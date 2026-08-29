@@ -19,9 +19,9 @@ const LOCAL_PATH = path.resolve(
 );
 
 /**
- * Strip this file's own provenance header — a C-style comment block that
- * ends at the first line consisting of exactly " */" — leaving the vendored
- * body, which must be byte-identical to the live upstream file.
+ * Strip this file's own provenance header — a C-style comment block whose
+ * closing line is a lone space, an asterisk, then a slash — leaving the
+ * vendored body, which must be byte-identical to the live upstream file.
  */
 function stripHeader(text) {
   const lines = text.split("\n");

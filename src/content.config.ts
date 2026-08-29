@@ -57,10 +57,7 @@ const docs = defineCollection({
  */
 const siteDocs = defineCollection({
   loader: glob({ pattern: "**/*.md", base: "./src/content/site-docs" }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-  }),
+  schema: z.object({ title: z.string(), description: z.string() }),
 });
 
 export const collections = { docs, siteDocs };
