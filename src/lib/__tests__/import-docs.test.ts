@@ -312,7 +312,7 @@ test("an out-of-range manifest section or slug (Foo, a/b, ..) fails the run", as
 
 // --- A6: the sink — canonicalize once, never blocklist spellings -------------------------------
 
-test("manifest traversal fixtures never produce a URL containing '..', and the run fails — while a legitimate sibling entry is still requested (not a wholesale manifest refusal)", async () => {
+test("manifest traversal fixtures never escape docs/ (and never produce a URL containing '..'), and the run fails — while a legitimate sibling entry is still requested (not a wholesale manifest refusal)", async () => {
   const targetRepo = "w6w-io/w6w-ui";
   const fixtures = ["../../../README.md", "/etc/passwd", "docs/../secret.md", "%2e%2e%2fsecret.md"];
 
@@ -330,16 +330,26 @@ test("manifest traversal fixtures never produce a URL containing '..', and the r
         if (path === "docs/manifest.json") return repo === targetRepo ? manifest : EMPTY_MANIFEST;
         requestedPaths.push(path);
         if (repo === targetRepo && path === "docs/embedding.md") return "Legit body\n";
+        // A request NOT anchored under docs/ "succeeds" here as if it reached real,
+        // out-of-scope, sensitive repo content — a blocklist that lets a raw/unprefixed path
+        // through (rather than always constructing the URL from the SAME canonicalized,
+        // docs/-anchored value) would happily fetch and import it; the assertions below catch
+        // that even though this fixture's raw spelling never contains a literal '..'.
+        if (!path.startsWith("docs/")) return "ATTACKER CONTROLLED CONTENT\n";
         throw new Error(`unexpected fetchRaw(${repo}, ${path})`);
       },
       fetchLastCommitDate: async (repo, path) => {
         requestedPaths.push(path);
         if (repo === targetRepo && path === "docs/embedding.md") return "2026-01-01T00:00:00Z";
+        if (!path.startsWith("docs/")) return "2020-01-01T00:00:00Z";
         throw new Error(`unexpected fetchLastCommitDate(${repo}, ${path})`);
       },
       readExisting: async () => null,
-      writeFile: async () => {
-        throw new Error("must not write on a failed run");
+      writeFile: async (path, bytes) => {
+        assert.ok(
+          !bytes.includes("ATTACKER CONTROLLED CONTENT"),
+          `attacker-controlled content must never be written (path ${path}, badPath ${JSON.stringify(badPath)})`,
+        );
       },
       listExisting: async () => [],
       removeFile: async () => {},
@@ -348,6 +358,10 @@ test("manifest traversal fixtures never produce a URL containing '..', and the r
     const result = await runImport([], deps);
 
     assert.notEqual(result.exitCode, 0, `badPath ${JSON.stringify(badPath)} must fail the run`);
+    assert.ok(
+      requestedPaths.every((p) => p.startsWith("docs/")),
+      `every requested path must be anchored under docs/ — got: ${JSON.stringify(requestedPaths)}`,
+    );
     assert.ok(
       !requestedPaths.some((p) => p.includes("..")),
       `no requested path may contain '..' — got: ${JSON.stringify(requestedPaths)}`,
