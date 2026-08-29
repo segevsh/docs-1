@@ -58,3 +58,70 @@ const sections = [...grouped].map(([section, sectionEntries]) => ({
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  // T3.1.1 — client-side channel toggle. Structural precedent:
+  // `packages/frontend/packages/web/src/layouts/DocsLayout.astro:122-159` —
+  // a plain `<script>` using `document.querySelector`, no framework. This
+  // repo depends on neither React nor `@w6w/ui`, so that (not
+  // `PropertyEntryForm.tsx`) is the shape to mirror.
+  //
+  // RENDER STRATEGY (pinned, `project.md`'s Constraints): one page per doc,
+  // every channel's markup ships in the HTML, and this script shows exactly
+  // one `[data-channel]` container at a time by toggling the `hidden`
+  // attribute — never a build-time fork into one page per channel.
+  //
+  // Selection logic itself lives in `../lib/channel-select.ts` (`selectChannel`,
+  // A8) — this script CALLS it, it does not re-implement the fallback rule.
+  import { CHANNELS } from "../lib/channels.ts";
+  import { selectChannel } from "../lib/channel-select.ts";
+
+  const STORAGE_KEY = "w6w-docs-channel";
+
+  function initChannelToggle(): void {
+    const containers = Array.from(document.querySelectorAll<HTMLElement>("[data-channel]"));
+    if (containers.length === 0) return; // no channel blocks on this page — no button group (A9)
+
+    // CHANNELS order (A1), filtered to what's actually present on this page —
+    // never the DOM's own encounter order, so the toggle reads the same left
+    // to right on every page regardless of which channels a given doc uses.
+    const present = CHANNELS.filter((channel) =>
+      containers.some((el) => el.dataset.channel === channel),
+    );
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+    const initial = selectChannel(present, stored);
+    if (initial === null) return;
+
+    const group = document.createElement("div");
+    group.className = "channel-toggle";
+    group.setAttribute("role", "group");
+    group.setAttribute("aria-label", "Channel");
+
+    function select(channel: string): void {
+      for (const el of containers) {
+        el.hidden = el.dataset.channel !== channel;
+      }
+      for (const button of Array.from(group.querySelectorAll<HTMLButtonElement>("button"))) {
+        button.setAttribute("aria-pressed", String(button.dataset.channel === channel));
+      }
+      localStorage.setItem(STORAGE_KEY, channel);
+    }
+
+    for (const channel of present) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.channel = channel;
+      button.textContent = channel;
+      button.addEventListener("click", () => select(channel));
+      group.appendChild(button);
+    }
+
+    const content = document.querySelector(".docs-content");
+    content?.insertBefore(group, content.firstChild);
+
+    select(initial);
+  }
+
+  initChannelToggle();
+</script>
