@@ -11,17 +11,25 @@ pnpm build          # static build -> dist/
 pnpm preview        # serve the build locally
 pnpm check          # astro check (typecheck)
 pnpm check:tokens   # verify src/styles/tokens.css hasn't drifted from w6w-io/w6w-branding
-pnpm import-docs    # fetch every pinned + manifest-declared doc into src/content/docs/
+pnpm import-docs    # fetch every pinned + manifest-declared doc into content/<section>/
 pnpm test           # node --test the importer's unit suites
 ```
 
 ## Content
 
-- `src/content/docs/` — imported markdown, one file per source doc. **Entirely
-  importer-owned**: `pnpm import-docs` (`src/lib/import-docs.ts`) deletes anything here its
-  effective source list doesn't claim. Never hand-author a page here.
-- `src/content/site-docs/` — hand-authored pages this site writes itself (the `/` landing page
-  today).
+`content/` is a sibling of `src/`, not nested under it — a file's path there matches its route
+exactly (`content/packages/core.md` → `/packages/core/`, `content/quickstart.md` →
+`/quickstart/`). Two collections read from this one root (`src/content.config.ts`), told apart by
+pattern rather than by a wrapper folder:
+
+- `content/<section>/<slug>.md` — imported markdown, one file per source doc, matched by
+  `*/*.md`. **Entirely importer-owned**: `pnpm import-docs` (`src/lib/import-docs.ts`) deletes
+  anything matching this shape its effective source list doesn't claim. Never hand-author a page
+  here.
+- `content/*.md` (root-level only) — hand-authored pages this site writes itself (`index.md` for
+  `/`, `quickstart.md` for `/quickstart/`), matched by `*.md`. The importer's prune sweep can't
+  reach these — see `content.config.ts`'s own comment for why the two patterns are disjoint by
+  construction, no wrapper folder required.
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the `docs/` + `docs/manifest.json` convention
 every source package repo follows, and what makes a doc eligible to land here.
@@ -32,7 +40,7 @@ every source package repo follows, and what makes a doc eligible to land here.
 each `MANIFEST_REPOS` repo's own `docs/manifest.json` declares, gathers everything first, and
 writes only if every fetch and every manifest entry validated cleanly — one failure (a 404, a bad
 manifest entry, a path-traversal attempt, a `(section, slug)` collision between two different
-sources) leaves `src/content/docs/` untouched and exits non-zero, naming every failure. On a
+sources) leaves `content/` untouched and exits non-zero, naming every failure. On a
 clean run it also prunes anything under the collection root the effective source list no longer
 claims. Set `GITHUB_TOKEN` to raise the commit-date lookup's rate limit above the unauthenticated
 60/hour (CI sets it automatically). `pnpm test` exercises this against fake network/filesystem

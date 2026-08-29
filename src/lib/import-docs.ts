@@ -1,7 +1,8 @@
 // The docs importer — `pnpm import-docs`. Fetches the PINNED list in `doc-sources.ts`'s
 // `DOC_SOURCES` plus every entry each `MANIFEST_REPOS` repo's own `docs/manifest.json` names,
 // from public GitHub, tags each with frontmatter (`renderDocFile`), and writes them into the
-// `docs` content collection (`src/content/docs/`).
+// `docs` content collection (`content/<section>/<slug>.md` — `content/` is a sibling of `src/`,
+// matched by `content.config.ts`'s `*/*.md` pattern, no `docs/` wrapper folder).
 //
 // HARD-FAIL, NEVER SKIP. `runImport` below gathers all sources first and writes only if every
 // one succeeded — a single 404, network error, rate limit, or invalid manifest entry leaves the
@@ -40,9 +41,10 @@ import type { DocSource } from "./doc-sources.ts";
 /**
  * The `docs` collection's source directory, resolved from **this module's own URL**, never
  * `cwd` — this may be invoked via `pnpm import-docs`, a workspace-root delegation, or directly
- * by a human from anywhere.
+ * by a human from anywhere. This file lives at `src/lib/import-docs.ts`; `content/` is a
+ * sibling of `src/`, so two levels up, not one.
  */
-const DOCS_DIR = new URL("../content/docs/", import.meta.url);
+const DOCS_DIR = new URL("../../content/", import.meta.url);
 
 const RAW_BASE = "https://raw.githubusercontent.com";
 const API_BASE = "https://api.github.com";
@@ -263,7 +265,17 @@ async function writeOutput(path: string, bytes: string): Promise<void> {
   await writeFile(file, bytes);
 }
 
-/** Every `.md` under the collection root, collection-relative (`<section>/<slug>.md`). */
+/**
+ * Every `.md` matching `outputPath`'s own shape (`<section>/<slug>.md`, exactly one directory
+ * level under the collection root) — collection-relative. `DOCS_DIR` is `content/`, shared with
+ * the `siteDocs` collection's root-level files (`content/index.md`, `content/quickstart.md`,
+ * `content.config.ts`'s `*.md` pattern) — a bare filename with no `/` is filtered out here for
+ * exactly the reason `content.config.ts`'s own comment gives: those two patterns are disjoint by
+ * shape, and this is the half of that disjointness the importer itself is responsible for. Without
+ * the filter, `listExisting` would report `index.md`/`quickstart.md` as "existing under the
+ * collection root", the prune step below would find them unclaimed by any `DocSource`, and a
+ * routine `pnpm import-docs` run would delete the site's own hand-authored pages.
+ */
 async function listExisting(): Promise<string[]> {
   const out: string[] = [];
   let entries;
@@ -279,7 +291,15 @@ async function listExisting(): Promise<string[]> {
     // `parentPath` is Node 20.12+/22+; `path` is its deprecated predecessor. Neither is in
     // this TS lib's Dirent, so read them off a narrowed shape rather than widening to any.
     const dir = e as unknown as { parentPath?: string; path?: string };
-    out.push(`${dir.parentPath ?? dir.path ?? ""}/${e.name}`.slice(root.length + 1));
+    // Node's `readdir(..., { recursive: true })` reports `parentPath` WITH a trailing slash
+    // for entries directly in the base directory (matching the trailing-slash URL passed to
+    // it) but WITHOUT one for subdirectory entries — collapse both shapes before joining, or
+    // a base-directory file leaves a stray leading "/" after the slice below and silently
+    // passes the "is this nested" check it exists to enforce.
+    const parent = (dir.parentPath ?? dir.path ?? "").replace(/\/$/, "");
+    const relative = `${parent}/${e.name}`.slice(root.length + 1);
+    if (!relative.includes("/")) continue; // root-level `siteDocs` file — not this collection's.
+    out.push(relative);
   }
   return out;
 }

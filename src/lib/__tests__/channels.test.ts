@@ -16,7 +16,7 @@ import remarkChannels from "../remark-channels.ts";
  * stripped with `parseFrontmatter` (also already a dependency) the same way
  * Astro's own content-collection loader does before handing the body to the
  * markdown processor — `bogus-tag.md` carries frontmatter because G3 also
- * copies it straight into `src/content/site-docs/`, where the `siteDocs`
+ * copies it straight into `content/`, where the `siteDocs`
  * schema requires `title`/`description`.
  */
 const FIXTURES_DIR = fileURLToPath(new URL("./fixtures/", import.meta.url));

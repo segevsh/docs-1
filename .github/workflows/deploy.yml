@@ -1,8 +1,10 @@
 name: Build + Deploy
 
 on:
-  push:
-    branches: [main]
+  # Ship on a deliberate GitHub Release, not on every push to main — a merge to main stages
+  # content; a published release is the actual "make this live" signal.
+  release:
+    types: [published]
   # Dispatched by T4.1.1's cross-repo workflows after a docs source repo publishes new content:
   # `gh workflow run "Build + Deploy" --repo w6w-io/docs`. This literal (both the "Build + Deploy"
   # name above and this trigger) is the calling interface — do not rename either.
@@ -61,13 +63,15 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # Deploy ONLY from main, and only for the two triggers that mean "ship this": a push, or a
-      # deliberate workflow_dispatch. A PR build (there is no `pull_request` trigger on this
-      # workflow at all) must never deploy.
+      # Deploy on the two triggers that mean "ship this": a published release (ref is the
+      # release tag, e.g. `refs/tags/v1.2.3` — not `refs/heads/main`, so no branch check applies
+      # there), or a workflow_dispatch — which T4.1.1's cross-repo callers always send with
+      # `--ref main`, so THAT trigger still gets the branch check. A PR build (there is no
+      # `pull_request` trigger on this workflow at all) must never deploy.
       - name: Deploy
         if: |
-          github.ref == 'refs/heads/main' &&
-          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+          github.event_name == 'release' ||
+          (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

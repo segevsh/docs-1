@@ -1,5 +1,8 @@
 node_modules/
 dist/
+dist-test/
+test-results/
+playwright-report/
 .astro/
 .env
 .env.local

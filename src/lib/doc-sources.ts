@@ -315,7 +315,7 @@ export function mergeSources(pinned: DocSource[], manifestSources: DocSource[]):
 
 /**
  * Where one source's rendered file lands, relative to the `docs` collection's base
- * (`src/content.config.ts`'s `glob({ pattern: "**\/*.md", base: "./src/content/docs" })`).
+ * (`src/content.config.ts`'s `glob({ pattern: "*\/*.md", base: "../content" })`).
  * `<section>/<slug>.md` — unique by construction across the pinned list, and `mergeSources`
  * above is what keeps it unique across the effective (pinned + manifest) list too.
  */

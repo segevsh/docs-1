@@ -1,0 +1,23 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import DocLayout from "../layouts/DocLayout.astro";
+
+/**
+ * `/quickstart/` — hand-authored `site-docs` `quickstart` entry, ported
+ * verbatim from `packages/frontend/packages/web/src/content/site-docs/
+ * quickstart.md` (the same page frontend renders at `/docs` today).
+ *
+ * Uses `DocLayout` (not a bare `BaseLayout`) so the rail — Quickstart pinned
+ * at top, plus every imported doc section below — is visible here too, not
+ * just on imported-doc pages.
+ */
+const entry = await getEntry("siteDocs", "quickstart");
+if (!entry) throw new Error("content/quickstart.md is missing");
+
+const entries = await getCollection("docs");
+const { Content } = await render(entry);
+---
+
+<DocLayout title={entry.data.title} description={entry.data.description} entries={entries} quickstartActive>
+  <Content />
+</DocLayout>

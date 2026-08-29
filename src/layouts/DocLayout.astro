@@ -15,9 +15,11 @@ interface Props {
   entries: CollectionEntry<"docs">[];
   /** The entry currently being viewed, highlighted in the rail. */
   currentId?: string;
+  /** True on `/quickstart/` itself — highlights the pinned rail link. */
+  quickstartActive?: boolean;
 }
 
-const { title, description, entries, currentId } = Astro.props;
+const { title, description, entries, currentId, quickstartActive } = Astro.props;
 
 /** Group by `section`, in first-seen order. */
 const grouped = new Map<string, CollectionEntry<"docs">[]>();
@@ -35,23 +37,33 @@ const sections = [...grouped].map(([section, sectionEntries]) => ({
 <BaseLayout title={title} description={description}>
   <div class="docs-layout">
     <nav class="docs-rail" aria-label="Docs">
-      {sections.map(({ section, entries: sectionEntries }) => (
-        <div class="docs-rail-section">
-          <h2>{section}</h2>
-          <ul>
-            {sectionEntries.map((entry) => (
-              <li>
-                <a
-                  href={`/${entry.id}/`}
-                  aria-current={entry.id === currentId ? "page" : undefined}
-                >
-                  {entry.data.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      <ul class="docs-rail-pinned">
+        <li>
+          <a href="/quickstart/" aria-current={quickstartActive ? "page" : undefined}>
+            Quickstart
+          </a>
+        </li>
+      </ul>
+      {sections.map(({ section, entries: sectionEntries }) => {
+        const hasActive = sectionEntries.some((entry) => entry.id === currentId);
+        return (
+          <details class="docs-rail-section" open={hasActive}>
+            <summary>{section}</summary>
+            <ul>
+              {sectionEntries.map((entry) => (
+                <li>
+                  <a
+                    href={`/${entry.id}/`}
+                    aria-current={entry.id === currentId ? "page" : undefined}
+                  >
+                    {entry.data.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </details>
+        );
+      })}
     </nav>
     <div class="docs-content">
       <slot />
