@@ -21,6 +21,7 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <title>{title} — w6w docs</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <style is:global>
       @import "../styles/global.css";
     </style>
@@ -28,7 +29,10 @@ const {
   <body>
     <header class="topbar">
       <div class="topbar-inner">
-        <a class="brand" href="/">w6w docs</a>
+        <a class="brand" href="/" aria-label="w6w docs">
+          <img class="brand-logo brand-logo-light" src="/w6w-lockup.svg" alt="w6w" width="96" height="24" />
+          <img class="brand-logo brand-logo-dark" src="/w6w-lockup-ondark.svg" alt="w6w" width="96" height="24" />
+        </a>
         <nav class="nav" aria-label="Site">
           <a href="/">Docs</a>
           <a href="https://w6w.io" rel="noopener noreferrer">w6w.io</a>

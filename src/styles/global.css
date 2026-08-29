@@ -54,9 +54,41 @@ pre {
 }
 
 .brand {
-  font-weight: 600;
-  color: var(--w6w-ink);
-  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.brand-logo {
+  display: block;
+  height: 24px;
+  width: auto;
+}
+
+/*
+ * Light logo shows by default (and when data-theme is forced light); the
+ * -ondark asset takes over under OS dark preference or a forced dark theme —
+ * the same selector pair `tokens.css` uses for its own light/dark variable
+ * blocks, kept in lockstep so the logo and the palette never disagree.
+ */
+.brand-logo-dark {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .brand-logo-light {
+    display: none;
+  }
+  :root:not([data-theme="light"]) .brand-logo-dark {
+    display: block;
+  }
+}
+
+:root[data-theme="dark"] .brand-logo-light {
+  display: none;
+}
+
+:root[data-theme="dark"] .brand-logo-dark {
+  display: block;
 }
 
 .nav {
