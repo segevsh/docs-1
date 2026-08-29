@@ -52,6 +52,11 @@ function failBuildOnChannelErrors() {
   };
 }
 
+// When served behind the devcontainer's cloudflared tunnel (docs-${DEV_ID}.${TUNNEL_ZONE}),
+// Vite must accept that Host header and run HMR over the public wss endpoint instead of
+// localhost — same mechanism as frontend's astro.config.mjs. No-op for a plain local `pnpm dev`.
+const PUBLIC_HOST = process.env.SITE_PUBLIC_HOST;
+
 export default defineConfig({
   site: "https://docs.w6w.io",
   output: "static",
@@ -70,4 +75,10 @@ export default defineConfig({
     },
   },
   server: { host: true },
+  vite: {
+    server: {
+      allowedHosts: PUBLIC_HOST ? [PUBLIC_HOST] : undefined,
+      hmr: PUBLIC_HOST ? { protocol: "wss", host: PUBLIC_HOST, clientPort: 443 } : undefined,
+    },
+  },
 });
