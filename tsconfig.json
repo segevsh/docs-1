@@ -1,0 +1,10 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  // The generated content-collection types live under `.astro/`, and this
+  // `include` overrides the one `astro/tsconfigs/strict` provides — which is
+  // what would otherwise pull them in. Drop the first entry below and
+  // `astro check` reports `Property 'data' does not exist on type 'never'`
+  // on every `getCollection` call, while the build stays green.
+  "include": [".astro/types.d.ts", "src/**/*", "astro.config.mjs"],
+  "exclude": ["dist", "node_modules"]
+}

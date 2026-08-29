@@ -1,0 +1,170 @@
+/*
+ * Global styles for docs.w6w.io.
+ *
+ * Every colour below is a `var(--w6w-*)` custom property from `./tokens.css`
+ * — never a literal hex value. This is what keeps `packages/branding/COLOR.md`
+ * §2's drift (a hand-retyped hex in a second consumer) from recurring here.
+ */
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--w6w-ink);
+  background: var(--w6w-bg);
+  line-height: 1.6;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--w6w-accent);
+}
+
+code,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.topbar {
+  border-bottom: 1px solid var(--w6w-border);
+  background: var(--w6w-panel);
+}
+
+.topbar-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand {
+  font-weight: 600;
+  color: var(--w6w-ink);
+  text-decoration: none;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav a {
+  color: var(--w6w-muted);
+  text-decoration: none;
+}
+
+.nav a:hover {
+  color: var(--w6w-ink);
+}
+
+.page-body {
+  flex: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  width: 100%;
+}
+
+.docs-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.docs-rail {
+  flex: 0 0 220px;
+}
+
+.docs-rail-section h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--w6w-muted);
+}
+
+.docs-rail ul {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.docs-rail a[aria-current="page"] {
+  color: var(--w6w-accent);
+  font-weight: 600;
+}
+
+.docs-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.docs-index-section {
+  margin-bottom: 16px;
+}
+
+.site-footer {
+  border-top: 1px solid var(--w6w-border);
+  background: var(--w6w-panel-2);
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  color: var(--w6w-muted);
+}
+
+@media (max-width: 640px) {
+  .docs-layout {
+    flex-direction: column;
+  }
+}
+
+/*
+ * T3.1.1 channel toggle. Hiding is keyed OFF THE `hidden` ATTRIBUTE the
+ * `DocLayout.astro` script sets — never a bare `[data-channel]` rule — so a
+ * reader with JavaScript disabled sees every channel's content: the script
+ * is what removes content, never the stylesheet by default (A10).
+ */
+.channel-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.channel-toggle button {
+  border: 1px solid var(--w6w-border);
+  border-radius: var(--w6w-radius);
+  background: var(--w6w-panel);
+  color: var(--w6w-muted);
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.channel-toggle button[aria-pressed="true"] {
+  border-color: var(--w6w-accent);
+  color: var(--w6w-accent);
+  font-weight: 600;
+}
+
+[data-channel][hidden] {
+  display: none;
+}

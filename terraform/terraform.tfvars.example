@@ -1,0 +1,9 @@
+cloudflare_api_token  = "cf_pat_xxxxxxxxxxxxxxxxxxxxxxxxx"
+cloudflare_account_id = "0123456789abcdef0123456789abcdef"
+cloudflare_zone_id    = "0123456789abcdef0123456789abcdef"
+
+# Overrides (defaults shown):
+# project_name      = "w6w-docs"
+# production_branch = "main"
+# domain            = "docs.w6w.io"
+# www_redirect      = false

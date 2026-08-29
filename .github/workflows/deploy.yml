@@ -1,0 +1,75 @@
+name: Build + Deploy
+
+on:
+  push:
+    branches: [main]
+  # Dispatched by T4.1.1's cross-repo workflows after a docs source repo publishes new content:
+  # `gh workflow run "Build + Deploy" --repo w6w-io/docs`. This literal (both the "Build + Deploy"
+  # name above and this trigger) is the calling interface — do not rename either.
+  workflow_dispatch:
+
+# Supersede an in-progress run when a newer one starts on the same ref. A docs rebuild has no
+# partial-application hazard, so superseding an in-flight run is the right default.
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    # Fork guard: this workflow reaches PRODUCTION and a personal fork carries none of the
+    # secrets it needs, so on a fork it fails loudly on every push instead of doing nothing.
+    # Mirrors every other deploy workflow in this codebase.
+    #
+    # NOTE the spelling: every sibling repo in this workspace follows the `w6w-io/w6w-*`
+    # pattern, but this one does not — the GitHub repo is simply `w6w-io/docs`. The Cloudflare
+    # Pages *project* below IS named `w6w-docs`; don't conflate the two when editing this guard.
+    if: github.repository == 'w6w-io/docs'
+    name: Type-check + build + deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # Install pnpm BEFORE Node so the Node action's pnpm cache can resolve the store path.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # Keeps T2.1.1's vendored branding tokens from drifting after this run. Not optional, and
+      # never allowed to soft-fail — a drifted token set fails the build, not just a warning.
+      - name: Check vendored tokens are current
+        run: pnpm check:tokens
+
+      # ---------------------------------------------------------------------------------------
+      # Collect content BEFORE building, so the site is built from freshly imported docs — this
+      # is the entire "collect on publish" mechanism this repo exists for.
+      #
+      # GITHUB_TOKEN is for the importer's per-file `api.github.com/commits` lookups, not for
+      # checkout: unauthenticated api.github.com is capped at 60 requests/hour per runner IP,
+      # which every job on that runner shares. Actions injects this token into every run
+      # automatically; there is no secret to provision.
+      # ---------------------------------------------------------------------------------------
+      - name: Import docs from source repos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm import-docs
+
+      - name: Build
+        run: pnpm build
+
+      # Deploy ONLY from main, and only for the two triggers that mean "ship this": a push, or a
+      # deliberate workflow_dispatch. A PR build (there is no `pull_request` trigger on this
+      # workflow at all) must never deploy.
+      - name: Deploy
+        if: |
+          github.ref == 'refs/heads/main' &&
+          (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=w6w-docs

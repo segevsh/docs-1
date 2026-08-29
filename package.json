@@ -1,0 +1,27 @@
+{
+  "name": "@w6w/docs",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Public documentation site for w6w — docs.w6w.io. Astro, static-first, single package.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "check:tokens": "node scripts/check-tokens.mjs",
+    "import-docs": "node src/lib/import-docs.ts",
+    "test": "node --test src/lib/__tests__/channels.test.ts src/lib/__tests__/doc-sources.test.ts src/lib/__tests__/import-docs.test.ts"
+  },
+  "dependencies": {
+    "@astrojs/check": "^0.9.0",
+    "@astrojs/markdown-remark": "^6.3.11",
+    "@astrojs/mdx": "^4.0.0",
+    "astro": "^5.1.0",
+    "typescript": "^5.6.0",
+    "vite": "^6.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.0"
+  }
+}
