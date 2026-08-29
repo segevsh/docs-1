@@ -135,3 +135,36 @@ pre {
     flex-direction: column;
   }
 }
+
+/*
+ * T3.1.1 channel toggle. Hiding is keyed OFF THE `hidden` ATTRIBUTE the
+ * `DocLayout.astro` script sets — never a bare `[data-channel]` rule — so a
+ * reader with JavaScript disabled sees every channel's content: the script
+ * is what removes content, never the stylesheet by default (A10).
+ */
+.channel-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.channel-toggle button {
+  border: 1px solid var(--w6w-border);
+  border-radius: var(--w6w-radius);
+  background: var(--w6w-panel);
+  color: var(--w6w-muted);
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.channel-toggle button[aria-pressed="true"] {
+  border-color: var(--w6w-accent);
+  color: var(--w6w-accent);
+  font-weight: 600;
+}
+
+[data-channel][hidden] {
+  display: none;
+}
