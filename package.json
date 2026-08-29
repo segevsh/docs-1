@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@11.24.0",
   "description": "Public documentation site for w6w — docs.w6w.io. Astro, static-first, single package.",
   "scripts": {
     "dev": "astro dev",
