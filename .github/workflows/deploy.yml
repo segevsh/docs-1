@@ -46,20 +46,10 @@ jobs:
       - name: Check vendored tokens are current
         run: pnpm check:tokens
 
-      # ---------------------------------------------------------------------------------------
-      # Collect content BEFORE building, so the site is built from freshly imported docs — this
-      # is the entire "collect on publish" mechanism this repo exists for.
-      #
-      # GITHUB_TOKEN is for the importer's per-file `api.github.com/commits` lookups, not for
-      # checkout: unauthenticated api.github.com is capped at 60 requests/hour per runner IP,
-      # which every job on that runner shares. Actions injects this token into every run
-      # automatically; there is no secret to provision.
-      # ---------------------------------------------------------------------------------------
-      - name: Import docs from source repos
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm import-docs
-
+      # NOT running `pnpm import-docs` here yet — the site is still being built out, and the
+      # importer needs `docs/manifest.json` live on GitHub in core/ui/wrappers/apps, which isn't
+      # true yet. Builds against whatever's already committed in `content/` instead. Re-add this
+      # step (see git history) once the site itself is settled and those manifests are live.
       - name: Build
         run: pnpm build
 
