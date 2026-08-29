@@ -20,10 +20,9 @@ jobs:
     # secrets it needs, so on a fork it fails loudly on every push instead of doing nothing.
     # Mirrors every other deploy workflow in this codebase.
     #
-    # NOTE the spelling: the GitHub repo is `w6w-io/docs`, not `w6w-io/w6w-docs` — every sibling
-    # repo in this workspace follows the `w6w-io/w6w-*` pattern, but this one does not. The
-    # Cloudflare Pages *project* below IS named `w6w-docs`; both spellings are correct, just in
-    # different places.
+    # NOTE the spelling: every sibling repo in this workspace follows the `w6w-io/w6w-*`
+    # pattern, but this one does not — the GitHub repo is simply `w6w-io/docs`. The Cloudflare
+    # Pages *project* below IS named `w6w-docs`; don't conflate the two when editing this guard.
     if: github.repository == 'w6w-io/docs'
     name: Type-check + build + deploy
     runs-on: ubuntu-latest
@@ -41,7 +40,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
 
       # Keeps T2.1.1's vendored branding tokens from drifting after this run. Not optional, and
-      # never continue-on-error — a drifted token set fails the build, not just a warning.
+      # never allowed to soft-fail — a drifted token set fails the build, not just a warning.
       - name: Check vendored tokens are current
         run: pnpm check:tokens
 
