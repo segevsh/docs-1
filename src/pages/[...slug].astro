@@ -1,0 +1,32 @@
+---
+import { getCollection, render } from "astro:content";
+import type { InferGetStaticPropsType } from "astro";
+import DocLayout from "../layouts/DocLayout.astro";
+
+/**
+ * One page per entry in the `docs` content collection. `index.astro` alone
+ * owns `/`; this catch-all owns every imported doc's route, keyed by the
+ * entry's own id (already URL-safe — the importer writes kebab-case paths).
+ *
+ * With the `docs` collection empty this returns zero paths, so the build
+ * emits no page from this file — `index.astro` is the only page in the
+ * build (A8).
+ */
+export async function getStaticPaths() {
+  const entries = await getCollection("docs");
+
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, entries },
+  }));
+}
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { entry, entries } = Astro.props as Props;
+const { Content } = await render(entry);
+---
+
+<DocLayout title={entry.data.title} entries={entries} currentId={entry.id}>
+  <Content />
+</DocLayout>
