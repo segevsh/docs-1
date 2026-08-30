@@ -58,6 +58,11 @@ jobs:
       # there), or a workflow_dispatch — which T4.1.1's cross-repo callers always send with
       # `--ref main`, so THAT trigger still gets the branch check. A PR build (there is no
       # `pull_request` trigger on this workflow at all) must never deploy.
+      # `wrangler-action@v3`'s own default (3.90.0) fails ALL Pages deploys against this
+      # account's API token with "Authentication error [code: 10000]" -- reproduced with two
+      # different, otherwise-working tokens, so it's not a token-scope problem. wrangler 4.127.1
+      # deploys the exact same tree with the exact same token with no error. Pin explicitly
+      # rather than trust the action's default.
       - name: Deploy
         if: |
           github.event_name == 'release' ||
@@ -66,4 +71,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.127.1"
           command: pages deploy dist --project-name=w6w-docs
