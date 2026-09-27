@@ -17,9 +17,31 @@ interface Props {
   currentId?: string;
   /** True on `/quickstart/` itself — highlights the pinned rail link. */
   quickstartActive?: boolean;
+  /**
+   * The active `/self-hosting/<slug>/` page, if any (T4.1.1, HITL-4) — highlights
+   * the matching link in the pinned "Self-hosting" rail group below. The group
+   * itself always renders, on every `DocLayout` page (including `/quickstart/`),
+   * exactly like the pinned Quickstart link above it.
+   */
+  selfHostingActive?: string;
 }
 
-const { title, description, entries, currentId, quickstartActive } = Astro.props;
+const { title, description, entries, currentId, quickstartActive, selfHostingActive } =
+  Astro.props;
+
+/**
+ * The five `self-host-*` `siteDocs` pages, in the order they appear in the
+ * rail. Hardcoded here rather than read from the `siteDocs` collection —
+ * this layout already hardcodes the pinned Quickstart link the same way, and
+ * a fixed, small, rarely-changing list needs no dynamic lookup.
+ */
+const SELF_HOSTING_PAGES = [
+  { slug: "install", label: "Install" },
+  { slug: "upgrade", label: "Upgrade" },
+  { slug: "config-reference", label: "Config reference" },
+  { slug: "air-gap", label: "Air-gapped install" },
+  { slug: "troubleshooting", label: "Troubleshooting" },
+];
 
 /** Group by `section`, in first-seen order. */
 const grouped = new Map<string, CollectionEntry<"docs">[]>();
@@ -44,6 +66,21 @@ const sections = [...grouped].map(([section, sectionEntries]) => ({
           </a>
         </li>
       </ul>
+      <details class="docs-rail-section" open={Boolean(selfHostingActive)}>
+        <summary>Self-hosting</summary>
+        <ul>
+          {SELF_HOSTING_PAGES.map(({ slug, label }) => (
+            <li>
+              <a
+                href={`/self-hosting/${slug}/`}
+                aria-current={selfHostingActive === slug ? "page" : undefined}
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
       {sections.map(({ section, entries: sectionEntries }) => {
         const hasActive = sectionEntries.some((entry) => entry.id === currentId);
         return (
