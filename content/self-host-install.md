@@ -60,11 +60,15 @@ docker login ghcr.io -u <your-github-username>
 
 ```sh
 docker compose up -d
-docker compose ps   # postgres, the API, Studio and the proxy should all report healthy
+docker compose ps
 ```
 
-A one-shot init step creates the database, a dedicated non-superuser role, and applies the schema
-before the API ever starts — you never run a separate install command by hand.
+`docker compose ps` should show: Postgres, the API and Studio reporting `healthy` (each has a
+container healthcheck); the one-shot init container reporting `Exited (0)` — it runs once, applies
+the schema, and stops, so exited-with-zero is its own success state, not a failure; and the reverse
+proxy simply `Up` (it has no healthcheck of its own). A one-shot init step creates the database, a
+dedicated non-superuser role, and applies the schema before the API ever starts — you never run a
+separate install command by hand.
 
 ## 5. Log in
 

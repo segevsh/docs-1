@@ -12,11 +12,22 @@
 // variable's description below is authored HERE, by hand, specifically for
 // a public reader, and reviewed for internal references the same way the
 // rest of this page is. The one thing this script reads out of `config.ts`
-// mechanically is the SET OF VARIABLE NAMES it declares
-// (`Deno.env.get("NAME")`), so the page can never silently fall behind a
-// `config.ts` change: a newly added variable that isn't accounted for below
-// (documented or excluded) fails the generator loudly rather than shipping
-// an incomplete page.
+// mechanically is the SET OF VARIABLE NAMES it declares — both the literal
+// `Deno.env.get("NAME")` form AND the three helper wrappers `config.ts`
+// itself reads through (`required("NAME")`, `flagOn("NAME")`,
+// `flagExplicitlyOn("NAME")`; T4.1.1 round 2, B1 — the two extraction sites
+// (this script and `docs-gate.sh`'s completeness check) must stay
+// byte-for-byte in sync on what counts as "a variable", or one can silently
+// go blind to a read the other still sees) — so the page can never silently
+// fall behind a `config.ts` change: a newly added variable that isn't
+// accounted for below (documented or excluded) fails the generator loudly
+// rather than shipping an incomplete page.
+//
+// SCOPE NOTE: this only ever sees `config.ts`. A handful of required
+// variables are read entirely outside it (e.g. `W6W_CREDENTIAL_KEY`, in
+// `packages/db/crypto.ts`) — those are hand-documented in the page's own
+// "Required variables not read through config.ts" section below, since no
+// mechanical extraction from this file can ever prove them complete.
 //
 // Deterministic: no timestamps, no environment-dependent values, no network
 // access. Re-running against the same `config.ts` produces byte-identical
@@ -72,11 +83,13 @@ const SECTIONS = [
       { name: "SIGNUP_TENANT", default: "`w6w`", description: "Which tenant a fresh signup, or a request that names none, lands in." },
       { name: "INVITE_TTL_SEC", default: "86400", description: "How long an account invite stays valid." },
       { name: "OPS_JWT_SECRET", default: "unset", description: "Signs a separate machine-to-machine edge this host does not mount on a self-host install. Leave it unset; it is still checked at boot for a collision with `JWT_SECRET`." },
+      { name: "W6W_DEV_MODE", default: "off", description: "A local-development escape hatch: while on, boot safety no longer refuses to start on a default/insecure `AUTH_PASSWORD`. Leave it unset (off) on any real deployment." },
     ],
   },
   {
     heading: "Process and storage",
     vars: [
+      { name: "DATABASE_URL", default: "none — required", description: "The Postgres connection string this host connects with. Boot refuses immediately if it is unset." },
       { name: "API_PORT", default: "8787", description: "The port the server listens on." },
       { name: "APPS_STORAGE_DIR", default: "`./storage/apps`", description: "Where app and asset files are read from. A published self-host image points this at its own baked-in app catalog." },
     ],
@@ -84,7 +97,7 @@ const SECTIONS = [
   {
     heading: "Public URLs and Studio",
     vars: [
-      { name: "PUBLIC_BASE_URL", default: "the local API address", description: "The public origin this API is served at, with no path prefix. An exposed Endpoint's callable URL is rendered against it, so set this to your real origin or operators will see `localhost` URLs." },
+      { name: "PUBLIC_BASE_URL", default: "the local API address", description: "The public URL at which the API's root is reachable, including any proxy path prefix (the self-host bundle sets `https://<domain>/api`). An exposed Endpoint's callable URL is rendered against it, so set this to your real origin or operators will see `localhost` URLs." },
       { name: "WEBHOOK_BASE_URL", default: "the local API address", description: "URL template inbound webhook triggers are built from, with an `{id}` placeholder." },
       { name: "STUDIO_BASE_URL", default: "`http://localhost:5173`", description: "Studio's own origin, used to build links such as invite redemption." },
       { name: "SERVE_STUDIO", default: "off", description: "Serve a built Studio bundle from this same process at `/`, instead of running Studio as its own deployment." },
@@ -121,7 +134,7 @@ const SECTIONS = [
       { name: "W6W_CONTROL_URL", default: "unset — link off", description: "Base URL of the control plane. With it unset the install is fully local: no licence fetch, usage report or commerce call is ever made." },
       { name: "W6W_CONTROL_PUBLIC_KEY", default: "unset — trusts nothing", description: "The vendor's public key (a JWK, or a JSON array of them) this host trusts for licence documents. Without it, every licence — fetched or from a file — is ignored." },
       { name: "W6W_LICENCE_FILE", default: "unset", description: "Path to an offline licence file (one signed document). Re-read on every poll tick, so replacing the file takes effect without a restart." },
-      { name: "W6W_USAGE_REPORTING", default: "off", description: "Turns on hourly usage reporting to the control plane. Self-host is opt-in; only an explicit \"on\" value enables it." },
+      { name: "W6W_USAGE_REPORTING", default: "off", description: "Turns on hourly usage reporting to the control plane. Self-host is opt-in; only `1`/`true`/`yes`/`on` (case-insensitively) enables it — anything else, including unset, leaves it off." },
     ],
   },
   {
@@ -130,21 +143,48 @@ const SECTIONS = [
       { name: "W6W_IMPORT_PACK", default: "unset", description: "Set to the exact value `official` to import the baked-in first-party app pack automatically at boot. Otherwise import it later, on demand." },
     ],
   },
+  {
+    heading: "Usage metering",
+    vars: [
+      { name: "USAGE_METERING_ENABLED", default: "off", description: "Whether this host records usage events at all. Self-host defaults off (opt-in); only `1`/`true`/`yes`/`on` (case-insensitively) turns it on. The four kind toggles below only matter once this is on." },
+      { name: "USAGE_METER_API_CALL", default: "on", description: "When metering is on, whether an inbound API call counts as a usage event." },
+      { name: "USAGE_METER_EGRESS", default: "on", description: "When metering is on, whether an outbound egress call counts as a usage event." },
+      { name: "USAGE_METER_ACTION_INVOKE", default: "on", description: "When metering is on, whether an action invocation counts as a usage event." },
+      { name: "USAGE_METER_WORKFLOW_RUN", default: "on", description: "When metering is on, whether a workflow run counts as a usage event." },
+    ],
+  },
 ];
+
+/**
+ * Required variables NEVER read through `config.ts` — the generator's
+ * mechanical extraction below can only ever see `config.ts`, so it can never
+ * prove one of these complete or catch a newly-added one; this list is
+ * hand-maintained and hand-reviewed instead (T4.1.1 round 2, B1/R2A2).
+ */
+const EXTERNAL_REQUIRED_VARS = [
+  { name: "W6W_CREDENTIAL_KEY", description: "64 hex chars (32 bytes). Encrypts stored connection credentials and vault secrets at rest (`packages/db/crypto.ts`). Unset or malformed falls back to a well-known development key with a loud warning — never rely on that outside development." },
+];
+
+// Matches the literal `Deno.env.get("NAME")` form AND the three helper
+// wrappers `config.ts` itself reads through (T4.1.1 round 2, B1). A variable
+// read only via a helper (`required("DATABASE_URL")`,
+// `flagExplicitlyOn("W6W_DEV_MODE")`, `flagOn("USAGE_METER_API_CALL")`, …)
+// used to be invisible to this extraction entirely.
+const VAR_READ_PATTERN =
+  /(?:Deno\.env\.get|required|flagOn|flagExplicitlyOn)\(\s*["']([A-Z0-9_]+)["']/g;
 
 function extractConfigVars(source) {
   const names = new Set();
-  const pattern = /Deno\.env\.get\("([A-Z0-9_]+)"\)/g;
-  for (const match of source.matchAll(pattern)) names.add(match[1]);
+  for (const match of source.matchAll(VAR_READ_PATTERN)) names.add(match[1]);
   return names;
 }
 
-function render(sections) {
+function render(sections, externalRequired) {
   const lines = [];
   lines.push("---");
   lines.push('title: "Self-host configuration reference"');
   lines.push(
-    'description: "Every environment variable a self-host install reads, generated from the host\'s own config module."',
+    'description: "Every environment variable config.ts declares, generated from the host\'s own config module, plus the handful read elsewhere."',
   );
   lines.push("---");
   lines.push("");
@@ -152,7 +192,7 @@ function render(sections) {
   lines.push("");
   lines.push(
     "Generated from the host's own configuration module, so this list can never drift from " +
-      "what the code actually reads. See [Install](/self-hosting/install/) for the compose " +
+      "what `config.ts` actually reads. See [Install](/self-hosting/install/) for the compose " +
       "bundle that sets the handful of these you must supply yourself, and " +
       "[Troubleshooting](/self-hosting/troubleshooting/) for what happens when one of these is " +
       "wrong.",
@@ -168,6 +208,21 @@ function render(sections) {
     }
     lines.push("");
   }
+  lines.push("## Required variables not read through `config.ts`");
+  lines.push("");
+  lines.push(
+    "The list above is generated by scanning `config.ts` itself, so it can only ever cover " +
+      "what that one module reads. A small number of required variables are read entirely " +
+      "outside it, by other parts of the server — this generator cannot mechanically prove " +
+      "this section complete, so it is hand-maintained instead.",
+  );
+  lines.push("");
+  lines.push("| Variable | What it does |");
+  lines.push("| --- | --- |");
+  for (const v of externalRequired) {
+    lines.push(`| \`${v.name}\` | ${v.description} |`);
+  }
+  lines.push("");
   return lines.join("\n").trimEnd() + "\n";
 }
 
@@ -200,7 +255,7 @@ function main() {
     return;
   }
 
-  writeFileSync(OUT_PATH, render(SECTIONS));
+  writeFileSync(OUT_PATH, render(SECTIONS, EXTERNAL_REQUIRED_VARS));
   console.log(`gen-config-reference: wrote ${OUT_PATH} (${found.size} variables accounted for)`);
 }
 
