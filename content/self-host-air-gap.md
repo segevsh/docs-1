@@ -6,8 +6,8 @@ description: "Installing, loading the app catalog, and licensing a self-host ins
 # Air-gapped install
 
 Running w6w day to day needs no outbound access. Three things to know if your install has none at
-all — plus one exception covered below: the bundle's automatic TLS certificate issuance still needs
-a single outbound connection the first time it runs.
+all: installing, getting the images onto the host, and TLS — the bundle's automatic TLS certificate
+issuance cannot work on a fully air-gapped host at all.
 
 ## Installing with no network
 
@@ -46,10 +46,11 @@ allows (removable media, an internal artifact store), then `docker load -i w6w-i
 ### TLS with no network
 
 Caddy's automatic certificate issuance for `{$W6W_DOMAIN}` (see [Install](/self-hosting/install/))
-needs one outbound connection to its ACME endpoint the first time it requests a certificate — it
-cannot obtain one offline. On a fully air-gapped install, either allow that one outbound connection
-through on first boot, or skip Caddy's automatic TLS entirely: bring your own certificate, or
-terminate TLS upstream on a load balancer or reverse proxy you already operate offline.
+cannot work on a fully air-gapped host at all: it needs live, ongoing outbound *and* inbound
+reachability to its ACME certificate authority, both to issue the first certificate and on every
+renewal after that. A fully air-gapped install must skip Caddy's automatic TLS entirely: bring your
+own certificate, or terminate TLS upstream on a load balancer or reverse proxy you already operate
+offline.
 
 ## Loading the app catalog with no network
 

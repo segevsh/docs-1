@@ -191,8 +191,8 @@ function render(sections, externalRequired) {
   lines.push("# Self-host configuration reference");
   lines.push("");
   lines.push(
-    "Generated from the host's own configuration module, so this list can never drift from " +
-      "what `config.ts` actually reads. See [Install](/self-hosting/install/) for the compose " +
+    "Generated from the host's own configuration module — the generator refuses to write a page " +
+      "that disagrees with what `config.ts` currently reads. See [Install](/self-hosting/install/) for the compose " +
       "bundle that sets the handful of these you must supply yourself, and " +
       "[Troubleshooting](/self-hosting/troubleshooting/) for what happens when one of these is " +
       "wrong.",
