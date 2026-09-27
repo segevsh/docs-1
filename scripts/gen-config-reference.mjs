@@ -108,8 +108,15 @@ const SECTIONS = [
     heading: "Scheduling and execution",
     vars: [
       { name: "SCHEDULER_ENABLED", default: "on", description: "Whether this replica runs the in-process cron scheduler. Every scheduled job is a database-wide advisory-lock singleton, so more than one replica sharing a database never double-fires regardless of this flag." },
-      { name: "RUN_CONCURRENCY_PER_REPLICA", default: "5", description: "How many workflow runs this one replica executes at once." },
-      { name: "REPLICA_ID", default: "generated", description: "A stable id for this replica, used in claims and logs." },
+      { name: "RUN_CONCURRENCY_PER_REPLICA", default: "5", description: "How many workflow runs this one replica executes at once. In a container, size this against the node's `cpuLimit` (its cgroup CPU ceiling), never against `cpus` — see Nodes and the resource scan." },
+      { name: "REPLICA_ID", default: "generated", description: "This replica's own id, and the **node id** it registers under. A stable value across restarts keeps one node, updated in place; a random one leaves a `gone` row behind per restart — hidden from `GET /nodes` unless you pass `?include=gone`, and not pruned yet. It is also the id claims and log lines carry." },
+    ],
+  },
+  {
+    heading: "Nodes, labels and resource inventory",
+    vars: [
+      { name: "W6W_NODE_LABELS", default: "unset", description: "Comma-separated labels this replica publishes about itself, e.g. `gpu,zone:lab-2`. Recorded with the node and shown on its row in Studio; nothing places work by label yet. Each entry may be 1–64 characters of letters, digits and `:` `.` `_` `/` `-`; one that is not is dropped with a start-time warning rather than refusing boot. See Nodes and the resource scan." },
+      { name: "W6W_REPORT_INVENTORY", default: "off", description: "**Self-host only.** When explicitly on (`1`/`true`/`yes`/`on`), each usage report additionally carries four integers and nothing else — node count, CPUs, GPUs and memory GiB. Hostnames, GPU models, disk paths and labels never leave the host, and a cloud installation never reports inventory whatever this is set to. See Nodes and the resource scan." },
     ],
   },
   {
@@ -165,6 +172,60 @@ const EXTERNAL_REQUIRED_VARS = [
   { name: "W6W_CREDENTIAL_KEY", description: "64 hex chars (32 bytes). Encrypts stored connection credentials and vault secrets at rest. Unset or malformed falls back to a well-known development key with a loud warning — never rely on that outside development." },
 ];
 
+/**
+ * Hand-authored prose no extraction can produce (the same hand-maintained rule
+ * {@link EXTERNAL_REQUIRED_VARS} follows): what a node IS, what the scan
+ * measures — and why `cpuLimit`, not `cpus`, is the number that matters inside
+ * a container — how to size a replica, and what the registry does and does not
+ * do with GPUs. Rendered after the variable tables, before the hand-maintained
+ * "required variables" section (`render` below).
+ */
+const NODES_NOTES = [
+  "## Nodes and the resource scan",
+  "",
+  "A **node** is one running host process — one container. Every node registers itself against this",
+  "installation's database at start, heartbeats every 10 seconds, and is reported `live` (seen within",
+  "30 s), `stale` (within 10 minutes) or `gone` (older than that) — all three derived from the node's",
+  "own last-seen stamp, never stored. `REPLICA_ID` is the node's id, which is why its stability",
+  "matters: a stable value across restarts keeps one row and updates it, while a random one leaves a",
+  "`gone` row behind per restart. Those rows are hidden, not pruned — `GET /nodes` leaves them out",
+  "unless you pass `?include=gone`, and pruning arrives with a later project.",
+  "",
+  "Operators reach the roster two ways: **Studio → Settings → Installation → Nodes** (one row per",
+  "node, with its own fields) or the operator-only **`GET /nodes`**. `/health/ready` carries only the",
+  "counts — `checks.nodes` is `{ok: true, total, stale}` and never a per-node field.",
+  "",
+  "Each node scans its own machine — at boot, then every 60 seconds for the cheap fields and every 10",
+  "minutes for the GPU probe. Every probe is feature-detected, time-boxed and never fatal: a field the",
+  "node cannot read is reported as `null`, never as a zero and never as a crash.",
+  "",
+  "| Field | Source | What it means |",
+  "| --- | --- | --- |",
+  "| `cpus` | `navigator.hardwareConcurrency` | The **host's** core count — the wrong number inside a container, where the process sees the machine rather than its own limit. |",
+  "| `cpuLimit` | cgroup v2 `cpu.max`, or v1 `cpu.cfs_quota_us`/`period` | The **cgroup ceiling** on how much CPU this node may actually use — the number that bounds it in a container. |",
+  "| `memoryTotal`, `memoryAvailable` | `Deno.systemMemoryInfo()` | Host memory, with the same container caveat. |",
+  "| `memoryLimit` | cgroup v2 `memory.max`, or v1 `memory.limit_in_bytes` | The cgroup memory ceiling. |",
+  "| `load1` / `load5` / `load15` | `Deno.loadavg()` | The 1-, 5- and 15-minute load averages, in that order. |",
+  "| `disk[]` | `df -kP` on the apps directory, `W6W_CACHE` and the runtime's own `DENO_DIR` | Free space per storage **role** (`apps`, `cache`, `deno`) — a role name, never the path, so a database dump cannot leak your layout. |",
+  "| `gpus[]` | `nvidia-smi` (or `/proc/driver/nvidia/...`), `rocm-smi` plus `/sys/class/drm`, `system_profiler` on macOS | Vendor and model per card, plus memory and driver when the vendor's tooling answers. `[]` means \"probed, none found\"; `null` means the probe could not run. |",
+  "| `os` / `arch` / `deno` / `container` | `Deno.build`, `Deno.version`, `/.dockerenv` | Where the node runs, and whether that is a container. |",
+  "",
+  "**Sizing a replica.** Keep `RUN_CONCURRENCY_PER_REPLICA` proportional to a node's **`cpuLimit`** —",
+  "its cgroup ceiling — and not to `cpus`, which inside a container is the host's core count and can be",
+  "an order of magnitude too large. The four inventory counters behind `W6W_REPORT_INVENTORY` follow the",
+  "same rule: the CPUs they total are each node's cgroup limit where one is known.",
+  "",
+  "**Labels.** `W6W_NODE_LABELS` publishes your own vocabulary (`gpu`, `zone:lab-2`); the scan adds the",
+  "capabilities it can prove (`gpu:nvidia`, `arch:x86_64`, `os:linux`). Both are recorded and shown on",
+  "the node's row — **nothing places work by label yet**.",
+  "",
+  "**GPUs are inventory only — w6w does not run work on GPUs.** The registry records what the scan finds",
+  "so you can plan capacity, and the four inventory counters include GPUs when you opt into reporting",
+  "them, but the runtime is a Deno Worker: nothing in this build schedules onto a GPU, and no `gpu`",
+  "label places work. Everything a GPU node runs, it runs on its CPUs.",
+  "",
+];
+
 // Matches the literal `Deno.env.get("NAME")` form AND the three helper
 // wrappers `config.ts` itself reads through (T4.1.1 round 2, B1). A variable
 // read only via a helper (`required("DATABASE_URL")`,
@@ -208,6 +269,7 @@ function render(sections, externalRequired) {
     }
     lines.push("");
   }
+  lines.push(...NODES_NOTES);
   lines.push("## Required variables not read through `config.ts`");
   lines.push("");
   lines.push(
