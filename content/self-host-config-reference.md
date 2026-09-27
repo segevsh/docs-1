@@ -1,6 +1,6 @@
 ---
 title: "Self-host configuration reference"
-description: "Every environment variable config.ts declares, generated from the host's own config module, plus the required variables read elsewhere that are hand-documented on this page."
+description: "Every environment variable config.ts declares, generated from the host's own config module, plus the handful of variables read outside it that are hand-documented on this page."
 ---
 
 # Self-host configuration reference
@@ -47,8 +47,8 @@ Generated from the host's own configuration module — the generator refuses to 
 | Variable | Default | What it does |
 | --- | --- | --- |
 | `SCHEDULER_ENABLED` | on | Whether this replica runs the in-process cron scheduler. Every scheduled job is a database-wide advisory-lock singleton, so more than one replica sharing a database never double-fires regardless of this flag. |
-| `RUN_CONCURRENCY_PER_REPLICA` | 5 | How many workflow runs this one replica executes at once. In a container, size this against the node's `cpuLimit` (its cgroup CPU ceiling), never against `cpus` — see Nodes and the resource scan. |
-| `REPLICA_ID` | generated | This replica's own id, and the **node id** it registers under. A stable value across restarts keeps one node, updated in place; a random one leaves a `gone` row behind per restart — hidden from `GET /nodes` unless you pass `?include=gone`, and not pruned yet. It is also the id claims and log lines carry. |
+| `RUN_CONCURRENCY_PER_REPLICA` | 5 | How many workflow runs this one replica executes at once. A per-replica budget, separate from the licence's install-wide parallel-execution limit; in a container, size it against the node's `cpuLimit` (its cgroup CPU ceiling), never against `cpus` — see Nodes and the resource scan. |
+| `REPLICA_ID` | generated | This replica's single identity: the **node id** it registers under AND the id its claims, logs and admission counters carry. Set it whenever you run more than one replica: it must be stable across restarts and unique per replica. Unset, every boot invents a fresh random id, leaving a `gone` node row behind (hidden from `GET /nodes` unless `?include=gone`, not pruned yet) and a dead admission-counter entry (never cleaned up); two live replicas sharing one id also read and reset each other's counts. |
 
 ## Nodes, labels and resource inventory
 
@@ -81,6 +81,7 @@ Generated from the host's own configuration module — the generator refuses to 
 | `W6W_CONTROL_PUBLIC_KEY` | unset — trusts nothing | The vendor's public key (a JWK, or a JSON array of them) this host trusts for licence documents. Without it, every licence — fetched or from a file — is ignored. |
 | `W6W_LICENCE_FILE` | unset | Path to an offline licence file (one signed document). Re-read on every poll tick, so replacing the file takes effect without a restart. |
 | `W6W_USAGE_REPORTING` | off | Turns on hourly usage reporting to the control plane. Self-host is opt-in; only `1`/`true`/`yes`/`on` (case-insensitively) enables it — anything else, including unset, leaves it off. |
+| `W6W_USAGE_REPORT_INTERVAL_MINUTES` | unset — the governing lease's own cadence, or 720 (twice a day) with none | Self-host only (a cloud installation always reports live and never reads this). May only **shorten** the base cadence, never lengthen it: `0` goes live; `1`–`4` floors to `5`; a value above the base is **clamped** back to the base with a boot-time warning; anything unparsable is ignored with a warning. Never refuses to boot. |
 
 ## App catalog
 
@@ -97,6 +98,19 @@ Generated from the host's own configuration module — the generator refuses to 
 | `USAGE_METER_EGRESS` | on | When metering is on, whether an outbound egress call counts as a usage event. |
 | `USAGE_METER_ACTION_INVOKE` | on | When metering is on, whether an action invocation counts as a usage event. |
 | `USAGE_METER_WORKFLOW_RUN` | on | When metering is on, whether a workflow run counts as a usage event. |
+
+## Data retention
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `W6W_RETENTION_DAYS_FLOOR` | 30 | The minimum age, in days, before old history is pruned — the window used when no licence supplies its own retention policy. Unset (or blank) means 30; any other value must be a whole number of days of at least 1, or the server refuses to start naming this variable. |
+
+## Metrics
+
+| Variable | Default | What it does |
+| --- | --- | --- |
+| `W6W_METRICS_ENABLED` | on | Serves `GET /metrics` on the API port — read-only Prometheus-format metrics, the same figures a licence and a run queue expose elsewhere. Only `false`/`0`/`off`/`no` turns it off, and then the route does not exist at all: `/metrics` answers exactly like any other unknown path. |
+| `W6W_METRICS_ALLOW_CIDRS` | loopback only — `127.0.0.0/8`, `::1/128` | The CIDR blocks allowed to read `/metrics` without a token. A request only qualifies when it reaches the server directly: one carrying `X-Forwarded-For` or `Forwarded` never does, so a scrape through a proxy needs an operator token instead. Widen this list only when the server is **not** reached through something that rewrites client addresses — behind `docker run -p` or a Kubernetes Service every external caller arrives from a private gateway address, so widening it exposes `/metrics`. A malformed entry refuses to start. |
 
 ## Nodes and the resource scan
 
@@ -143,8 +157,9 @@ label places work. Everything a GPU node runs, it runs on its CPUs.
 
 ## Required variables not read through `config.ts`
 
-The list above is generated by scanning `config.ts` itself, so it can only ever cover what that one module reads. A small number of required variables are read entirely outside it, by other parts of the server — this generator cannot mechanically prove this section complete, so it is hand-maintained instead.
+The list above is generated by scanning `config.ts` itself, so it can only ever cover what that one module reads. A small number of variables are read entirely outside it, by other parts of the server — this generator cannot mechanically prove this section complete, so it is hand-maintained instead.
 
 | Variable | What it does |
 | --- | --- |
 | `W6W_CREDENTIAL_KEY` | 64 hex chars (32 bytes). Encrypts stored connection credentials and vault secrets at rest. Unset or malformed falls back to a well-known development key with a loud warning — never rely on that outside development. |
+| `W6W_CREDENTIAL_KEY_NEXT` | Optional. 64 hex chars (32 bytes), different from `W6W_CREDENTIAL_KEY`. Set it only while rotating the credential key, on every replica, exactly as the rotation runbook in [Upgrade](/self-hosting/upgrade/) describes — the server then reads both keys, and a value that is not 64 hex characters, or that decodes to the same bytes as `W6W_CREDENTIAL_KEY`, refuses to start. Unset in normal operation. |

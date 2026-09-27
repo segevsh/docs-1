@@ -83,10 +83,40 @@ first-party apps are already there to register by name from Studio or the API. S
 [configuration reference](/self-hosting/config-reference/) for what else there is to configure, and
 [Troubleshooting](/self-hosting/troubleshooting/) if something doesn't come up healthy.
 
+## Running more than one replica
+
+The API keeps nothing of its own — every bit of state is in your Postgres — so you can run several
+replicas behind a load balancer against the one database. A few things to know first:
+
+- **Set `REPLICA_ID` on every replica.** It has to be **stable across restarts** and
+  **unique per replica** (see the [configuration reference](/self-hosting/config-reference/)). Leave
+  it unset and each boot invents a fresh random id, so every restart leaves a dead entry behind; two
+  live replicas that end up sharing one id also reset each other's counts.
+- **Scheduled work and migrations are already safe.** The cron scheduler and the migration runner are
+  each a database-wide advisory-lock singleton, so a schedule fires exactly once across the fleet and
+  two replicas booting at the same moment serialize rather than race. There is nothing to switch off
+  on any replica.
+- **Your licence's parallel-execution limit is counted install-wide**, in the database, whenever a
+  limit applies to you — synchronous invocations and the run queue draw on the same count, so adding a
+  replica cannot widen it. A replica that dies keeps holding its slots until its heartbeat is 30
+  seconds stale, which can briefly *under*-admit (a request refused that would have fitted) but never
+  over-admit. Two replicas claiming a run at the exact same instant can still go one over the cap.
+- **Triggers need no lock.** Each event is claimed by exactly one replica; an event whose dispatch
+  stalls for 10 minutes is re-queued, so a dispatch stuck that long can run twice. Trigger handling is
+  at-least-once — make your handlers idempotent.
+- **Rate limits are shared, not per replica.** The buckets live in the database, so running more
+  replicas does not multiply any of the limits above.
+- **Give the container a stop grace period above 5 seconds** — the compose default of 10 is fine. On
+  a graceful stop, usage events are flushed for at most five seconds and anything still buffered is
+  then dropped with a warning; a hard kill loses the events since the previous flush, which is
+  normally no more than two seconds' worth and never more than 10,000 events.
+
 ## Where to next
 
 - **[Upgrade](/self-hosting/upgrade/)** — moving to a new version safely.
+- **[Backup and restore](/self-hosting/upgrade/#backup-and-restore)** — the built-in backup and
+  restore commands, what they refuse, and how often to run them.
 - **[Configuration reference](/self-hosting/config-reference/)** — every variable `config.ts`
-  declares, plus the required variables read elsewhere.
+  declares, plus the handful of variables read outside it.
 - **[Air-gapped install](/self-hosting/air-gap/)** — installing, loading the catalog, and licensing
   with no outbound network access at all.

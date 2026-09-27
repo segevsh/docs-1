@@ -23,10 +23,10 @@
 // accounted for below (documented or excluded) fails the generator loudly
 // rather than shipping an incomplete page.
 //
-// SCOPE NOTE: this only ever sees `config.ts`. A handful of required
-// variables are read entirely outside it (e.g. `W6W_CREDENTIAL_KEY`, in
+// SCOPE NOTE: this only ever sees `config.ts`. A handful of variables are read
+// entirely outside it (e.g. `W6W_CREDENTIAL_KEY`, in
 // `packages/db/crypto.ts`) — those are hand-documented in the page's own
-// "Required variables not read through config.ts" section below, since no
+// "Variables not read through config.ts" section below, since no
 // mechanical extraction from this file can ever prove them complete.
 //
 // Deterministic: no timestamps, no environment-dependent values, no network
@@ -108,8 +108,8 @@ const SECTIONS = [
     heading: "Scheduling and execution",
     vars: [
       { name: "SCHEDULER_ENABLED", default: "on", description: "Whether this replica runs the in-process cron scheduler. Every scheduled job is a database-wide advisory-lock singleton, so more than one replica sharing a database never double-fires regardless of this flag." },
-      { name: "RUN_CONCURRENCY_PER_REPLICA", default: "5", description: "How many workflow runs this one replica executes at once. In a container, size this against the node's `cpuLimit` (its cgroup CPU ceiling), never against `cpus` — see Nodes and the resource scan." },
-      { name: "REPLICA_ID", default: "generated", description: "This replica's own id, and the **node id** it registers under. A stable value across restarts keeps one node, updated in place; a random one leaves a `gone` row behind per restart — hidden from `GET /nodes` unless you pass `?include=gone`, and not pruned yet. It is also the id claims and log lines carry." },
+      { name: "RUN_CONCURRENCY_PER_REPLICA", default: "5", description: "How many workflow runs this one replica executes at once. A per-replica budget, separate from the licence's install-wide parallel-execution limit; in a container, size it against the node's `cpuLimit` (its cgroup CPU ceiling), never against `cpus` — see Nodes and the resource scan." },
+      { name: "REPLICA_ID", default: "generated", description: "This replica's single identity: the **node id** it registers under AND the id its claims, logs and admission counters carry. Set it whenever you run more than one replica: it must be stable across restarts and unique per replica. Unset, every boot invents a fresh random id, leaving a `gone` node row behind (hidden from `GET /nodes` unless `?include=gone`, not pruned yet) and a dead admission-counter entry (never cleaned up); two live replicas sharing one id also read and reset each other's counts." },
     ],
   },
   {
@@ -142,6 +142,7 @@ const SECTIONS = [
       { name: "W6W_CONTROL_PUBLIC_KEY", default: "unset — trusts nothing", description: "The vendor's public key (a JWK, or a JSON array of them) this host trusts for licence documents. Without it, every licence — fetched or from a file — is ignored." },
       { name: "W6W_LICENCE_FILE", default: "unset", description: "Path to an offline licence file (one signed document). Re-read on every poll tick, so replacing the file takes effect without a restart." },
       { name: "W6W_USAGE_REPORTING", default: "off", description: "Turns on hourly usage reporting to the control plane. Self-host is opt-in; only `1`/`true`/`yes`/`on` (case-insensitively) enables it — anything else, including unset, leaves it off." },
+      { name: "W6W_USAGE_REPORT_INTERVAL_MINUTES", default: "unset — the governing lease's own cadence, or 720 (twice a day) with none", description: "Self-host only (a cloud installation always reports live and never reads this). May only **shorten** the base cadence, never lengthen it: `0` goes live; `1`–`4` floors to `5`; a value above the base is **clamped** back to the base with a boot-time warning; anything unparsable is ignored with a warning. Never refuses to boot." },
     ],
   },
   {
@@ -160,16 +161,32 @@ const SECTIONS = [
       { name: "USAGE_METER_WORKFLOW_RUN", default: "on", description: "When metering is on, whether a workflow run counts as a usage event." },
     ],
   },
+  {
+    heading: "Data retention",
+    vars: [
+      { name: "W6W_RETENTION_DAYS_FLOOR", default: "30", description: "The minimum age, in days, before old history is pruned — the window used when no licence supplies its own retention policy. Unset (or blank) means 30; any other value must be a whole number of days of at least 1, or the server refuses to start naming this variable." },
+    ],
+  },
+  {
+    heading: "Metrics",
+    vars: [
+      { name: "W6W_METRICS_ENABLED", default: "on", description: "Serves `GET /metrics` on the API port — read-only Prometheus-format metrics, the same figures a licence and a run queue expose elsewhere. Only `false`/`0`/`off`/`no` turns it off, and then the route does not exist at all: `/metrics` answers exactly like any other unknown path." },
+      { name: "W6W_METRICS_ALLOW_CIDRS", default: "loopback only — `127.0.0.0/8`, `::1/128`", description: "The CIDR blocks allowed to read `/metrics` without a token. A request only qualifies when it reaches the server directly: one carrying `X-Forwarded-For` or `Forwarded` never does, so a scrape through a proxy needs an operator token instead. Widen this list only when the server is **not** reached through something that rewrites client addresses — behind `docker run -p` or a Kubernetes Service every external caller arrives from a private gateway address, so widening it exposes `/metrics`. A malformed entry refuses to start." },
+    ],
+  },
 ];
 
 /**
- * Required variables NEVER read through `config.ts` — the generator's
- * mechanical extraction below can only ever see `config.ts`, so it can never
- * prove one of these complete or catch a newly-added one; this list is
- * hand-maintained and hand-reviewed instead (T4.1.1 round 2, B1/R2A2).
+ * Variables NEVER read through `config.ts` — the generator's mechanical
+ * extraction below can only ever see `config.ts`, so it can never prove one of
+ * these complete or catch a newly-added one; this list is hand-maintained and
+ * hand-reviewed instead (T4.1.1 round 2, B1/R2A2). Not all of them are
+ * required: `W6W_CREDENTIAL_KEY_NEXT` is optional and set only while an
+ * operator is rotating the credential key.
  */
 const EXTERNAL_REQUIRED_VARS = [
   { name: "W6W_CREDENTIAL_KEY", description: "64 hex chars (32 bytes). Encrypts stored connection credentials and vault secrets at rest. Unset or malformed falls back to a well-known development key with a loud warning — never rely on that outside development." },
+  { name: "W6W_CREDENTIAL_KEY_NEXT", description: "Optional. 64 hex chars (32 bytes), different from `W6W_CREDENTIAL_KEY`. Set it only while rotating the credential key, on every replica, exactly as the rotation runbook in [Upgrade](/self-hosting/upgrade/) describes — the server then reads both keys, and a value that is not 64 hex characters, or that decodes to the same bytes as `W6W_CREDENTIAL_KEY`, refuses to start. Unset in normal operation." },
 ];
 
 /**
@@ -245,7 +262,7 @@ function render(sections, externalRequired) {
   lines.push("---");
   lines.push('title: "Self-host configuration reference"');
   lines.push(
-    'description: "Every environment variable config.ts declares, generated from the host\'s own config module, plus the required variables read elsewhere that are hand-documented on this page."',
+    'description: "Every environment variable config.ts declares, generated from the host\'s own config module, plus the handful of variables read outside it that are hand-documented on this page."',
   );
   lines.push("---");
   lines.push("");
@@ -274,7 +291,7 @@ function render(sections, externalRequired) {
   lines.push("");
   lines.push(
     "The list above is generated by scanning `config.ts` itself, so it can only ever cover " +
-      "what that one module reads. A small number of required variables are read entirely " +
+      "what that one module reads. A small number of variables are read entirely " +
       "outside it, by other parts of the server — this generator cannot mechanically prove " +
       "this section complete, so it is hand-maintained instead.",
   );
