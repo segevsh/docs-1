@@ -52,7 +52,8 @@ Both refuse rather than guess:
   refuses if `pg_dump` is missing or older than the database server.
 - **Restore** refuses — before it writes anything — a backup taken under a different
   `W6W_CREDENTIAL_KEY`, a backup whose schema this image doesn't recognize, a target database that
-  already holds anything, a backup taken during a rotation, and a missing or too-old `pg_restore`.
+  already holds anything, a backup taken during a rotation, a dump that doesn't match its own
+  manifest, and a missing or too-old `pg_restore`.
 
 Both take an optional `--database-url`, but a URL that carries a password is refused: a password on
 a command line is visible to every process on the host, so supply it through `DATABASE_URL` or
@@ -90,7 +91,8 @@ Two things happen the first time the new version starts against your existing da
   and noticeably longer on a big history. They are `api_calls(created_at)`, `run_log(occurred_at)`,
   `runs(started_at)`, `invocations(started_at)`, `usage_events(occurred_at)` and
   `trigger_events(received_at)`.
-- **History starts ageing out.** An installation with no licence runs the hourly retention tick,
-  which on its first run prunes history older than 30 days. If you need to keep more than that, back
-  the database up first (see above) or raise `W6W_RETENTION_DAYS_FLOOR` before you upgrade — see the
+- **History starts ageing out.** An installation that is neither linked to a control plane nor running
+  from a licence file runs the hourly retention tick, which on its first run prunes history older than
+  30 days. If you need to keep more than that, back the database up first (see above) or raise
+  `W6W_RETENTION_DAYS_FLOOR` before you upgrade — see the
   [configuration reference](/self-hosting/config-reference/).
