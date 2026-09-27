@@ -80,13 +80,13 @@ which takes a few seconds. Sign in with the `AUTH_USERNAME` / `AUTH_PASSWORD` yo
 Setting `W6W_IMPORT_PACK=official` (the example environment file sets this already) imports the
 official first-party app pack automatically, in the background, the first time the API boots — most
 first-party apps are already there to register by name from Studio or the API. See the
-[configuration reference](/self-hosting/config-reference/) for every other variable, and
+[configuration reference](/self-hosting/config-reference/) for what else there is to configure, and
 [Troubleshooting](/self-hosting/troubleshooting/) if something doesn't come up healthy.
 
 ## Where to next
 
 - **[Upgrade](/self-hosting/upgrade/)** — moving to a new version safely.
-- **[Configuration reference](/self-hosting/config-reference/)** — every environment variable the
-  host reads.
+- **[Configuration reference](/self-hosting/config-reference/)** — every variable `config.ts`
+  declares, plus the required variables read elsewhere.
 - **[Air-gapped install](/self-hosting/air-gap/)** — installing, loading the catalog, and licensing
   with no outbound network access at all.

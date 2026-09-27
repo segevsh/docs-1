@@ -5,8 +5,9 @@ description: "Installing, loading the app catalog, and licensing a self-host ins
 
 # Air-gapped install
 
-Nothing about running w6w requires outbound access. Three things to know if your install has none
-at all.
+Running w6w day to day needs no outbound access. Three things to know if your install has none at
+all — plus one exception covered below: the bundle's automatic TLS certificate issuance still needs
+a single outbound connection the first time it runs.
 
 ## Installing with no network
 
@@ -30,13 +31,25 @@ container itself.
 
 ### Getting the images onto an offline host
 
-`docker pull` and `docker run` both need network access to `ghcr.io` unless the images already sit
-in the target host's local Docker image store. To move a published image without ever pulling it on
-the offline host: on a machine that *can* reach `ghcr.io`, `docker pull` the exact tag, `docker save
-ghcr.io/w6w-io/w6w-server:<tag> ghcr.io/w6w-io/w6w-studio:<tag> -o w6w-images.tar`, transfer that
-tarball to the offline host by whatever means your environment allows (removable media, an internal
-artifact store), then `docker load -i w6w-images.tar` there. `docker compose up -d` then finds the
-images already present and never attempts to pull.
+`docker pull` and `docker run` both need network access unless the images already sit in the target
+host's local Docker image store — and the compose bundle runs four images, not just the two w6w
+publishes: `ghcr.io/w6w-io/w6w-server`, `ghcr.io/w6w-io/w6w-studio`, and the two upstream images the
+bundle depends on, `pgvector/pgvector:pg16` (postgres) and `caddy:2-alpine` (the reverse proxy). Miss
+either of the last two and `docker compose up -d` fails trying to pull them on a host with no
+network. To move all four without ever pulling on the offline host: on a machine that *can* reach
+`ghcr.io` and Docker Hub, `docker pull` all four exact images, `docker save
+ghcr.io/w6w-io/w6w-server:<tag> ghcr.io/w6w-io/w6w-studio:<tag> pgvector/pgvector:pg16 caddy:2-alpine
+-o w6w-images.tar`, transfer that tarball to the offline host by whatever means your environment
+allows (removable media, an internal artifact store), then `docker load -i w6w-images.tar` there.
+`docker compose up -d` then finds all four images already present and never attempts to pull.
+
+### TLS with no network
+
+Caddy's automatic certificate issuance for `{$W6W_DOMAIN}` (see [Install](/self-hosting/install/))
+needs one outbound connection to its ACME endpoint the first time it requests a certificate — it
+cannot obtain one offline. On a fully air-gapped install, either allow that one outbound connection
+through on first boot, or skip Caddy's automatic TLS entirely: bring your own certificate, or
+terminate TLS upstream on a load balancer or reverse proxy you already operate offline.
 
 ## Loading the app catalog with no network
 

@@ -162,7 +162,7 @@ const SECTIONS = [
  * hand-maintained and hand-reviewed instead (T4.1.1 round 2, B1/R2A2).
  */
 const EXTERNAL_REQUIRED_VARS = [
-  { name: "W6W_CREDENTIAL_KEY", description: "64 hex chars (32 bytes). Encrypts stored connection credentials and vault secrets at rest (`packages/db/crypto.ts`). Unset or malformed falls back to a well-known development key with a loud warning — never rely on that outside development." },
+  { name: "W6W_CREDENTIAL_KEY", description: "64 hex chars (32 bytes). Encrypts stored connection credentials and vault secrets at rest. Unset or malformed falls back to a well-known development key with a loud warning — never rely on that outside development." },
 ];
 
 // Matches the literal `Deno.env.get("NAME")` form AND the three helper
@@ -184,7 +184,7 @@ function render(sections, externalRequired) {
   lines.push("---");
   lines.push('title: "Self-host configuration reference"');
   lines.push(
-    'description: "Every environment variable config.ts declares, generated from the host\'s own config module, plus the handful read elsewhere."',
+    'description: "Every environment variable config.ts declares, generated from the host\'s own config module, plus the required variables read elsewhere that are hand-documented on this page."',
   );
   lines.push("---");
   lines.push("");
