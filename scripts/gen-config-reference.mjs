@@ -84,6 +84,12 @@ const SECTIONS = [
       { name: "INVITE_TTL_SEC", default: "86400", description: "How long an account invite stays valid." },
       { name: "OPS_JWT_SECRET", default: "unset", description: "Signs a separate machine-to-machine edge this host does not mount on a self-host install. Leave it unset; it is still checked at boot for a collision with `JWT_SECRET`." },
       { name: "W6W_DEV_MODE", default: "off", description: "A local-development escape hatch: while on, boot safety no longer refuses to start on a default/insecure `AUTH_PASSWORD`. Leave it unset (off) on any real deployment." },
+      { name: "W6W_OPERATOR_SESSION_TTL", default: "`8h`", description: "How long an operator session stays valid. Either a bare number of seconds or a number with an `s`, `m`, `h` or `d` suffix (for example `30m`, `8h`, `7d`), resolving to between one minute and 30 days; anything else — a decimal, a negative number, a unit this page does not list — refuses to start. Signed-in operators can list their own sessions and revoke one." },
+      { name: "W6W_OPERATOR_OIDC_ISSUER", default: "unset — Operator SSO off", description: "The OpenID Connect issuer your operators sign in through. Unset or blank means operator SSO does not exist on this install at all — the login form is the only way in. Once set, it must be a valid URL using `https:` (`http:` is accepted only while `W6W_DEV_MODE` is on) or the server refuses to start; the rest of the `W6W_OPERATOR_OIDC_*` variables below then become required." },
+      { name: "W6W_OPERATOR_OIDC_CLIENT_ID", default: "none — required once the issuer is set", description: "The OIDC client id this install signs in as. Required as soon as `W6W_OPERATOR_OIDC_ISSUER` is set: an empty value refuses to start rather than leaving you with a login page that cannot work." },
+      { name: "W6W_OPERATOR_OIDC_CLIENT_SECRET", default: "unset — a public client", description: "The OIDC client secret. Leaving it unset or empty runs this install as a **public client**: the authorization-code flow with PKCE and no secret, which is what most identity providers expect from a self-hosted install. Set it only when your provider requires a confidential client." },
+      { name: "W6W_OPERATOR_OIDC_OPERATOR_GROUPS", default: "none — required once the issuer is set", description: "Which of the issuer's groups become which operator scopes, written as the group-to-scope mappings this host understands. Required as soon as `W6W_OPERATOR_OIDC_ISSUER` is set, and at least one mapping must resolve; an empty value or a malformed list refuses to start." },
+      { name: "W6W_OPERATOR_OIDC_GROUP_CLAIM", default: "`groups`", description: "Which claim in the issuer's token carries the group list that `W6W_OPERATOR_OIDC_OPERATOR_GROUPS` is matched against. Unset or blank means the claim named `groups`." },
     ],
   },
   {
@@ -115,8 +121,16 @@ const SECTIONS = [
   {
     heading: "Nodes, labels and resource inventory",
     vars: [
-      { name: "W6W_NODE_LABELS", default: "unset", description: "Comma-separated labels this replica publishes about itself, e.g. `gpu,zone:lab-2`. Recorded with the node and shown on its row in Studio; nothing places work by label yet. Each entry may be 1–64 characters of letters, digits and `:` `.` `_` `/` `-`; one that is not is dropped with a start-time warning rather than refusing boot. See Nodes and the resource scan." },
+      { name: "W6W_NODE_ROLE", default: "`all`", description: "What this process is for. `all` serves the API and executes runs; `api` serves the API and executes none; `executor` executes runs and serves no API. Blank or unset means `all`, so a deployment that configures nothing boots exactly as before; any other value refuses to start, and `API` is a mistake rather than a synonym. The value `spoke` starts a spoke instead of a server — see [Hub and spokes](/self-hosting/install/#hub-and-spokes)." },
+      { name: "W6W_DRAIN_TIMEOUT_SEC", default: "60", description: "How long a shutting-down node waits for the runs it is executing. A whole number of seconds from `0` to `3600`; `0` means do not wait at all; a decimal, a negative number or anything above an hour refuses to start. A run still in flight when the deadline passes is abandoned to the queue — another node picks it up — rather than delaying the shutdown any further." },
+      { name: "W6W_NODE_LABELS", default: "unset", description: "Comma-separated labels this replica publishes about itself, e.g. `gpu,zone:lab-2`. Recorded with the node, shown on its row in Studio, and matched against a workflow's `x-w6w-placement` labels when a run is claimed. Each entry may be 1–64 characters of letters, digits and `:` `.` `_` `/` `-`; one that is not is dropped with a start-time warning rather than refusing boot. See Nodes and the resource scan." },
       { name: "W6W_REPORT_INVENTORY", default: "off", description: "**Self-host only.** When explicitly on (`1`/`true`/`yes`/`on`), each usage report additionally carries four integers and nothing else — node count, CPUs, GPUs and memory GiB. Hostnames, GPU models, disk paths and labels never leave the host, and a cloud installation never reports inventory whatever this is set to. See Nodes and the resource scan." },
+    ],
+  },
+  {
+    heading: "Hub and spokes",
+    vars: [
+      { name: "W6W_SPOKE_CREDENTIAL_MODE", default: "`handoff`", description: "**Hub only.** How a hub gives a spoke the credentials a leased step needs. `handoff` (the default) hands each step's credential to the spoke when that step runs, scoped to the step and recorded in the audit log. `proxy` hands the spoke nothing: it sends the unsigned request intent and the hub runs the signing and the egress itself. Any other value refuses to start. See [Hub and spokes](/self-hosting/install/#hub-and-spokes)." },
     ],
   },
   {
@@ -187,6 +201,11 @@ const SECTIONS = [
 const EXTERNAL_REQUIRED_VARS = [
   { name: "W6W_CREDENTIAL_KEY", description: "64 hex chars (32 bytes). Encrypts stored connection credentials and vault secrets at rest. Unset or malformed falls back to a well-known development key with a loud warning — never rely on that outside development." },
   { name: "W6W_CREDENTIAL_KEY_NEXT", description: "Optional. 64 hex chars (32 bytes), different from `W6W_CREDENTIAL_KEY`. Set it only while rotating the credential key, on every replica, exactly as the rotation runbook in [Upgrade](/self-hosting/upgrade/) describes — the server then reads both keys, and a value that is not 64 hex characters, or that decodes to the same bytes as `W6W_CREDENTIAL_KEY`, refuses to start. Unset in normal operation." },
+  { name: "W6W_HUB_URL", description: "**Spoke only.** The hub this spoke is enrolled to, as the base URL a browser would reach it at — including any reverse-proxy path prefix (`https://hub.example.com/api` on the published self-host bundle). It must use `https:` with no userinfo, query string or fragment; plain `http:` is accepted only while `W6W_DEV_MODE` is on, and only for development. Every call the spoke makes is signed over this URL's own `/hub/...` path and never over the prefix, so the same hub can be reached through your proxy. A spoke only ever reaches its hub, on your local network — cross-site spokes over the public internet are not supported in this release." },
+  { name: "W6W_HUB_ENROLL_TOKEN", description: "**Spoke only.** The one-time token that enrolls this spoke with its hub on its first start. An operator mints it in Studio under Settings → Installation → Nodes → **Enroll a spoke**, or through `POST /nodes/enroll-tokens` with an operator token holding `operator:installation` — the response shows the token once. It is single-use and valid for 15 minutes; the spoke exchanges it for its own key so that later starts need no token, and you can remove it from the spoke's environment after enrolling." },
+  { name: "W6W_SPOKE_KEY_FILE", description: "**Spoke only.** Where the spoke keeps its own key, default `./spoke-key.json`. The spoke mints the key on first enrolment and refuses to start if the file is readable by its group or by other users — mode `0600`, owner-only — and the spoke's own id lives inside that file, so keep the file on persistent storage and never share it between spokes. A read-only mounted secret works too, as long as it already holds an enrolled key file." },
+  { name: "W6W_NODE_LABELS", description: "**Spoke only.** The same variable the node section above documents, read by a spoke with the same parser: on a spoke this is read by the spoke's own configuration module rather than `config.ts`, which is why it is listed here as well. A spoke publishes these labels with its enrolment and every heartbeat, and is offered only runs whose placement names labels it reports." },
+  { name: "RUN_CONCURRENCY_PER_REPLICA", description: "**Spoke only.** The same variable the scheduling section above documents, read by a spoke with the same parser: on a spoke this is read by the spoke's own configuration module rather than `config.ts`, which is why it is listed here as well. It is how many runs this spoke executes at once — unset means 5, and anything but a whole number of at least 1 refuses to start." },
 ];
 
 /**
@@ -234,12 +253,14 @@ const NODES_NOTES = [
   "",
   "**Labels.** `W6W_NODE_LABELS` publishes your own vocabulary (`gpu`, `zone:lab-2`); the scan adds the",
   "capabilities it can prove (`gpu:nvidia`, `arch:x86_64`, `os:linux`). Both are recorded and shown on",
-  "the node's row — **nothing places work by label yet**.",
+  "the node's row, and both place work: a workflow's `x-w6w-placement` annotation names labels, and",
+  "a run of it is claimed only by a node carrying every one of them — while no live node does, the run",
+  "waits and reports `waiting_for_capacity`.",
   "",
   "**GPUs are inventory only — w6w does not run work on GPUs.** The registry records what the scan finds",
   "so you can plan capacity, and the four inventory counters include GPUs when you opt into reporting",
-  "them, but the runtime is a Deno Worker: nothing in this build schedules onto a GPU, and no `gpu`",
-  "label places work. Everything a GPU node runs, it runs on its CPUs.",
+  "them, but the runtime is a Deno Worker: nothing in this build schedules onto a GPU. A `gpu` label can",
+  "place a run on a GPU node, but everything a GPU node runs, it runs on its CPUs.",
   "",
 ];
 
