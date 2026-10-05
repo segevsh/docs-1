@@ -17,6 +17,8 @@ interface Props {
   currentId?: string;
   /** True on `/quickstart/` itself — highlights the pinned rail link. */
   quickstartActive?: boolean;
+  /** True on `/connect-mcp/` itself — highlights the pinned rail link below Quickstart. */
+  connectMcpActive?: boolean;
   /**
    * The active `/self-hosting/<slug>/` page, if any (T4.1.1, HITL-4) — highlights
    * the matching link in the pinned "Self-hosting" rail group below. The group
@@ -26,7 +28,7 @@ interface Props {
   selfHostingActive?: string;
 }
 
-const { title, description, entries, currentId, quickstartActive, selfHostingActive } =
+const { title, description, entries, currentId, quickstartActive, connectMcpActive, selfHostingActive } =
   Astro.props;
 
 /**
@@ -63,6 +65,11 @@ const sections = [...grouped].map(([section, sectionEntries]) => ({
         <li>
           <a href="/quickstart/" aria-current={quickstartActive ? "page" : undefined}>
             Quickstart
+          </a>
+        </li>
+        <li>
+          <a href="/connect-mcp/" aria-current={connectMcpActive ? "page" : undefined}>
+            Connect an MCP client
           </a>
         </li>
       </ul>
