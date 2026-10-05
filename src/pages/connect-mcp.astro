@@ -1,0 +1,18 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import DocLayout from "../layouts/DocLayout.astro";
+
+/**
+ * `/connect-mcp/` — hand-authored `siteDocs` `connect-mcp` entry. Mirrors
+ * `quickstart.astro`'s shape exactly (T3.1.2).
+ */
+const entry = await getEntry("siteDocs", "connect-mcp");
+if (!entry) throw new Error("content/connect-mcp.md is missing");
+
+const entries = await getCollection("docs");
+const { Content } = await render(entry);
+---
+
+<DocLayout title={entry.data.title} description={entry.data.description} entries={entries} connectMcpActive>
+  <Content />
+</DocLayout>
