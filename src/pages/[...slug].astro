@@ -7,6 +7,8 @@ import DocLayout from "../layouts/DocLayout.astro";
  * One page per entry in the `docs` content collection. `index.astro` alone
  * owns `/`; this catch-all owns every imported doc's route, keyed by the
  * entry's own id (already URL-safe — the importer writes kebab-case paths).
+ * A rest param, so a sub-page's two-slash id (`studio/workflows/triggers`)
+ * routes to `/studio/workflows/triggers/` with no extra handling.
  *
  * With the `docs` collection empty this returns zero paths, so the build
  * emits no page from this file — `index.astro` is the only page in the
@@ -27,6 +29,11 @@ const { entry, entries } = Astro.props as Props;
 const { Content } = await render(entry);
 ---
 
-<DocLayout title={entry.data.title} entries={entries} currentId={entry.id}>
+<DocLayout
+  title={entry.data.title}
+  description={entry.data.description || undefined}
+  entries={entries}
+  currentId={entry.id}
+>
   <Content />
 </DocLayout>

@@ -319,6 +319,18 @@ hr {
   border-left-color: var(--w6w-accent);
 }
 
+/* A parent page's sub-pages, nested one step in under its link. */
+.docs-rail .docs-rail-children {
+  margin-left: 14px;
+  padding-bottom: 0;
+}
+
+.docs-rail-children a {
+  font-size: 0.85rem;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
 .docs-content {
   flex: 1;
   min-width: 0;

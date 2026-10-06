@@ -1,6 +1,7 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
+import { buildRail } from "../lib/rail.ts";
 
 /**
  * Docs layout: section rail + content. Mirrors the shape of
@@ -11,7 +12,7 @@ import BaseLayout from "./BaseLayout.astro";
 interface Props {
   title: string;
   description?: string;
-  /** Every `docs` entry — the rail is built from this, grouped by `section`. */
+  /** Every `docs` entry — the rail is built from this, grouped by `section`, sub-pages nested. */
   entries: CollectionEntry<"docs">[];
   /** The entry currently being viewed, highlighted in the rail. */
   currentId?: string;
@@ -45,17 +46,12 @@ const SELF_HOSTING_PAGES = [
   { slug: "troubleshooting", label: "Troubleshooting" },
 ];
 
-/** Group by `section`, in first-seen order. */
-const grouped = new Map<string, CollectionEntry<"docs">[]>();
-for (const entry of entries) {
-  const list = grouped.get(entry.data.section) ?? [];
-  list.push(entry);
-  grouped.set(entry.data.section, list);
-}
-const sections = [...grouped].map(([section, sectionEntries]) => ({
-  section,
-  entries: sectionEntries,
-}));
+/**
+ * Sections in first-seen order; within each, pages sorted by `order` with sub-pages nested
+ * under their parent — see `../lib/rail.ts` for the rules. The viewed page's section and parent
+ * render expanded.
+ */
+const sections = buildRail(entries, currentId);
 ---
 
 <BaseLayout title={title} description={description}>
@@ -88,26 +84,31 @@ const sections = [...grouped].map(([section, sectionEntries]) => ({
           ))}
         </ul>
       </details>
-      {sections.map(({ section, entries: sectionEntries }) => {
-        const hasActive = sectionEntries.some((entry) => entry.id === currentId);
-        return (
-          <details class="docs-rail-section" open={hasActive}>
-            <summary>{section}</summary>
-            <ul>
-              {sectionEntries.map((entry) => (
-                <li>
-                  <a
-                    href={`/${entry.id}/`}
-                    aria-current={entry.id === currentId ? "page" : undefined}
-                  >
-                    {entry.data.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </details>
-        );
-      })}
+      {sections.map(({ section, open, items }) => (
+        <details class="docs-rail-section" open={open}>
+          <summary>{section}</summary>
+          <ul>
+            {items.map((item) => (
+              <li>
+                <a href={`/${item.id}/`} aria-current={item.active ? "page" : undefined}>
+                  {item.title}
+                </a>
+                {item.children.length > 0 && (
+                  <ul class="docs-rail-children" hidden={!item.open}>
+                    {item.children.map((child) => (
+                      <li>
+                        <a href={`/${child.id}/`} aria-current={child.active ? "page" : undefined}>
+                          {child.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </details>
+      ))}
     </nav>
     <div class="docs-content">
       <slot />

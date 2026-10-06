@@ -12,7 +12,7 @@
     "check": "astro check",
     "check:tokens": "node scripts/check-tokens.mjs",
     "import-docs": "node src/lib/import-docs.ts",
-    "test": "node --test src/lib/__tests__/channels.test.ts src/lib/__tests__/doc-sources.test.ts src/lib/__tests__/import-docs.test.ts",
+    "test": "node --test src/lib/__tests__/channels.test.ts src/lib/__tests__/doc-sources.test.ts src/lib/__tests__/import-docs.test.ts src/lib/__tests__/rail.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium"
   },
