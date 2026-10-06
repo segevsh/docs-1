@@ -1,5 +1,5 @@
 // The docs importer — `pnpm import-docs`. Collects every page this site publishes from the LOCAL
-// monorepo checkout: the pinned `DOC_SOURCES` in `doc-sources.ts`, plus every entry of every
+// monorepo checkout: every entry of every
 // `docs/manifest.json` found by walking the source root (the monorepo's `packages/` by default).
 // Each page is stamped with provenance frontmatter (`renderDocFile`) and written into the `docs`
 // content collection (`content/<section>/<slug>.md`, a sub-page at
@@ -36,7 +36,6 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import {
   checkSourceMeta,
-  DOC_SOURCES,
   DOCSIGNORE,
   expandManifest,
   isSkippedDirName,
@@ -228,7 +227,7 @@ export async function runImport(
   const { root, dryRun = false, allowDirty = false } = options;
   const discovery = await discoverManifests(root, deps);
   const manifest = await gatherManifestSources(root, discovery.manifests, deps);
-  const merge = mergeSources(pinned, manifest.sources);
+  const merge = mergeSources([...pinned, ...manifest.sources]);
 
   const failures: ImportFailure[] = [...discovery.failures, ...manifest.failures];
   for (const collision of merge.collisions) {
@@ -494,7 +493,7 @@ function list(label: string, items: string[]): void {
 
 async function main(): Promise<number> {
   const options = parseArgs(process.argv.slice(2));
-  const result = await runImport(DOC_SOURCES, REAL_DEPS, options);
+  const result = await runImport([], REAL_DEPS, options);
 
   console.log(`import-docs: source root ${options.root}${result.dryRun ? " (dry run)" : ""}`);
   list("manifests found", result.manifests);
