@@ -1,5 +1,5 @@
 // The docs importer — `pnpm import-docs`. Collects every page this site publishes from the LOCAL
-// monorepo checkout: the pinned `DOC_SOURCES` in `doc-sources.ts`, plus every entry of every
+// monorepo checkout: every entry of every
 // `docs/manifest.json` found by walking the source root (the monorepo's `packages/` by default).
 // Each page is stamped with provenance frontmatter (`renderDocFile`) and written into the `docs`
 // content collection (`content/<section>/<slug>.md`, a sub-page at
@@ -23,6 +23,16 @@
 // deliberate removal in the resulting diff. The one deliberate skip is a page whose own
 // frontmatter says `shared: false` — a draft — and it is reported, not silent.
 //
+// SOURCES. Every page comes from a manifest entry, except one: `reference-api/http-api`, generated
+// from `<root>/wrappers/endpoints.json` (`api-reference.ts`; absent → skipped, unparseable → a
+// failure). A manifest may also declare `roots` (a README, an RFC dir) whose files may omit
+// frontmatter; a file under `docs/` may not. Sections are the closed `SECTIONS` list.
+//
+// LINKS. After gathering — the whole route map is needed — and before the write phase, every
+// collected page's relative links are rewritten (`link-rewrite.ts`): a collected target becomes a
+// site route, an uncollected public one a GitHub blob URL at the source commit, and a target in a
+// private repo (`PRIVATE_REPOS`) or outside its own repo is a failure like any other.
+//
 // PURE CORE / IMPURE SHELL. `runImport` takes its filesystem and git calls as an injected
 // `ImportDeps` — directory listing, file reads, git lookups, existing-file read, write and remove
 // are parameters, not calls to the real `node:fs`/`git` — so this file's whole trust-boundary
@@ -36,7 +46,6 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import {
   checkSourceMeta,
-  DOC_SOURCES,
   DOCSIGNORE,
   expandManifest,
   isSkippedDirName,
@@ -48,6 +57,9 @@ import {
   renderDocFile,
 } from "./doc-sources.ts";
 import type { DocSource, Provenance, SourceMeta } from "./doc-sources.ts";
+import { ENDPOINTS_FILE, GENERATED_HTTP_API, renderHttpApi } from "./api-reference.ts";
+import { rewriteLinks } from "./link-rewrite.ts";
+import type { LinkRoute } from "./link-rewrite.ts";
 
 /**
  * The `docs` collection's source directory, resolved from **this module's own URL**, never
@@ -209,6 +221,36 @@ async function gatherManifestSources(
   return { sources, failures };
 }
 
+/** `description:` frontmatter of the generated HTTP-API reference page. */
+const GENERATED_DESCRIPTION =
+  "Every HTTP endpoint the w6w API serves, generated from the client contract.";
+
+/**
+ * Is there a `<root>/wrappers/endpoints.json` to generate the HTTP-API reference from? Absent is a
+ * skip, never a failure — a checkout without the wrappers repo still imports. Presence is read
+ * from directory listings (the injected `readDir`), and a `.docsignore` on the root or on
+ * `wrappers/` withdraws it like any other source. A listing that fails for any reason except the
+ * root simply not holding a `wrappers` directory is a failure, not a quiet skip.
+ */
+async function endpointsPresent(
+  root: string,
+  ignored: string[],
+  deps: ImportDeps,
+  failures: ImportFailure[],
+): Promise<boolean> {
+  const [dir, ...rest] = ENDPOINTS_FILE.split("/");
+  if (ignored.includes(".") || ignored.includes(dir)) return false;
+  try {
+    const top = await deps.readDir(root);
+    if (!top.some((e) => e.kind === "dir" && e.name === dir)) return false;
+    const entries = await deps.readDir(posix.join(root, dir));
+    return entries.some((e) => e.kind === "file" && e.name === rest.join("/"));
+  } catch (error) {
+    failures.push({ at: dir, error: `cannot list directory: ${(error as Error).message}` });
+    return false;
+  }
+}
+
 interface RepoInfo {
   root: string;
   slug: string;
@@ -221,16 +263,21 @@ interface RepoInfo {
  * second, and only if gathering produced zero failures.
  */
 export async function runImport(
-  pinned: DocSource[],
   deps: ImportDeps,
   options: ImportOptions,
 ): Promise<ImportResult> {
   const { root, dryRun = false, allowDirty = false } = options;
   const discovery = await discoverManifests(root, deps);
   const manifest = await gatherManifestSources(root, discovery.manifests, deps);
-  const merge = mergeSources(pinned, manifest.sources);
-
   const failures: ImportFailure[] = [...discovery.failures, ...manifest.failures];
+
+  // The one source with no manifest entry: the HTTP-API reference, generated from the wrappers
+  // contract. It joins the merge so a manifest entry claiming `reference-api/http-api` collides.
+  const generatedPresent = await endpointsPresent(root, discovery.ignored, deps, failures);
+  const merge = mergeSources([
+    ...manifest.sources,
+    ...(generatedPresent ? [GENERATED_HTTP_API] : []),
+  ]);
   for (const collision of merge.collisions) {
     failures.push({
       at: collision.b.file,
@@ -267,8 +314,15 @@ export async function runImport(
     const file = posix.join(root, source.file);
     try {
       const text = await deps.readText(file);
-      const parsed = parseFrontmatter(text);
-      const meta = checkSourceMeta(source, parsed?.fields ?? null);
+      const generated = source === GENERATED_HTTP_API ? renderHttpApi(text) : null;
+      if (generated !== null && "error" in generated) {
+        failures.push({ at: source.file, error: `cannot render the HTTP API reference: ${generated.error}` });
+        continue;
+      }
+      const parsed = generated === null ? parseFrontmatter(text) : null;
+      const meta: SourceMeta | { errors: string[] } = generated === null
+        ? checkSourceMeta(source, parsed?.fields ?? null)
+        : { description: GENERATED_DESCRIPTION, format: "markdown", shared: true };
       if ("errors" in meta) {
         for (const error of meta.errors) failures.push({ at: source.file, error });
         continue;
@@ -306,7 +360,7 @@ export async function runImport(
           sourceRefSha: repo.headSha,
           syncedAt,
         },
-        body: parsed?.body ?? text,
+        body: generated !== null ? generated.body : parsed?.body ?? text,
       });
     } catch (error) {
       failures.push({ at: source.file, error: (error as Error).message });
@@ -320,6 +374,23 @@ export async function runImport(
         `sub-page (${orphan.section}, ${orphan.slug}) has no published parent ` +
         `(${orphan.section}, ${orphan.slug.split("/")[0]})`,
     });
+  }
+
+  // LINK REWRITING needs the whole route map, so it runs after gathering and before the write
+  // phase. A refused link (private repo, escaping its repo) is an ordinary failure: nothing is
+  // written. A `shared: false` draft is not collected, so a link to it is an uncollected target.
+  const routes = new Map<string, LinkRoute>(
+    gathered.map((g) => [g.source.file, { section: g.source.section, slug: g.source.slug }]),
+  );
+  for (const g of gathered) {
+    const rewritten = rewriteLinks(g.body, {
+      file: g.source.file,
+      routes,
+      sourceRepo: g.provenance.sourceRepo,
+      sourceRefSha: g.provenance.sourceRefSha,
+    });
+    for (const error of rewritten.errors) failures.push({ at: g.source.file, error });
+    g.body = rewritten.body;
   }
 
   const base = { dryRun, manifests: discovery.manifests, ignored: discovery.ignored, skipped, dirty };
@@ -494,7 +565,7 @@ function list(label: string, items: string[]): void {
 
 async function main(): Promise<number> {
   const options = parseArgs(process.argv.slice(2));
-  const result = await runImport(DOC_SOURCES, REAL_DEPS, options);
+  const result = await runImport(REAL_DEPS, options);
 
   console.log(`import-docs: source root ${options.root}${result.dryRun ? " (dry run)" : ""}`);
   list("manifests found", result.manifests);

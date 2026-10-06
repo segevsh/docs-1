@@ -8,12 +8,14 @@
 // package with that file (binding, contract's Context notes): this module is an independent port,
 // not a shared dependency.
 //
-// TWO SOURCE KINDS. `DOC_SOURCES` pins the handful of files that predate the manifest convention
-// (core's README, its app-building guide and RFCs, the ui/wrappers READMEs) by their path under
-// the source root. Everything else is DISCOVERED: the importer walks the local monorepo checkout
+// ONE SOURCE KIND. Every source is DISCOVERED: the importer walks the local monorepo checkout
 // for every `docs/manifest.json` (skipping `SKIPPED_DIR_NAMES`, dot-directories, and any
 // directory holding a `.docsignore` file), and `expandManifest` below turns each into sources.
-// The manifest is the only publish gate — a file in `docs/` that no manifest lists is never read.
+// The manifest is the only publish gate — a file that no manifest lists is never read. There is no
+// pinned source list: a manifest may name files outside its `docs/` folder only through its
+// declared `roots` (`resolveManifestPath`). The `section` of an entry is checked against the
+// closed `SECTIONS` list — the site owns the taxonomy, repos only choose which page lands where.
+// The one generated page (`reference-api/http-api`) comes from `api-reference.ts`, not a manifest.
 //
 // `syncedAt` (rendered by `renderDocFile` below) is the source file's own last-COMMIT date, never
 // an in-body revision header — these are two different, legitimately-disagreeing dates.
@@ -22,11 +24,29 @@
 import { posix } from "node:path";
 
 /**
- * Groups entries under a heading in the docs rail. The three RFC groups mirror the
- * three-section grouping the site's rail uses today — not derivable from the RFC files
- * themselves, so it is pinned here.
+ * The closed section list, in rail order — the site-owned taxonomy. A manifest entry whose
+ * `section` is not one of these fails the import. `reference-*` are the three sub-groups of the
+ * rail's collapsed Reference area.
  */
-type DocSection = "packages" | "guides" | "app-contract" | "composition" | "host-runtime";
+export const SECTIONS = [
+  "get-started",
+  "guides",
+  "clients",
+  "self-hosting",
+  "build-apps",
+  "reference-spec",
+  "reference-api",
+  "reference-packages",
+] as const;
+
+export type Section = (typeof SECTIONS)[number];
+
+/**
+ * Repos (package dir names — the first segment of `DocSource.file`, never the remote slug) whose
+ * source must not be linked to from a public page: a relative link from a collected page into an
+ * uncollected file of one of these fails the import instead of becoming a GitHub URL (D-6).
+ */
+export const PRIVATE_REPOS: readonly string[] = ["server", "studio", "control", "admin"];
 
 export interface DocSource {
   /** Path of the file under the source root (the monorepo's `packages/`), posix, no leading
@@ -34,9 +54,7 @@ export interface DocSource {
    *  manifest-derived source this is always built from the CANONICALIZED manifest path (see
    *  `resolveManifestPath`), never the raw manifest field. */
   file: string;
-  /** A pinned entry's section is one of the fixed `DocSection` values; a manifest entry's
-   *  section is validated against `SEGMENT_RE` but is otherwise repo-author-chosen — hence the
-   *  wider `string` here rather than the narrower `DocSection`. */
+  /** One of `SECTIONS` for every manifest-derived source (validated by `expandManifest`). */
   section: string;
   /** One segment (`workflows`) or two (`workflows/triggers`, a sub-page of `workflows`) —
    *  becomes `<section>/<slug>.md` (see `outputPath`). */
@@ -45,72 +63,16 @@ export interface DocSource {
   title: string;
   /** Explicit nav position within its level; `null` sorts after every ordered sibling. */
   order: number | null;
-  /** Index of this entry in the list that declared it (its manifest's `docs` array, or
-   *  `DOC_SOURCES`) — the rail's tie-break, so unordered entries keep their declared order. */
+  /** Index of this entry in its manifest's `docs` array — the rail's tie-break, so unordered
+   *  entries keep their declared order. */
   position: number;
-  /** A pinned source may have no frontmatter of its own (a README); a manifest-listed one must. */
-  origin: "pinned" | "manifest";
+  /** One reader-facing line for the section landing page, from the manifest's optional `summary`;
+   *  `null` when absent. */
+  summary: string | null;
+  /** Where the file lives: under the manifest's `docs/` (frontmatter mandatory) or under one of
+   *  its declared `roots` (a README, an RFC — frontmatter optional). */
+  origin: "docs" | "root";
 }
-
-/** The 17 real RFCs under `core/rfcs/` — never `_template.md` (present in the repo but not a real
- *  RFC) and never `interface.md` (Draft status as of 2026-08-28 — a Draft RFC is not yet a public
- *  commitment, so it is excluded exactly like `_template.md`). */
-const RFCS: ReadonlyArray<{ slug: string; title: string; section: DocSection }> = [
-  // The App contract — what a publisher ships, and what a host may assume about it.
-  { slug: "app", title: "App", section: "app-contract" },
-  { slug: "action", title: "Action", section: "app-contract" },
-  { slug: "param", title: "Param", section: "app-contract" },
-  { slug: "auth", title: "Auth", section: "app-contract" },
-  { slug: "connection", title: "Connection", section: "app-contract" },
-  { slug: "healthcheck", title: "Health Check", section: "app-contract" },
-  { slug: "categories", title: "Categories", section: "app-contract" },
-  { slug: "image-object", title: "ImageObject", section: "app-contract" },
-  // Composition — how one call becomes a reusable operation, an entry point, or a graph.
-  { slug: "function", title: "Function", section: "composition" },
-  { slug: "endpoint", title: "Endpoint", section: "composition" },
-  { slug: "workflow", title: "Workflow", section: "composition" },
-  { slug: "node-types", title: "Node Types", section: "composition" },
-  { slug: "trigger", title: "Trigger", section: "composition" },
-  // Host & runtime — the contracts that make an App portable across implementations.
-  { slug: "hook-runtime", title: "Hook Runtime", section: "host-runtime" },
-  { slug: "invocation", title: "Invocation", section: "host-runtime" },
-  { slug: "registry", title: "Registry", section: "host-runtime" },
-  { slug: "engine", title: "Engine", section: "host-runtime" },
-];
-
-type PinnedSpec = Pick<DocSource, "file" | "section" | "slug" | "title">;
-
-const PINNED: PinnedSpec[] = [
-  { file: "core/README.md", section: "packages", slug: "core", title: "w6w-core" },
-  {
-    // The one guide in `core/docs/`, and the target of seven of the imported RFCs' own
-    // cross-references — importing it turns those seven GitHub fallbacks into on-site links.
-    file: "core/docs/build-a-w6w-app.md",
-    section: "guides",
-    slug: "build-a-w6w-app",
-    title: "Build a w6w app",
-  },
-  ...RFCS.map((r): PinnedSpec => ({
-    file: `core/rfcs/${r.slug}.md`,
-    section: r.section,
-    slug: r.slug,
-    title: r.title,
-  })),
-  { file: "ui/README.md", section: "packages", slug: "ui", title: "w6w-ui" },
-  { file: "wrappers/README.md", section: "packages", slug: "wrappers", title: "w6w-wrappers" },
-];
-
-/**
- * The pinned 21-source list: `core`'s README + its `docs/build-a-w6w-app.md` guide + its 17
- * RFCs, then one README each from `ui` and `wrappers`. `wrappers` contributes `README.md` here
- * only — its `docs/` folder publishes nothing unless its own manifest lists it.
- */
-export const DOC_SOURCES: DocSource[] = PINNED.map((spec, position) => ({
-  ...spec,
-  order: null,
-  position,
-  origin: "pinned",
-}));
 
 /** Directory names discovery never descends into, on top of every dot-directory (`.git`,
  *  `.worktrees`, `.astro`, …) and every directory holding a `.docsignore` file. */
@@ -153,18 +115,34 @@ export function parentSlug(slug: string): string | null {
  * return value, never the raw manifest field (canonicalize once, at the sink, rather than
  * blocklisting spellings like `..`/`%2e%2e`/a leading `/`/a backslash).
  *
- * Returns `null` when the entry cannot possibly resolve inside `docs/` (a `..` that cannot be
- * cancelled out — e.g. `"../../../README.md"`). Subfolders (`workflows/triggers.md`) are fine. A
- * concatenation that merely lands somewhere *inside* `docs/` that doesn't correspond to a real
- * file (a leading `/`, a same-directory `../`, a percent-encoded spelling that never becomes a
- * literal `..`) is NOT rejected here — it is refused naturally when the (nonexistent) resolved
- * path fails to read, which is exactly as safe and needs no second blocklist.
+ * The path is anchored at `docs/` and normalized (`../rfcs/app.md` → `rfcs/app.md`). It resolves
+ * iff the result lies under `docs/`, or equals / lies under one of the (already canonical)
+ * `roots`. Anything else — a `..` that cannot be cancelled out, or a sibling directory the manifest
+ * never declared — is `null`. A concatenation that merely lands somewhere *inside* an allowed tree
+ * without corresponding to a real file (a leading `/`, a percent-encoded spelling that never
+ * becomes a literal `..`) is NOT rejected here — it is refused naturally when the (nonexistent)
+ * resolved path fails to read, which is exactly as safe and needs no second blocklist.
  */
-function resolveManifestPath(rawPath: string): string | null {
+function resolveManifestPath(rawPath: string, roots: readonly string[] = []): string | null {
   const resolved = posix.normalize(`docs/${rawPath}`);
-  if (!resolved.startsWith("docs/") || resolved === "docs/") return null;
+  if (resolved === "docs/" || resolved === "docs" || resolved === ".") return null;
   if (resolved.split("/").includes("..")) return null;
-  return resolved;
+  if (resolved.startsWith("docs/")) return resolved;
+  if (roots.some((root) => resolved === root || resolved.startsWith(`${root}/`))) return resolved;
+  return null;
+}
+
+/**
+ * One `roots` item, canonicalized — or `null` when it is not a safe repo-relative directory/file:
+ * not a string, absolute, containing a backslash, escaping via `..`, empty / `.`, or `docs` /
+ * under `docs/` (that tree is already the manifest's own, with the stricter frontmatter rule).
+ */
+function canonicalRoot(raw: unknown): string | null {
+  if (typeof raw !== "string" || raw === "" || raw.startsWith("/") || raw.includes("\\")) return null;
+  const root = posix.normalize(raw).replace(/\/+$/, "");
+  if (root === "" || root === "." || root.split("/").includes("..")) return null;
+  if (root === "docs" || root.startsWith("docs/")) return null;
+  return root;
 }
 
 export interface ManifestEntryFailure {
@@ -180,13 +158,16 @@ export interface ManifestExpansion {
   failures: ManifestEntryFailure[];
 }
 
-/** The whole manifest failed to parse as `{ "docs": [...] }` — distinct from a single bad
- *  entry: nothing in the manifest can be trusted, so nothing is expanded. */
+/** The whole manifest failed to parse as `{ "roots"?: [...], "docs": [...] }` — distinct from a
+ *  single bad entry: nothing in the manifest can be trusted, so nothing is expanded. */
 export interface ManifestParseFailure {
   manifestError: string;
 }
 
-const MANIFEST_ENTRY_KEYS = ["path", "slug", "section", "title"] as const;
+const MANIFEST_KEYS: readonly string[] = ["roots", "docs"];
+const MANIFEST_REQUIRED_ENTRY_KEYS = ["path", "slug", "section", "title"] as const;
+/** Every key an entry may carry; any other fails the entry (a typo'd `sumary` must not vanish). */
+const MANIFEST_ENTRY_KEYS: readonly string[] = [...MANIFEST_REQUIRED_ENTRY_KEYS, "order", "summary"];
 
 /**
  * Parses and validates one discovered `docs/manifest.json` body. Pure — takes the manifest's own
@@ -215,6 +196,24 @@ export function expandManifest(
   ) {
     return { manifestError: `${where}: missing a "docs" array` };
   }
+  for (const key of Object.keys(parsed as object)) {
+    if (!MANIFEST_KEYS.includes(key)) {
+      return { manifestError: `${where}: unknown top-level key "${key}" (allowed: roots, docs)` };
+    }
+  }
+  const rawRoots = (parsed as { roots?: unknown }).roots ?? [];
+  if (!Array.isArray(rawRoots)) return { manifestError: `${where}: "roots" must be an array` };
+  const roots: string[] = [];
+  for (const raw of rawRoots) {
+    const root = canonicalRoot(raw);
+    if (root === null) {
+      return {
+        manifestError: `${where}: invalid root ${JSON.stringify(raw)} — a roots item must be a ` +
+          `repo-relative path: no "..", not absolute, not "docs" or under it`,
+      };
+    }
+    roots.push(root);
+  }
 
   const entries = (parsed as { docs: unknown[] }).docs;
   const sources: DocSource[] = [];
@@ -224,7 +223,12 @@ export function expandManifest(
     const fail = (error: string) => failures.push({ index, error: `${where} entry ${index}: ${error}` });
     if (typeof raw !== "object" || raw === null) return fail("not an object");
     const entry = raw as Record<string, unknown>;
-    for (const key of MANIFEST_ENTRY_KEYS) {
+    for (const key of Object.keys(entry)) {
+      if (!MANIFEST_ENTRY_KEYS.includes(key)) {
+        return fail(`unknown key "${key}" (allowed: ${MANIFEST_ENTRY_KEYS.join(", ")})`);
+      }
+    }
+    for (const key of MANIFEST_REQUIRED_ENTRY_KEYS) {
       if (typeof entry[key] !== "string") return fail(`"${key}" is missing or not a string`);
     }
     const path = entry.path as string;
@@ -232,16 +236,22 @@ export function expandManifest(
     const section = entry.section as string;
     const title = entry.title as string;
     const order = entry.order ?? null;
+    const summary = entry.summary ?? null;
+    if ("summary" in entry && typeof entry.summary !== "string") {
+      return fail(`"summary" must be a string`);
+    }
 
-    const resolved = resolveManifestPath(path);
-    if (resolved === null) return fail(`path "${path}" escapes docs/`);
+    const resolved = resolveManifestPath(path, roots);
+    if (resolved === null) return fail(`path "${path}" escapes docs/ and every declared root`);
     if (!validSlug(slug)) {
       return fail(
         `slug "${slug}" must be one or two "/"-joined segments, each matching ${SEGMENT_RE} ` +
           `and not "index"`,
       );
     }
-    if (!SEGMENT_RE.test(section)) return fail(`section "${section}" must match ${SEGMENT_RE}`);
+    if (!(SECTIONS as readonly string[]).includes(section)) {
+      return fail(`section "${section}" is not one of: ${SECTIONS.join(", ")}`);
+    }
     if (order !== null && !Number.isInteger(order)) return fail(`"order" must be an integer`);
 
     sources.push({
@@ -251,7 +261,8 @@ export function expandManifest(
       title,
       order: order as number | null,
       position: index,
-      origin: "manifest",
+      summary: summary as string | null,
+      origin: resolved.startsWith("docs/") ? "docs" : "root",
     });
   });
 
@@ -266,24 +277,22 @@ export interface SourceCollision {
 }
 
 export interface MergeResult {
-  /** The effective source list — pinned ∪ manifest-derived, deduplicated by `(section, slug)`. */
+  /** The effective source list, deduplicated by `(section, slug)`. */
   sources: DocSource[];
   /** Two DIFFERENT files resolving to the same `(section, slug)` — a hard-fail. */
   collisions: SourceCollision[];
 }
 
 /**
- * The effective source list is the pinned array UNION the discovered manifests, deduplicated by
- * `(section, slug)`. Two entries sharing that key from the SAME file collapse to one silently —
- * the LATER (manifest) entry wins, since it may carry an `order` the pinned one can't; from a
- * DIFFERENT file it is a collision that must abort the whole run — `outputPath` uniqueness is the
- * invariant this protects.
+ * The effective source list, deduplicated by `(section, slug)`. Two entries sharing that key from
+ * the SAME file collapse to one silently — the LATER entry wins; from a DIFFERENT file it is a
+ * collision that must abort the whole run — `outputPath` uniqueness is the invariant this protects.
  */
-export function mergeSources(pinned: DocSource[], manifestSources: DocSource[]): MergeResult {
+export function mergeSources(all: DocSource[]): MergeResult {
   const bySlug = new Map<string, DocSource>();
   const collisions: SourceCollision[] = [];
 
-  for (const source of [...pinned, ...manifestSources]) {
+  for (const source of all) {
     const key = `${source.section}/${source.slug}`;
     const existing = bySlug.get(key);
     if (!existing || existing.file === source.file) {
@@ -425,8 +434,9 @@ export interface SourceMeta {
  * Checks a source's own frontmatter against the entry that listed it and returns the fields the
  * rendered page takes from it — or the list of reasons it can't be imported. Rules:
  *
- * - A manifest-listed source MUST carry frontmatter (the contract's page shape); a pinned one may
- *   not (a README), and then gets `description: ""`, `format: "markdown"`, `shared: true`.
+ * - A source under the manifest's `docs/` MUST carry frontmatter (the contract's page shape); one
+ *   under a declared root may not (a README), and then gets `description: ""`,
+ *   `format: "markdown"`, `shared: true`.
  * - `title` and `section`, when present, must equal the entry's; `key`, when non-null, must equal
  *   its slug. A disagreement fails the run rather than silently picking one side.
  * - `shared` must be a boolean when present; `shared: false` is how an author keeps a listed
@@ -437,7 +447,7 @@ export function checkSourceMeta(
   fields: Record<string, FrontmatterValue> | null,
 ): SourceMeta | { errors: string[] } {
   if (fields === null) {
-    if (source.origin === "manifest") {
+    if (source.origin === "docs") {
       return { errors: [`${source.file}: no frontmatter block (see templates/page.md)`] };
     }
     return { description: "", format: "markdown", shared: true };
@@ -454,7 +464,7 @@ export function checkSourceMeta(
       );
     }
   };
-  if (source.origin === "manifest") {
+  if (source.origin === "docs") {
     for (const key of ["title", "section"]) {
       if (fields[key] === undefined) errors.push(`${source.file}: frontmatter has no ${key}`);
     }
@@ -495,8 +505,8 @@ export interface Provenance {
 
 /**
  * Render one committed doc file's full bytes: fixed-order frontmatter, matching
- * `content.config.ts`'s Zod schema exactly — `key`, `title`, `section`, `description`, `format`,
- * `shared`, `order`, `position`, then the provenance block (`sourceRepo`, `sourcePath`,
+ * `content.config.ts`'s Zod schema exactly — `key`, `title`, `section`, `description`, `summary`,
+ * `format`, `shared`, `order`, `position`, then the provenance block (`sourceRepo`, `sourcePath`,
  * `sourceSha`, `sourceRefSha`, `sourceUrl`, `syncedAt`) — followed by the source's (already
  * frontmatter-stripped) body, unmodified.
  *
@@ -515,6 +525,7 @@ export function renderDocFile(
     `title: ${yamlString(source.title)}`,
     `section: ${yamlString(source.section)}`,
     `description: ${yamlString(meta.description)}`,
+    `summary: ${source.summary === null ? "null" : yamlString(source.summary)}`,
     `format: ${yamlString(meta.format)}`,
     `shared: ${meta.shared}`,
     `order: ${source.order ?? "null"}`,

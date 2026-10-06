@@ -63,6 +63,8 @@ const docs = defineCollection({
       section: z.string(),
       /** One reader-facing sentence; the page's meta description. */
       description: z.string().optional(),
+      /** One reader-facing line for the section landing page (the manifest's `summary`). */
+      summary: z.string().nullable().optional(),
       /** Always "markdown" for a docs page. */
       format: z.string().optional(),
       /** Always true here — a `shared: false` source is a draft the importer never writes. */
