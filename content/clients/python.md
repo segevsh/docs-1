@@ -3,16 +3,17 @@ key: "python"
 title: "Python"
 section: "clients"
 description: "Install the w6w Python package, authenticate, and call your connected apps, Functions, Endpoints and Workflows from Python."
+summary: null
 format: "markdown"
 shared: true
 order: 40
 position: 11
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/python/index.md"
-sourceSha: "21382225b155461d974c5c10d9b98a2d86387236"
-sourceRefSha: "392b74c42ff0e1b9c69334fddb8b56a3b4d581eb"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/392b74c42ff0e1b9c69334fddb8b56a3b4d581eb/docs/clients/python/index.md"
-syncedAt: "2026-10-06T03:44:44Z"
+sourceSha: "d271475d8d44fa693fd6f071700755e8cc3904ed"
+sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/python/index.md"
+syncedAt: "2026-10-06T21:19:03Z"
 ---
 
 
@@ -260,7 +261,7 @@ client = Client(
 )
 ```
 
-The callable must be synchronous. The [Node embedding guide](/clients/node/embedding/) explains
+The callable must be synchronous. The [Node embedding guide](/guides/embed/) explains
 each option in more detail.
 
 ## Troubleshooting

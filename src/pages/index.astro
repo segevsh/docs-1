@@ -1,56 +1,26 @@
 ---
-import { getCollection, getEntry, render } from "astro:content";
+import { getEntry, render } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 /**
  * `/` — the docs home page: the hand-authored `site-docs` `index` entry,
- * followed by every `docs` entry grouped by section.
- *
- * With the `docs` collection empty (nothing imported yet — T3.1.2's job)
- * this renders the intro alone and stays green (A1/A8).
+ * followed by links to the get-started, self-hosting and guides landings.
  */
-const entries = await getCollection("docs");
-
 const index = await getEntry("siteDocs", "index");
 if (!index) throw new Error("content/index.md is missing");
 
 const { Content } = await render(index);
 
-const grouped = new Map<string, typeof entries>();
-for (const entry of entries) {
-  const list = grouped.get(entry.data.section) ?? [];
-  list.push(entry);
-  grouped.set(entry.data.section, list);
-}
-const sections = [...grouped].map(([section, sectionEntries]) => ({
-  section,
-  entries: sectionEntries,
-}));
 ---
 
 <BaseLayout title={index.data.title} description={index.data.description}>
   <Content />
 
-  <a class="quickstart-cta" href="/quickstart/">
-    <span class="quickstart-cta-title">Quickstart →</span>
-    <span class="quickstart-cta-desc">Get a token, install a client, make your first call.</span>
-  </a>
-
-  <section class="docs-index" aria-label="All docs">
-    <h2>All docs</h2>
-    {sections.length === 0 ? (
-      <p>No docs imported yet.</p>
-    ) : (
-      sections.map(({ section, entries: sectionEntries }) => (
-        <div class="docs-index-section">
-          <h3>{section}</h3>
-          <ul>
-            {sectionEntries.map((entry) => (
-              <li><a href={`/${entry.id}/`}>{entry.data.title}</a></li>
-            ))}
-          </ul>
-        </div>
-      ))
-    )}
+  <section class="docs-index" aria-label="Start here">
+    <ul>
+      <li><a href="/get-started/">Get started</a></li>
+      <li><a href="/self-hosting/">Self-hosting</a></li>
+      <li><a href="/guides/">Guides</a></li>
+    </ul>
   </section>
 </BaseLayout>

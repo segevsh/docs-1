@@ -3,16 +3,17 @@ key: "react/nextjs"
 title: "Next.js and token minting"
 section: "clients"
 description: "Set up @w6w/react in a Next.js App Router app, with per-user tokens minted by your own backend route."
+summary: null
 format: "markdown"
 shared: true
 order: 20
-position: 8
+position: 7
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/react/nextjs.md"
-sourceSha: "eab2b063c65afb027e31ff716dfcfc4dfc1ba48b"
-sourceRefSha: "392b74c42ff0e1b9c69334fddb8b56a3b4d581eb"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/392b74c42ff0e1b9c69334fddb8b56a3b4d581eb/docs/clients/react/nextjs.md"
-syncedAt: "2026-10-06T03:44:44Z"
+sourceSha: "06327713d6c59b9b16840c68c12d3f5ade24fbc6"
+sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/react/nextjs.md"
+syncedAt: "2026-10-06T21:19:03Z"
 ---
 
 
@@ -172,4 +173,4 @@ server component or a route handler, use the [Node SDK](/clients/node/) directly
 ## Where to next
 
 - **[Hooks reference](/clients/react/hooks/)**: every hook and provider prop.
-- **[Embed w6w in your product](/clients/node/embedding/)**: the token exchange in more detail.
+- **[Embed w6w in your product](/guides/embed/)**: the token exchange in more detail.

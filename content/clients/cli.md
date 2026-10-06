@@ -3,15 +3,16 @@ key: "cli"
 title: "CLI"
 section: "clients"
 description: "Install the w6w command, authenticate it, and run actions, Functions and Workflows from a terminal or a CI job."
+summary: null
 format: "markdown"
 shared: true
 order: 30
-position: 9
+position: 8
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/cli/index.md"
 sourceSha: "3cced6931a069b56c43363a371375cac503668f6"
-sourceRefSha: "392b74c42ff0e1b9c69334fddb8b56a3b4d581eb"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/392b74c42ff0e1b9c69334fddb8b56a3b4d581eb/docs/clients/cli/index.md"
+sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/cli/index.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 

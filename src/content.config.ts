@@ -1,5 +1,6 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
+import { SECTIONS } from "./lib/doc-sources.ts";
 
 /**
  * Content collections for docs.w6w.io.
@@ -46,41 +47,42 @@ const CONTENT_ROOT = process.env.DOCS_CONTENT_DIR ?? "./content";
  * model — `Doc` + `DocWithProvenance` in `packages/studio/src/repos/documents.ts` — minus the
  * server-issued `id`/`createdAt`/`updatedAt`, plus the rail's `order`/`position`.
  *
- * The keys the 2026-10-06 importer added (everything but `title`, `section`, `sourceRepo`,
- * `sourcePath`, `syncedAt`) are `.optional()` ONLY so content committed by the previous importer
- * still validates until the next `pnpm import-docs` rewrites it; once every committed file
- * carries them, drop the `.optional()`s.
+ * `section` is the importer's closed `SECTIONS` enum, so an unknown section in committed content
+ * fails the build. Every key is required (the importer always writes all of them); `summary` and
+ * `order` are nullable, not optional.
  */
 const docs = defineCollection({
   loader: glob({ pattern: "*/**/*.md", base: CONTENT_ROOT }),
   schema: z
     .object({
       /** The page's stable key — its slug within the section (`workflows/triggers`). */
-      key: z.string().optional(),
+      key: z.string(),
       /** Page heading, and the rail's link label for this entry. */
       title: z.string(),
       /** Groups entries under a heading in the docs rail (e.g. "packages", "studio"). */
-      section: z.string(),
+      section: z.enum(SECTIONS),
       /** One reader-facing sentence; the page's meta description. */
-      description: z.string().optional(),
+      description: z.string(),
+      /** One reader-facing line for the section landing page (the manifest's `summary`). */
+      summary: z.string().nullable(),
       /** Always "markdown" for a docs page. */
-      format: z.string().optional(),
+      format: z.string(),
       /** Always true here — a `shared: false` source is a draft the importer never writes. */
-      shared: z.boolean().optional(),
+      shared: z.boolean(),
       /** Rail position within its level; `null` sorts after every ordered sibling. */
-      order: z.number().int().nullable().optional(),
+      order: z.number().int().nullable(),
       /** Index in the list that declared the entry — the rail's tie-break after `order`. */
-      position: z.number().int().optional(),
+      position: z.number().int(),
       /** `owner/name` of the repo the content was collected from, e.g. "w6w-io/w6w-core". */
       sourceRepo: z.string(),
       /** Path to the source file within that repo, e.g. "README.md". */
       sourcePath: z.string(),
       /** Git blob hash of the source file's bytes — a content hash, not a commit SHA. */
-      sourceSha: z.string().optional(),
+      sourceSha: z.string(),
       /** The source repo's HEAD commit at collection time — not a content hash. */
-      sourceRefSha: z.string().optional(),
+      sourceRefSha: z.string(),
       /** Link to the source file on GitHub at `sourceRefSha`. */
-      sourceUrl: z.string().optional(),
+      sourceUrl: z.string(),
       /** ISO date of the source file's last commit — when its content last actually changed. */
       syncedAt: z.string(),
     })
@@ -98,7 +100,14 @@ const docs = defineCollection({
  */
 const siteDocs = defineCollection({
   loader: glob({ pattern: "*.md", base: CONTENT_ROOT }),
-  schema: z.object({ title: z.string(), description: z.string() }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    /** Set to join the Get started group (rendered at `/get-started/<slug>/`). */
+    section: z.literal("get-started").optional(),
+    /** Rail position within Get started. */
+    order: z.number().int().optional(),
+  }),
 });
 
 export const collections = { docs, siteDocs };
