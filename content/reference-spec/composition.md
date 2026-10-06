@@ -11,8 +11,8 @@ position: 9
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "docs/composition.md"
 sourceSha: "3b1f67b95183a1cb5ef2e5f9d5a81afeebc06ab8"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/docs/composition.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/docs/composition.md"
 syncedAt: "2026-10-06T21:19:19Z"
 ---
 

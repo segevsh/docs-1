@@ -11,8 +11,8 @@ position: 19
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/engine.md"
 sourceSha: "8d2c37faa4487d163f8bb0cb6e01c10060c46b55"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/engine.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/engine.md"
 syncedAt: "2026-08-11T03:16:34Z"
 ---
 

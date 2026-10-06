@@ -11,8 +11,8 @@ position: 14
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/guides/api-health.md"
 sourceSha: "08b972d125e5fc28a9eca44449fc6ce4bd0ea601"
-sourceRefSha: "1eee1ca1c273fcccc91988c49213335e02b22b4e"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/1eee1ca1c273fcccc91988c49213335e02b22b4e/docs/guides/api-health.md"
+sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/guides/api-health.md"
 syncedAt: "2026-10-06T21:28:36Z"
 ---
 

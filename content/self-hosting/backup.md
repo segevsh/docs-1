@@ -11,8 +11,8 @@ position: 4
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-hosting/backup.md"
 sourceSha: "09d7a94bc6fa35dea87a8b301cb9dcbbe526ca0c"
-sourceRefSha: "1eee1ca1c273fcccc91988c49213335e02b22b4e"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/1eee1ca1c273fcccc91988c49213335e02b22b4e/docs/self-hosting/backup.md"
+sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-hosting/backup.md"
 syncedAt: "2026-10-06T21:22:18Z"
 ---
 

@@ -11,8 +11,8 @@ position: 7
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/forms.md"
 sourceSha: "37cef01997c709be0ae7951c92db74507fa051d1"
-sourceRefSha: "78c999001a58fa24af60667b1fdcc8244b651654"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/78c999001a58fa24af60667b1fdcc8244b651654/docs/components/forms.md"
+sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/forms.md"
 syncedAt: "2026-10-06T21:20:06Z"
 ---
 

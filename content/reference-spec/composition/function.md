@@ -11,8 +11,8 @@ position: 10
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/function.md"
 sourceSha: "10271781b5da140d25c5a7a5a1ee87bac6d6e994"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/function.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/function.md"
 syncedAt: "2026-09-08T01:37:52Z"
 ---
 

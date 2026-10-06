@@ -11,8 +11,8 @@ position: 2
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/design-system.md"
 sourceSha: "4b08ffd990c69fca819100ed601278eb5509a6c1"
-sourceRefSha: "78c999001a58fa24af60667b1fdcc8244b651654"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/78c999001a58fa24af60667b1fdcc8244b651654/docs/design-system.md"
+sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/design-system.md"
 syncedAt: "2026-10-06T21:20:06Z"
 ---
 

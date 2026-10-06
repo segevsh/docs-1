@@ -11,8 +11,8 @@ position: 15
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/dashboard.md"
 sourceSha: "dfec4d5e4d8c9171fe2d2d3466e4b05f253f636f"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/dashboard.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/dashboard.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

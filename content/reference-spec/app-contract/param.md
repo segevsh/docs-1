@@ -11,8 +11,8 @@ position: 3
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/param.md"
 sourceSha: "88eb6b26a379cf53271e1a4b1c249aa5162d4373"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/param.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/param.md"
 syncedAt: "2026-09-20T03:58:03Z"
 ---
 
@@ -179,7 +179,7 @@ A form is `Param[]`. The surface that owns the form (Action, Trigger, Auth, …)
 | `repeat` | boolean | ⬜ | Allow multiple values (array of `type`). UI renders as an add/remove list. |
 | `ui` | string | ⬜ | Render hint — see UI hints by type. |
 | `dependsOn` | string[] | ⬜ | Keys of other params. Disabled until all listed keys have values; changes invalidate cached `options` and re-run `validate`. |
-| `showIf` | [JSONLogic](https://jsonlogic.com) rule | ⬜ | Conditional visibility based on other field values. Evaluated against the current form state; truthy → visible. The platform ships a JSONLogic engine in [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/expr/README.md). |
+| `showIf` | [JSONLogic](https://jsonlogic.com) rule | ⬜ | Conditional visibility based on other field values. Evaluated against the current form state; truthy → visible. The platform ships a JSONLogic engine in [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/expr/README.md). |
 | `options` | Options | ⬜ | For choice types. Static list or dynamic hook source. |
 | `validation` | Validation | ⬜ | Declarative rules and/or a custom hook. |
 | `children` | Param[] | ⬜ | Nested params for `type: "group"` (nested object) or `type: "section"` (flat, layout-only). |
@@ -389,7 +389,7 @@ Circular dependencies are rejected at manifest load time.
 
 | Question | Resolution |
 |---|---|
-| `showIf` expression language | **JSONLogic.** The reference engine ships as [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/expr/README.md). No bespoke mini-language. |
+| `showIf` expression language | **JSONLogic.** The reference engine ships as [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/expr/README.md). No bespoke mini-language. |
 | Grouping / sections / tabs | **Resolved.** Added `type: "section"` (`section: "collapsible"` disclosure / `section: "group"` row/stack layout) as a layout-only container — its children's values stay flat in the enclosing form. See [Sections](#sections). Tabs still deferred. |
 | i18n on Param | **Deferred to the enclosing manifest's `localizations` block.** No per-Param locale object — avoids double-sourcing translations. |
 | `repeat` vs nested schema | Added a `group` type that takes a nested `Param[]` via `children`. Lists of structured items use `type: "group", repeat: true`. |

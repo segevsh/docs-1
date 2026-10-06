@@ -11,8 +11,8 @@ position: 20
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "docs/build-a-w6w-app.md"
 sourceSha: "3962532168b3cccd9cc787208b5144f116f4f1f8"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/docs/build-a-w6w-app.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/docs/build-a-w6w-app.md"
 syncedAt: "2026-10-06T21:19:19Z"
 ---
 
@@ -22,7 +22,7 @@ syncedAt: "2026-10-06T21:19:19Z"
 > **Audience: an LLM / coding agent building a w6w App.** This file is written to be pasted into an
 > agent prompt. It is self-contained: the rules, contracts, and examples an agent needs to author a
 > correct App without reading the whole spec. When something here is ambiguous, the RFCs under
-> [`../rfcs/`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/) and the types in [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/types/) are the source of
+> [`../rfcs/`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/) and the types in [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/) are the source of
 > truth.
 
 ## Start from a template — do not scaffold from scratch
@@ -370,10 +370,10 @@ triggers; add them only when asked, and read [`rfcs/trigger.md`](/reference-spec
 
 - Templates: [w6w-app-template-node](https://github.com/w6w-io/w6w-app-template-node) ·
   [w6w-app-template-deno](https://github.com/w6w-io/w6w-app-template-deno)
-- Types: [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/types/) · Runtime: [`@w6w/runtime`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/runtime/)
+- Types: [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/) · Runtime: [`@w6w/runtime`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/runtime/)
 - RFCs: [app](/reference-spec/app-contract/app/) · [action](/reference-spec/app-contract/action/) · [auth](/reference-spec/app-contract/auth/) ·
   [param](/reference-spec/app-contract/param/) · [connection](/reference-spec/app-contract/connection/) ·
   [invocation](/reference-spec/host-runtime/invocation/) · [hook-runtime](/reference-spec/host-runtime/hook-runtime/) ·
   [categories](/reference-spec/app-contract/categories/) · [trigger](/reference-spec/composition/trigger/)
-- Working examples: [`fixtures/apps/hello`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/fixtures/apps/hello/) (no-auth) ·
-  [`fixtures/apps/sendgrid`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/fixtures/apps/sendgrid/) (apiKey + sign)
+- Working examples: [`fixtures/apps/hello`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/fixtures/apps/hello/) (no-auth) ·
+  [`fixtures/apps/sendgrid`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/fixtures/apps/sendgrid/) (apiKey + sign)

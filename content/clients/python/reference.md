@@ -11,8 +11,8 @@ position: 12
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/python/reference.md"
 sourceSha: "0b11e0c7b73bca6f024f0e011196de39bfe27e3e"
-sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/python/reference.md"
+sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients/python/reference.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 

@@ -11,8 +11,8 @@ position: 14
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/trigger.md"
 sourceSha: "26b6dba7340c7e573ef60a3b1994a46677a53d55"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/trigger.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/trigger.md"
 syncedAt: "2026-10-04T22:25:56Z"
 ---
 

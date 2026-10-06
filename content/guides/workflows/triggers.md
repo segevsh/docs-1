@@ -11,8 +11,8 @@ position: 9
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/workflows/triggers.md"
 sourceSha: "42765a1d92120ca283d53288c576ea0e64ddaba3"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/workflows/triggers.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/workflows/triggers.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

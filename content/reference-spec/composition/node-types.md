@@ -11,8 +11,8 @@ position: 13
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/node-types.md"
 sourceSha: "9e1c66bf5cc243dafeb3e6becc1bdd5e9aaff9e2"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/node-types.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/node-types.md"
 syncedAt: "2026-09-19T14:27:31Z"
 ---
 

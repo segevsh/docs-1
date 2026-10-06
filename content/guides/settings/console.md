@@ -11,8 +11,8 @@ position: 26
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/settings/console.md"
 sourceSha: "553e3823cdfb86d7aa3292e892ebcbf186a72031"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/settings/console.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/settings/console.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

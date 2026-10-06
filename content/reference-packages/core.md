@@ -11,8 +11,8 @@ position: 21
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "README.md"
 sourceSha: "e69382e7f3b44bc6684edd9717a4723331cb7279"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/README.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/README.md"
 syncedAt: "2026-10-06T21:19:45Z"
 ---
 
@@ -20,7 +20,7 @@ syncedAt: "2026-10-06T21:19:45Z"
 
 The core monorepo for the workflow platform.
 
-**Status:** Source-available under [FSL-1.1-ALv2](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/LICENSE) (converts to Apache 2.0).
+**Status:** Source-available under [FSL-1.1-ALv2](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/LICENSE) (converts to Apache 2.0).
 **Current spec:** `manifestVersion: "1"` — all primitive RFCs are Final.
 
 ## Purpose
@@ -34,7 +34,7 @@ methods; a Connection holds a credential; a Function gives an operation a stable
 swappable implementation; an Endpoint is how anything outside calls in; a Health Check declares how
 the thing should be probed. A Workflow composes several of those into a graph.
 
-It contains two halves: the **specification** ([`rfcs/`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs) — what each primitive *is*) and a
+It contains two halves: the **specification** ([`rfcs/`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs) — what each primitive *is*) and a
 **Deno workspace of packages** (the reference implementation — code that proves the spec runs).
 `core` is deliberately **transport-free**: no HTTP server, no database, no credential storage. A
 host supplies those.
@@ -50,18 +50,18 @@ Every RFC carries one of:
 | `Final` | Frozen for the current `manifestVersion`. Breaking changes require a new RFC and a `manifestVersion` bump. |
 | `Superseded` | Replaced by another RFC; carries a pointer to its successor. |
 
-`manifestVersion: "1"` covers the primitive RFCs listed below plus the Hook Runtime and Categories vocabulary. **There are 17 RFCs**; Trigger, Workflow, Engine, Node Types, Function, Endpoint and Health Check have all landed since this section was first written, and Webhook and Run are still TBD. New RFCs use the template at [`rfcs/_template.md`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/_template.md).
+`manifestVersion: "1"` covers the primitive RFCs listed below plus the Hook Runtime and Categories vocabulary. **There are 17 RFCs**; Trigger, Workflow, Engine, Node Types, Function, Endpoint and Health Check have all landed since this section was first written, and Webhook and Run are still TBD. New RFCs use the template at [`rfcs/_template.md`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/_template.md).
 
 ## Packages
 
 | Package | What it is |
 |---|---|
-| [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/types/README.md) | Shared, dependency-free TypeScript logical model + hook contracts. Published to npm + JSR. |
-| [`@w6w/runtime`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/runtime/README.md) | Lib core: load an app, describe it, and invoke actions in a least-privilege Deno sandbox. |
-| [`@w6w/sources`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/sources/README.md) | Resolve a source reference (`file:`, `github:`) to a local directory for the runtime. |
-| [`@w6w/validator`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/validator/README.md) | Validate manifests against the spec rules. Ships a `core validate <path>` CLI (`deno task validate`). |
-| [`@w6w/schema`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/schema/README.md) | JSON Schema (Draft 2020-12) for every primitive — structural validation layer. |
-| [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/expr/README.md) | JSONLogic engine for Param `showIf` and expression evaluation. |
+| [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/README.md) | Shared, dependency-free TypeScript logical model + hook contracts. Published to npm + JSR. |
+| [`@w6w/runtime`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/runtime/README.md) | Lib core: load an app, describe it, and invoke actions in a least-privilege Deno sandbox. |
+| [`@w6w/sources`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/sources/README.md) | Resolve a source reference (`file:`, `github:`) to a local directory for the runtime. |
+| [`@w6w/validator`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/validator/README.md) | Validate manifests against the spec rules. Ships a `core validate <path>` CLI (`deno task validate`). |
+| [`@w6w/schema`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/schema/README.md) | JSON Schema (Draft 2020-12) for every primitive — structural validation layer. |
+| [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/expr/README.md) | JSONLogic engine for Param `showIf` and expression evaluation. |
 
 Each package is transport-free and independently focused; deployment concerns
 (an HTTP server, a CLI, credential storage) are wrappers built on top — some
@@ -73,7 +73,7 @@ the whole workspace.
 | | Licence | Why |
 |---|---|---|
 | `@w6w/types`, `@w6w/expr` | **MIT** (each carries its own `LICENSE`) | The *format*. Anything that reads or writes a w6w manifest, expression or `{{ }}` template must be able to do so without asking — a spec nobody may reimplement is not a spec. |
-| everything else, incl. `@w6w/runtime` | **FSL-1.1-ALv2** (repo [`LICENSE`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/LICENSE)) | The *implementation*, including the sandbox. Readable and usable for any purpose except Competing Use; converts to Apache 2.0 two years after each version ships. |
+| everything else, incl. `@w6w/runtime` | **FSL-1.1-ALv2** (repo [`LICENSE`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/LICENSE)) | The *implementation*, including the sandbox. Readable and usable for any purpose except Competing Use; converts to Apache 2.0 two years after each version ships. |
 
 So: build apps, tools, importers and integrations freely. The one thing withheld
 is standing up a competing hosted w6w out of this implementation.

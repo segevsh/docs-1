@@ -11,8 +11,8 @@ position: 24
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/settings/team.md"
 sourceSha: "fe55d3dbcdcbff0a1460fc4c94906064e584932a"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/settings/team.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/settings/team.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

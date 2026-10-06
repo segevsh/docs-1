@@ -11,8 +11,8 @@ position: 6
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/healthcheck.md"
 sourceSha: "0d9df35b55c945d73a836215bf363a9db8dd75c2"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/healthcheck.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/healthcheck.md"
 syncedAt: "2026-08-23T15:05:48Z"
 ---
 
@@ -527,20 +527,20 @@ A host claiming support MUST:
    host's log, not on a status pill: a broken status page must not read like a broken product.
    The same rule binds `input.feed.error`, which a conforming check echoes into `message`.
 
-Fixtures: [`fixtures/apps/sendgrid/health/`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/fixtures/apps/sendgrid/health/) declares one
+Fixtures: [`fixtures/apps/sendgrid/health/`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/fixtures/apps/sendgrid/health/) declares one
 check of each credential posture plus an `unavailable`; the conformance cases live under
-[`packages/validator/tests/fixtures/{valid,invalid}/health/`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/validator/tests/fixtures/).
+[`packages/validator/tests/fixtures/{valid,invalid}/health/`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/validator/tests/fixtures/).
 
 ### Reference implementation
 
 | Piece | Where |
 |---|---|
-| Types (`HealthCheck`, `HealthReport`, postures, default resolution) | [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/types/src/health.ts) |
-| Spec rules, incl. the unsigned-egress rule and the tagged-Action rule | [`@w6w/validator`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/validator/src/validate.ts) |
-| Loading, `auth:*` derivation, per-check allowlist composition | [`runtime/src/loader.ts`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/runtime/src/loader.ts) |
-| `checkHealth()`, posture enforcement, `rollUpHealth()` | [`runtime/src/health.ts`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/runtime/src/health.ts) |
-| Atom/RSS parsing, `latestPerId` fold | [`runtime/src/feed.ts`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/runtime/src/feed.ts) |
-| `describe()` exposure, sandbox selector | [`runtime/src/runtime.ts`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/runtime/src/runtime.ts), [`sandbox/`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/runtime/src/sandbox/) |
+| Types (`HealthCheck`, `HealthReport`, postures, default resolution) | [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/health.ts) |
+| Spec rules, incl. the unsigned-egress rule and the tagged-Action rule | [`@w6w/validator`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/validator/src/validate.ts) |
+| Loading, `auth:*` derivation, per-check allowlist composition | [`runtime/src/loader.ts`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/runtime/src/loader.ts) |
+| `checkHealth()`, posture enforcement, `rollUpHealth()` | [`runtime/src/health.ts`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/runtime/src/health.ts) |
+| Atom/RSS parsing, `latestPerId` fold | [`runtime/src/feed.ts`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/runtime/src/feed.ts) |
+| `describe()` exposure, sandbox selector | [`runtime/src/runtime.ts`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/runtime/src/runtime.ts), [`sandbox/`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/runtime/src/sandbox/) |
 
 The posture rules are enforced in two places on purpose. The validator rejects a `signed`
 check that widens its egress at author time; `healthAllowlist()` refuses to widen it at load

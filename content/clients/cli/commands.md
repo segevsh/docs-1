@@ -11,8 +11,8 @@ position: 10
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/cli/commands.md"
 sourceSha: "0d54969da444c5ba3ecd001ca0e7e60345317f8d"
-sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/cli/commands.md"
+sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients/cli/commands.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 

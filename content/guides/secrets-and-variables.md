@@ -11,8 +11,8 @@ position: 17
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/secrets-and-variables.md"
 sourceSha: "45be5a12d26fb67782e3730690c8d08b544157fd"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/secrets-and-variables.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/secrets-and-variables.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

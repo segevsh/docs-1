@@ -11,8 +11,8 @@ position: 0
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "endpoints.json"
 sourceSha: "b7e7dd1fc861eb7770dc442a020b486ef0598c80"
-sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/endpoints.json"
+sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/endpoints.json"
 syncedAt: "2026-10-02T15:56:29Z"
 ---
 

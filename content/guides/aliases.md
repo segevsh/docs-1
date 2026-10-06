@@ -11,8 +11,8 @@ position: 11
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/guides/aliases.md"
 sourceSha: "38b5283f9b5eaf6e14d7b874219383f9d4fd4788"
-sourceRefSha: "1eee1ca1c273fcccc91988c49213335e02b22b4e"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/1eee1ca1c273fcccc91988c49213335e02b22b4e/docs/guides/aliases.md"
+sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/guides/aliases.md"
 syncedAt: "2026-10-06T21:24:51Z"
 ---
 

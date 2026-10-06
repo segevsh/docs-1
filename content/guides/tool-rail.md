@@ -11,8 +11,8 @@ position: 13
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/tool-rail.md"
 sourceSha: "da922fba060c0fa439a590ea7e64217efc6b589a"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/tool-rail.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/tool-rail.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

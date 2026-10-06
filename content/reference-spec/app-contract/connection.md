@@ -11,8 +11,8 @@ position: 5
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/connection.md"
 sourceSha: "49204e019d92e62260ec7302213dc8403f5d76c9"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/connection.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/connection.md"
 syncedAt: "2026-09-19T13:49:21Z"
 ---
 
@@ -152,7 +152,7 @@ Only Auth `sign` / `refresh` / `revoke` hooks ever receive the unredacted record
 | `lastTestedAt` | timestamp | ⬜ | Last successful `test`. |
 | `lastRefreshedAt` | timestamp | ⬜ | Last successful `refresh`. Redacted in the projection. |
 | `expiresAt` | timestamp | ⬜ | When known (e.g. OAuth `expires_in`). Drives proactive refresh scheduling. |
-| `target` | [`ConnectionTarget`](https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/packages/types/src/connection.ts) | ⬜ | Non-secret connect target (`host`/`port`/`database`/`tlsMode`/`caCert`/`allowPrivate`) for a socket-backed Connection. **Not** secret and **present in the redacted projection** — unlike `credential`, the host must be able to read it to run the [pre-connect target check](/reference-spec/host-runtime/hook-runtime/#the-target-check). |
+| `target` | [`ConnectionTarget`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/connection.ts) | ⬜ | Non-secret connect target (`host`/`port`/`database`/`tlsMode`/`caCert`/`allowPrivate`) for a socket-backed Connection. **Not** secret and **present in the redacted projection** — unlike `credential`, the host must be able to read it to run the [pre-connect target check](/reference-spec/host-runtime/hook-runtime/#the-target-check). |
 
 **Provenance.** `target` is set at connect time **alongside `credential`**, from the user's
 Connection form — not the mechanism `display` uses. `display` is populated *after* connect by Auth's

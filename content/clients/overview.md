@@ -11,8 +11,8 @@ position: 0
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/overview.md"
 sourceSha: "6857d7ff0563536478f16a1ca43d8a070300b269"
-sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/overview.md"
+sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients/overview.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 

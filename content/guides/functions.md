@@ -11,8 +11,8 @@ position: 5
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/functions.md"
 sourceSha: "9b77f6386668c09ab169ae13694cfac475c5d013"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/functions.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/functions.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

@@ -11,8 +11,8 @@ position: 8
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-host-quickstart.md"
 sourceSha: "347ddca0f2cf8f5afab0825b3dbbbd8ab1a69e4e"
-sourceRefSha: "1eee1ca1c273fcccc91988c49213335e02b22b4e"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/1eee1ca1c273fcccc91988c49213335e02b22b4e/docs/self-host-quickstart.md"
+sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-host-quickstart.md"
 syncedAt: "2026-10-06T21:21:22Z"
 ---
 

@@ -11,8 +11,8 @@ position: 8
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/workflows/editor.md"
 sourceSha: "d57af397dc5c71bb5ae7fe5a4852741f5f232f34"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/workflows/editor.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/workflows/editor.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

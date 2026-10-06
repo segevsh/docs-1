@@ -11,8 +11,8 @@ position: 18
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/registry.md"
 sourceSha: "2a91305b5dd90e4a816ab315a3746b1c2b7b633f"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/registry.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/registry.md"
 syncedAt: "2026-10-06T21:19:19Z"
 ---
 

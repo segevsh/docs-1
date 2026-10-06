@@ -11,8 +11,8 @@ position: 6
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-hosting/hub-spokes.md"
 sourceSha: "c70c3e1ca6159996f0439794a5b979d7340c3efb"
-sourceRefSha: "1eee1ca1c273fcccc91988c49213335e02b22b4e"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/1eee1ca1c273fcccc91988c49213335e02b22b4e/docs/self-hosting/hub-spokes.md"
+sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-hosting/hub-spokes.md"
 syncedAt: "2026-10-06T21:23:31Z"
 ---
 

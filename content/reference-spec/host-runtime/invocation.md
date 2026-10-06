@@ -11,8 +11,8 @@ position: 17
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/invocation.md"
 sourceSha: "4c85f17f20af6d8f3b65ae620e303e70be7df90a"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/invocation.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/invocation.md"
 syncedAt: "2026-08-20T18:35:20Z"
 ---
 

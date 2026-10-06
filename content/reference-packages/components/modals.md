@@ -11,8 +11,8 @@ position: 10
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/modals.md"
 sourceSha: "0e0419ec5bc477a2b23cfa75bf1c598608cf5268"
-sourceRefSha: "78c999001a58fa24af60667b1fdcc8244b651654"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/78c999001a58fa24af60667b1fdcc8244b651654/docs/components/modals.md"
+sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/modals.md"
 syncedAt: "2026-10-06T21:20:06Z"
 ---
 

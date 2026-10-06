@@ -11,8 +11,8 @@ position: 3
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/node/documents-and-vars.md"
 sourceSha: "28f5556b8795980a918d63db688e7e7a80dc3c35"
-sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/node/documents-and-vars.md"
+sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients/node/documents-and-vars.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 

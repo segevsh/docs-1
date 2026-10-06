@@ -11,8 +11,8 @@ position: 9
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/flow-editor.md"
 sourceSha: "6f5b3de74ce022cf0c30196810bd0c2c80c74ace"
-sourceRefSha: "78c999001a58fa24af60667b1fdcc8244b651654"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/78c999001a58fa24af60667b1fdcc8244b651654/docs/components/flow-editor.md"
+sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/flow-editor.md"
 syncedAt: "2026-10-06T21:20:06Z"
 ---
 

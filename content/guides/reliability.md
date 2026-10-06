@@ -11,8 +11,8 @@ position: 16
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/reliability.md"
 sourceSha: "ee26f75b870cd083d755200b1a71b4bd903aeee7"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/reliability.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/reliability.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

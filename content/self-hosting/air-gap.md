@@ -11,8 +11,8 @@ position: 5
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-hosting/air-gap.md"
 sourceSha: "ae4e6e9ea39b4af11291af12a645509d4cb189ad"
-sourceRefSha: "1eee1ca1c273fcccc91988c49213335e02b22b4e"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/1eee1ca1c273fcccc91988c49213335e02b22b4e/docs/self-hosting/air-gap.md"
+sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-hosting/air-gap.md"
 syncedAt: "2026-10-06T21:22:23Z"
 ---
 

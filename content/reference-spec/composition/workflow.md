@@ -11,8 +11,8 @@ position: 12
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/workflow.md"
 sourceSha: "0850842af3794e51e908c3a27a7e5c7ce48fa645"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/workflow.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/workflow.md"
 syncedAt: "2026-10-04T22:19:44Z"
 ---
 

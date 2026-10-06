@@ -11,8 +11,8 @@ position: 0
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/overview.md"
 sourceSha: "0e879f45456c8f7f094a816700bd5ee43d748479"
-sourceRefSha: "78c999001a58fa24af60667b1fdcc8244b651654"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/78c999001a58fa24af60667b1fdcc8244b651654/docs/overview.md"
+sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/overview.md"
 syncedAt: "2026-10-06T21:20:06Z"
 ---
 

@@ -11,8 +11,8 @@ position: 16
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/reference/mcp.md"
 sourceSha: "a9d739b283a8bbf9afbf32b368ac2000a6401810"
-sourceRefSha: "1eee1ca1c273fcccc91988c49213335e02b22b4e"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/1eee1ca1c273fcccc91988c49213335e02b22b4e/docs/reference/mcp.md"
+sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/reference/mcp.md"
 syncedAt: "2026-10-06T21:32:49Z"
 ---
 

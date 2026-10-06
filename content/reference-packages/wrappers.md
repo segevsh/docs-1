@@ -11,8 +11,8 @@ position: 15
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "README.md"
 sourceSha: "0119d6e64b92a96172bbfb79c7f0318e01c7fd21"
-sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/README.md"
+sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/README.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 
@@ -22,10 +22,10 @@ Open-source client libraries that wrap the w6w HTTP API.
 
 | Wrapper | Directory | Published as | Language |
 |---------|-----------|--------------|----------|
-| SDK  | [`node/`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/node)     | `@w6w/sdk` (npm + JSR) | TypeScript |
-| CLI  | [`cli/`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/cli)       | `@w6w/cli` (npm), binary `w6w` | TypeScript |
-| SDK  | [`python/`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/python) | `w6w` (PyPI) | Python |
-| SDK bindings | [`react/`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/react) | `@w6w/react` (npm) | TypeScript (React) |
+| SDK  | [`node/`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/node)     | `@w6w/sdk` (npm + JSR) | TypeScript |
+| CLI  | [`cli/`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/cli)       | `@w6w/cli` (npm), binary `w6w` | TypeScript |
+| SDK  | [`python/`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/python) | `w6w` (PyPI) | Python |
+| SDK bindings | [`react/`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/react) | `@w6w/react` (npm) | TypeScript (React) |
 
 ## Install
 
@@ -37,13 +37,13 @@ npm install @w6w/react      # composes @w6w/sdk — a derived lane, see docs/par
 ```
 
 Each install is a normal, tokenless publish from this repo's own CI, over OIDC —
-see [docs/release.md](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/release.md).
+see [docs/release.md](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/release.md).
 
 **Using a client?** The user guides are published at
 [docs.w6w.io/clients](https://docs.w6w.io/clients/overview/), from the pages in
-[`docs/clients/`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients). Each lane's README —
-[`node/`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/node/README.md), [`cli/`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/cli/README.md),
-[`python/`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/python/README.md), [`react/`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/react/README.md) — is the short
+[`docs/clients/`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients). Each lane's README —
+[`node/`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/node/README.md), [`cli/`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/cli/README.md),
+[`python/`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/python/README.md), [`react/`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/react/README.md) — is the short
 version that ships with the package.
 
 **One repo, one directory per language, one version.** The wrappers live here
@@ -60,7 +60,7 @@ after a change lands here, the monorepo bumps its pointer in a dedicated
 > **Adding a language is adding a directory** — `go/`, `dart/` — with a lane in
 > this repo's CI and a publish job on the shared release trigger. There is no
 > repo to create, no CI to bootstrap, and no fourth set of publish secrets. What
-> it does still cost is the obligation in [docs/parity.md](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/parity.md):
+> it does still cost is the obligation in [docs/parity.md](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/parity.md):
 > every future operation gets written one more time, on the same day. That
 > obligation falls on a **contract lane** — a `go/` or `dart/` implementing
 > `endpoints.json` directly — not on a **derived lane** like `react/`, which
@@ -72,15 +72,15 @@ after a change lands here, the monorepo bumps its pointer in a dedicated
 source of truth for what every wrapper must expose. A **contract lane** is not
 conformant until it implements every operation in it; a **derived lane** —
 `react/` — inherits that guarantee from the contract lane it composes instead of
-implementing the surface itself. See [docs/endpoints.md](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/endpoints.md)
+implementing the surface itself. See [docs/endpoints.md](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/endpoints.md)
 for the catalog with wire shapes and per-language signatures.
 
-**2. One version, released together.** [`VERSION`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/VERSION) holds the single
+**2. One version, released together.** [`VERSION`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/VERSION) holds the single
 version every wrapper in this repo, contract lane or derived, publishes under.
 There is no such thing as `@w6w/sdk@0.2.0` without `@w6w/cli@0.2.0`,
 `w6w==0.2.0`, and `@w6w/react@0.2.0`. A user on any wrapper at version *X* gets
 the same operations as a user on any other wrapper at version *X* — that is the
-whole promise. See [docs/parity.md](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/parity.md).
+whole promise. See [docs/parity.md](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/parity.md).
 
 ## Layout
 
@@ -110,13 +110,13 @@ answer is the same in CI, in a laptop checkout, and inside the monorepo's
 submodule.
 
 `endpoints.json` says *which* operations exist and `docs/endpoints.md` says *what
-the API returns*; [`docs/implementation.md`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/implementation.md) pins
+the API returns*; [`docs/implementation.md`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/implementation.md) pins
 everything else — types, error model, environment handling, toolchains, tests and
 the conformance runner — so that three people implementing in three languages
 produce the same client. Where it says "pinned", it is not a starting point for
 discussion.
 
-Those three describe the **API**. [`docs/sdk-surface.md`](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/sdk-surface.md)
+Those three describe the **API**. [`docs/sdk-surface.md`](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/sdk-surface.md)
 describes the **client**: every symbol a wrapper publishes, side by side in both
 languages, including the ones no contract entry covers — `request`, `path`,
 `joinBaseUrl`, the error classes, the run predicates, `UNSET` — plus the handful
@@ -142,7 +142,7 @@ Adding or changing an operation is always the same four steps, in this order:
 1. Land the endpoint in the server first — the API leads, wrappers follow.
 2. Update `endpoints.json` and `docs/endpoints.md`.
 3. Implement it in **every** language directory, in the same PR.
-4. Bump `VERSION` and release them together ([docs/release.md](https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/release.md)).
+4. Bump `VERSION` and release them together ([docs/release.md](https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/release.md)).
 
 Step 3 is not optional or deferrable, and the layout is what makes it hard to
 skip: one diff, one CI run, every lane's conformance test reading the same

@@ -11,8 +11,8 @@ position: 4
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/auth.md"
 sourceSha: "49b0d08f5a291cad787d62f3dfd6cd8095ebb7eb"
-sourceRefSha: "d226878bddda23a18f161369f0297055f6698822"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/d226878bddda23a18f161369f0297055f6698822/rfcs/auth.md"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/auth.md"
 syncedAt: "2026-09-19T13:49:21Z"
 ---
 

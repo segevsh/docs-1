@@ -11,8 +11,8 @@ position: 0
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-hosting/overview.md"
 sourceSha: "0a979e8eec44b5d0775e78dad539fd7a695470ee"
-sourceRefSha: "1eee1ca1c273fcccc91988c49213335e02b22b4e"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/1eee1ca1c273fcccc91988c49213335e02b22b4e/docs/self-hosting/overview.md"
+sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-hosting/overview.md"
 syncedAt: "2026-10-06T21:23:31Z"
 ---
 

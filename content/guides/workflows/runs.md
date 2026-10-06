@@ -11,8 +11,8 @@ position: 11
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/workflows/runs.md"
 sourceSha: "90a58c13d8b1e02ad8532e96d7af626ed0f23fe6"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/workflows/runs.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/workflows/runs.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

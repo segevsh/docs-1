@@ -11,8 +11,8 @@ position: 0
 sourceRepo: "w6w-io/w6w-apps"
 sourcePath: "docs/testing.md"
 sourceSha: "eeb4fc3daf04a04f7882e743eaa56a36c661910e"
-sourceRefSha: "cc9e339259c021a218ff2693f20b4a180d1f5fa8"
-sourceUrl: "https://github.com/w6w-io/w6w-apps/blob/cc9e339259c021a218ff2693f20b4a180d1f5fa8/docs/testing.md"
+sourceRefSha: "c3526851298a1ea383ca47ffa3ef048bbb5506e7"
+sourceUrl: "https://github.com/w6w-io/w6w-apps/blob/c3526851298a1ea383ca47ffa3ef048bbb5506e7/docs/testing.md"
 syncedAt: "2026-10-06T21:20:18Z"
 ---
 

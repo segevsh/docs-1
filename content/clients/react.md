@@ -11,8 +11,8 @@ position: 5
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/react/index.md"
 sourceSha: "098837a2fbe133edf12e745c85d9dc4ee4f1ca96"
-sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/react/index.md"
+sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients/react/index.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 

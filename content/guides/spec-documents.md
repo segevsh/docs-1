@@ -11,8 +11,8 @@ position: 15
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/guides/spec-documents.md"
 sourceSha: "81d1d744c92862bcbe4532f888cb68012a64f405"
-sourceRefSha: "1eee1ca1c273fcccc91988c49213335e02b22b4e"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/1eee1ca1c273fcccc91988c49213335e02b22b4e/docs/guides/spec-documents.md"
+sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/guides/spec-documents.md"
 syncedAt: "2026-10-06T21:29:52Z"
 ---
 

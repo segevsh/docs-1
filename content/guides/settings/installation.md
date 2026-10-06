@@ -11,8 +11,8 @@ position: 27
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/settings/installation.md"
 sourceSha: "d285c8fc5c613253640e2478bf704e77b619b388"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/settings/installation.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/settings/installation.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

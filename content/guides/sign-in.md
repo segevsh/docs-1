@@ -11,8 +11,8 @@ position: 1
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/sign-in.md"
 sourceSha: "7002bb180d216a065bf716bd92a2b9f21ee06385"
-sourceRefSha: "015853978c4f9263eb1dc504226820872c8f26bd"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/015853978c4f9263eb1dc504226820872c8f26bd/docs/sign-in.md"
+sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/sign-in.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

@@ -11,8 +11,8 @@ position: 4
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/node/reference.md"
 sourceSha: "8b2b3196582cc5146f3b54e41a3a52e48478f038"
-sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/node/reference.md"
+sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients/node/reference.md"
 syncedAt: "2026-10-06T21:19:03Z"
 ---
 
