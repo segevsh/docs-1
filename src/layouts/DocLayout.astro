@@ -51,7 +51,7 @@ const SELF_HOSTING_PAGES = [
  * under their parent — see `../lib/rail.ts` for the rules. The viewed page's section and parent
  * render expanded.
  */
-const sections = buildRail(entries, currentId);
+const areas = buildRail(entries, currentId);
 ---
 
 <BaseLayout title={title} description={description}>
@@ -84,29 +84,34 @@ const sections = buildRail(entries, currentId);
           ))}
         </ul>
       </details>
-      {sections.map(({ section, open, items }) => (
+      {areas.map(({ id: areaId, title: areaTitle, open, groups }) => (
         <details class="docs-rail-section" open={open}>
-          <summary>{section}</summary>
-          <ul>
-            {items.map((item) => (
-              <li>
-                <a href={`/${item.id}/`} aria-current={item.active ? "page" : undefined}>
-                  {item.title}
-                </a>
-                {item.children.length > 0 && (
-                  <ul class="docs-rail-children" hidden={!item.open}>
-                    {item.children.map((child) => (
-                      <li>
-                        <a href={`/${child.id}/`} aria-current={child.active ? "page" : undefined}>
-                          {child.title}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
+          <summary>{areaTitle}</summary>
+          {groups.map(({ section, title: groupTitle, items }) => (
+            <>
+              {areaId === "reference" && <h3 class="docs-rail-group">{groupTitle}</h3>}
+              <ul data-section={section}>
+                {items.map((item) => (
+                  <li>
+                    <a href={`/${item.id}/`} aria-current={item.active ? "page" : undefined}>
+                      {item.title}
+                    </a>
+                    {item.children.length > 0 && (
+                      <ul class="docs-rail-children" hidden={!item.open}>
+                        {item.children.map((child) => (
+                          <li>
+                            <a href={`/${child.id}/`} aria-current={child.active ? "page" : undefined}>
+                              {child.title}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </>
+          ))}
         </details>
       ))}
     </nav>
