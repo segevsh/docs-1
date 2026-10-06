@@ -3,6 +3,7 @@ key: "node/documents-and-vars"
 title: "Documents and vars"
 section: "clients"
 description: "Create, read, update and delete documents and vars from the Node SDK, the configuration your workflows read at run time."
+summary: null
 format: "markdown"
 shared: true
 order: 20
@@ -10,8 +11,8 @@ position: 3
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/node/documents-and-vars.md"
 sourceSha: "28f5556b8795980a918d63db688e7e7a80dc3c35"
-sourceRefSha: "392b74c42ff0e1b9c69334fddb8b56a3b4d581eb"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/392b74c42ff0e1b9c69334fddb8b56a3b4d581eb/docs/clients/node/documents-and-vars.md"
+sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/node/documents-and-vars.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 

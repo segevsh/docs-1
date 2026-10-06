@@ -29,28 +29,96 @@ jobs:
     name: Type-check + build + deploy
     runs-on: ubuntu-latest
     steps:
+      # The docs repo is checked out into `docs/` and its six source repos beside it, so the
+      # importer's root is the common parent (`$GITHUB_WORKSPACE/sources`).
       - uses: actions/checkout@v6
+        with:
+          path: sources/docs
 
       # Install pnpm BEFORE Node so the Node action's pnpm cache can resolve the store path.
       - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: sources/docs/package.json
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
           cache: pnpm
+          cache-dependency-path: sources/docs/pnpm-lock.yaml
 
       - run: pnpm install --frozen-lockfile
+        working-directory: sources/docs
 
       # Keeps T2.1.1's vendored branding tokens from drifting after this run. Not optional, and
       # never allowed to soft-fail — a drifted token set fails the build, not just a warning.
       - name: Check vendored tokens are current
         run: pnpm check:tokens
+        working-directory: sources/docs
 
-      # NEVER running `pnpm import-docs` here: the importer reads a full local monorepo
-      # checkout (sibling package repos), which this job doesn't have. A human runs it and
-      # commits `content/`; this builds against whatever is committed there.
+      # D-7: the source repos are private, so the default workflow token (scoped to this repo only) cannot
+      # read them and no personal token is used. Mint a GitHub App installation token scoped to exactly the
+      # six repos the importer reads.
+      - name: Mint source-repo token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: w6w-io
+          repositories: w6w-core,w6w-server,w6w-wrappers,w6w-studio,w6w-apps,w6w-ui
+
+      # Full history (fetch-depth 0): the importer stamps each page with its source file's last
+      # commit date and refuses a dirty listed file.
+      - name: Checkout core
+        uses: actions/checkout@v6
+        with:
+          repository: w6w-io/w6w-core
+          token: ${{ steps.app-token.outputs.token }}
+          path: sources/core
+          fetch-depth: 0
+      - name: Checkout server
+        uses: actions/checkout@v6
+        with:
+          repository: w6w-io/w6w-server
+          token: ${{ steps.app-token.outputs.token }}
+          path: sources/server
+          fetch-depth: 0
+      - name: Checkout wrappers
+        uses: actions/checkout@v6
+        with:
+          repository: w6w-io/w6w-wrappers
+          token: ${{ steps.app-token.outputs.token }}
+          path: sources/wrappers
+          fetch-depth: 0
+      - name: Checkout studio
+        uses: actions/checkout@v6
+        with:
+          repository: w6w-io/w6w-studio
+          token: ${{ steps.app-token.outputs.token }}
+          path: sources/studio
+          fetch-depth: 0
+      - name: Checkout apps
+        uses: actions/checkout@v6
+        with:
+          repository: w6w-io/w6w-apps
+          token: ${{ steps.app-token.outputs.token }}
+          path: sources/apps
+          fetch-depth: 0
+      - name: Checkout ui
+        uses: actions/checkout@v6
+        with:
+          repository: w6w-io/w6w-ui
+          token: ${{ steps.app-token.outputs.token }}
+          path: sources/ui
+          fetch-depth: 0
+
+      - name: Import docs from the source repos
+        run: node src/lib/import-docs.ts --root "$GITHUB_WORKSPACE/sources"
+        working-directory: sources/docs
+
       - name: Build
         run: pnpm build
+        working-directory: sources/docs
 
       # Deploy on the two triggers that mean "ship this": a published release (ref is the
       # release tag, e.g. `refs/tags/v1.2.3` — not `refs/heads/main`, so no branch check applies
@@ -71,4 +139,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.127.1"
+          workingDirectory: sources/docs
           command: pages deploy dist --project-name=w6w-docs

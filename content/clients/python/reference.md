@@ -3,6 +3,7 @@ key: "python/reference"
 title: "Python reference"
 section: "clients"
 description: "Every Client argument, method and error in the w6w Python package, on one page."
+summary: null
 format: "markdown"
 shared: true
 order: 10
@@ -10,8 +11,8 @@ position: 12
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/python/reference.md"
 sourceSha: "0b11e0c7b73bca6f024f0e011196de39bfe27e3e"
-sourceRefSha: "392b74c42ff0e1b9c69334fddb8b56a3b4d581eb"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/392b74c42ff0e1b9c69334fddb8b56a3b4d581eb/docs/clients/python/reference.md"
+sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/python/reference.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 

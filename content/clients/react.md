@@ -3,15 +3,16 @@ key: "react"
 title: "React"
 section: "clients"
 description: "Wrap your React app in W6WProvider, read w6w data with hooks, and run actions and workflows from components."
+summary: null
 format: "markdown"
 shared: true
 order: 20
-position: 6
+position: 5
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/react/index.md"
 sourceSha: "098837a2fbe133edf12e745c85d9dc4ee4f1ca96"
-sourceRefSha: "392b74c42ff0e1b9c69334fddb8b56a3b4d581eb"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/392b74c42ff0e1b9c69334fddb8b56a3b4d581eb/docs/clients/react/index.md"
+sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/react/index.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 
