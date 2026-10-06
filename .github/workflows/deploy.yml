@@ -46,10 +46,9 @@ jobs:
       - name: Check vendored tokens are current
         run: pnpm check:tokens
 
-      # NOT running `pnpm import-docs` here yet — the site is still being built out, and the
-      # importer needs `docs/manifest.json` live on GitHub in core/ui/wrappers/apps, which isn't
-      # true yet. Builds against whatever's already committed in `content/` instead. Re-add this
-      # step (see git history) once the site itself is settled and those manifests are live.
+      # NEVER running `pnpm import-docs` here: the importer reads a full local monorepo
+      # checkout (sibling package repos), which this job doesn't have. A human runs it and
+      # commits `content/`; this builds against whatever is committed there.
       - name: Build
         run: pnpm build
 

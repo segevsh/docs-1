@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/image-object.md"
-lastChanged: "2026-06-01T02:16:14Z"
+syncedAt: "2026-06-01T02:16:14Z"
 title: "ImageObject"
 section: "app-contract"
 ---

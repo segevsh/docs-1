@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/healthcheck.md"
-lastChanged: "2026-08-23T02:21:42Z"
+syncedAt: "2026-08-23T02:21:42Z"
 title: "Health Check"
 section: "app-contract"
 ---

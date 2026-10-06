@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/endpoint.md"
-lastChanged: "2026-08-20T15:33:59Z"
+syncedAt: "2026-08-20T15:33:59Z"
 title: "Endpoint"
 section: "composition"
 ---

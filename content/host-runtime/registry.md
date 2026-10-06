@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/registry.md"
-lastChanged: "2026-07-14T03:55:37Z"
+syncedAt: "2026-07-14T03:55:37Z"
 title: "Registry"
 section: "host-runtime"
 ---

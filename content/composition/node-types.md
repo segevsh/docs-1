@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/node-types.md"
-lastChanged: "2026-08-20T16:18:05Z"
+syncedAt: "2026-08-20T16:18:05Z"
 title: "Node Types"
 section: "composition"
 ---

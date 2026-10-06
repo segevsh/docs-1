@@ -3,7 +3,7 @@ title: "A deliberately long title meant to wrap across multiple lines in both th
 section: "edge-cases"
 sourceRepo: "w6w-io/docs-test-fixtures"
 sourcePath: "edge-cases/long-title.md"
-lastChanged: "2026-01-01T00:00:00Z"
+syncedAt: "2026-01-01T00:00:00Z"
 ---
 
 # A deliberately long title meant to wrap across multiple lines in both the rail and the page heading without ever forcing a horizontal scrollbar

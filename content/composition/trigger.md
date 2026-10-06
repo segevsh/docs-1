@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/trigger.md"
-lastChanged: "2026-07-03T22:15:39Z"
+syncedAt: "2026-07-03T22:15:39Z"
 title: "Trigger"
 section: "composition"
 ---

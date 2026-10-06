@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/invocation.md"
-lastChanged: "2026-07-23T21:01:26Z"
+syncedAt: "2026-07-23T21:01:26Z"
 title: "Invocation"
 section: "host-runtime"
 ---

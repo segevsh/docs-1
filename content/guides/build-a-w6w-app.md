@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "docs/build-a-w6w-app.md"
-lastChanged: "2026-07-27T03:00:03Z"
+syncedAt: "2026-07-27T03:00:03Z"
 title: "Build a w6w app"
 section: "guides"
 ---

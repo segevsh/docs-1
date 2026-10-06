@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/function.md"
-lastChanged: "2026-08-20T15:54:51Z"
+syncedAt: "2026-08-20T15:54:51Z"
 title: "Function"
 section: "composition"
 ---

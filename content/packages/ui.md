@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "README.md"
-lastChanged: "2026-08-15T01:02:33Z"
+syncedAt: "2026-08-15T01:02:33Z"
 title: "w6w-ui"
 section: "packages"
 ---

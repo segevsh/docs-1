@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/workflow.md"
-lastChanged: "2026-08-21T02:20:33Z"
+syncedAt: "2026-08-21T02:20:33Z"
 title: "Workflow"
 section: "composition"
 ---

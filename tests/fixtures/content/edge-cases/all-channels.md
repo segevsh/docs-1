@@ -3,7 +3,7 @@ title: "All channels"
 section: "edge-cases"
 sourceRepo: "w6w-io/docs-test-fixtures"
 sourcePath: "edge-cases/all-channels.md"
-lastChanged: "2026-01-01T00:00:00Z"
+syncedAt: "2026-01-01T00:00:00Z"
 ---
 
 # All channels

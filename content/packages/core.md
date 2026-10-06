@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "README.md"
-lastChanged: "2026-08-12T01:32:27Z"
+syncedAt: "2026-08-12T01:32:27Z"
 title: "w6w-core"
 section: "packages"
 ---

@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/auth.md"
-lastChanged: "2026-07-26T19:51:06Z"
+syncedAt: "2026-07-26T19:51:06Z"
 title: "Auth"
 section: "app-contract"
 ---

@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/action.md"
-lastChanged: "2026-07-23T20:53:45Z"
+syncedAt: "2026-07-23T20:53:45Z"
 title: "Action"
 section: "app-contract"
 ---

@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/engine.md"
-lastChanged: "2026-08-11T03:16:34Z"
+syncedAt: "2026-08-11T03:16:34Z"
 title: "Engine"
 section: "host-runtime"
 ---

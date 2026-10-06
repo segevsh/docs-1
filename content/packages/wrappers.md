@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "README.md"
-lastChanged: "2026-08-13T15:03:22Z"
+syncedAt: "2026-08-13T15:03:22Z"
 title: "w6w-wrappers"
 section: "packages"
 ---

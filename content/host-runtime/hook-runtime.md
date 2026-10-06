@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/hook-runtime.md"
-lastChanged: "2026-06-11T19:23:45Z"
+syncedAt: "2026-06-11T19:23:45Z"
 title: "Hook Runtime"
 section: "host-runtime"
 ---

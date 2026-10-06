@@ -1,7 +1,7 @@
 ---
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/param.md"
-lastChanged: "2026-07-11T19:30:39Z"
+syncedAt: "2026-07-11T19:30:39Z"
 title: "Param"
 section: "app-contract"
 ---
