@@ -383,7 +383,6 @@ export async function runImport(
     gathered.map((g) => [g.source.file, { section: g.source.section, slug: g.source.slug }]),
   );
   for (const g of gathered) {
-    if (g.source === GENERATED_HTTP_API) continue; // generated text carries no authored links
     const rewritten = rewriteLinks(g.body, {
       file: g.source.file,
       routes,
