@@ -56,7 +56,8 @@ mirroring the doc's own frontmatter:
 
 ## Adding a doc
 
-1. Write `docs/<slug>.md` with frontmatter (`title`, `section`).
+1. Copy [`templates/page.md`](./templates/page.md) to `docs/<slug>.md` and fill in its frontmatter
+   and sections.
 2. Add an entry to `docs/manifest.json`: `path`, `slug`, `section`, `title` (mirror the
    frontmatter).
 3. Ship it in the same PR as the code change it documents.
