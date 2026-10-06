@@ -3,15 +3,16 @@ key: "react/hooks"
 title: "Hooks reference"
 section: "clients"
 description: "Every W6WProvider prop and every hook in @w6w/react, with what each one wraps."
+summary: null
 format: "markdown"
 shared: true
 order: 10
-position: 7
+position: 6
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/react/hooks.md"
 sourceSha: "b250ee8fad96669fac3fa311be61046e6ea8889b"
-sourceRefSha: "392b74c42ff0e1b9c69334fddb8b56a3b4d581eb"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/392b74c42ff0e1b9c69334fddb8b56a3b4d581eb/docs/clients/react/hooks.md"
+sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/react/hooks.md"
 syncedAt: "2026-10-06T03:44:44Z"
 ---
 

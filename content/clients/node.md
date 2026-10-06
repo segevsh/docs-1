@@ -3,16 +3,17 @@ key: "node"
 title: "Node SDK"
 section: "clients"
 description: "Install @w6w/sdk, authenticate, and call your connected apps, Functions, Endpoints and Workflows from TypeScript or JavaScript."
+summary: null
 format: "markdown"
 shared: true
 order: 10
 position: 1
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/node/index.md"
-sourceSha: "34a1d6b66c763621a79b562079241432ab883409"
-sourceRefSha: "392b74c42ff0e1b9c69334fddb8b56a3b4d581eb"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/392b74c42ff0e1b9c69334fddb8b56a3b4d581eb/docs/clients/node/index.md"
-syncedAt: "2026-10-06T03:44:44Z"
+sourceSha: "773ff5ce98be959d1adba93c0d758a875bfa864a"
+sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/node/index.md"
+syncedAt: "2026-10-06T21:19:03Z"
 ---
 
 
@@ -166,7 +167,7 @@ A workflow run that fails is not an error. It comes back as a result with `statu
 The SDK never retries on its own and never polls. If a call fails, it raises once and you decide
 what to do. The one exception is opt-in: with a token supplier and `refreshOnUnauthorized: true`,
 a `401` asks your supplier for a fresh token and retries that request once. See
-[Embed w6w in your product](/clients/node/embedding/).
+[Embed w6w in your product](/guides/embed/).
 
 If you add your own retries, only retry `network_error` and `5xx` responses, and only for calls
 that are safe to repeat. A `4xx` won't succeed on a second try.
@@ -230,6 +231,6 @@ addresses a different route than the one you meant.
   cancel runs, and create or edit definitions.
 - **[Documents and vars](/clients/node/documents-and-vars/)**: store configuration your workflows
   read.
-- **[Embed w6w in your product](/clients/node/embedding/)**: per-user tokens, rotating
+- **[Embed w6w in your product](/guides/embed/)**: per-user tokens, rotating
   credentials and the backend token exchange.
 - **[Node SDK reference](/clients/node/reference/)**: every method and option on one page.

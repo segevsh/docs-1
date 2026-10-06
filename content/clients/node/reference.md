@@ -3,16 +3,17 @@ key: "node/reference"
 title: "Node SDK reference"
 section: "clients"
 description: "Every W6WClient option, method and error in @w6w/sdk, on one page."
+summary: null
 format: "markdown"
 shared: true
 order: 40
-position: 5
+position: 4
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/node/reference.md"
-sourceSha: "bf86a9064972711bde7cdbdec59bc961fd30567a"
-sourceRefSha: "392b74c42ff0e1b9c69334fddb8b56a3b4d581eb"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/392b74c42ff0e1b9c69334fddb8b56a3b4d581eb/docs/clients/node/reference.md"
-syncedAt: "2026-10-06T03:44:44Z"
+sourceSha: "8b2b3196582cc5146f3b54e41a3a52e48478f038"
+sourceRefSha: "47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/47f8253f24009b48ed2a1fd22a7ed9e5ed60ad98/docs/clients/node/reference.md"
+syncedAt: "2026-10-06T21:19:03Z"
 ---
 
 
@@ -26,7 +27,7 @@ Everything `@w6w/sdk` exports for application code. For a walkthrough, start wit
 | Import from | What it holds |
 | --- | --- |
 | `@w6w/sdk` | `W6WClient`, `ApiError`, `ConfigError`, `path`, `VERSION`, the result guards and every type. |
-| `@w6w/sdk/server` | `exchangeToken`, for backends only. See [Embed w6w in your product](/clients/node/embedding/). |
+| `@w6w/sdk/server` | `exchangeToken`, for backends only. See [Embed w6w in your product](/guides/embed/). |
 | `@w6w/sdk/console` | The calls Studio makes. Unstable: it can change in any release. |
 
 ## `new W6WClient(options?)`
