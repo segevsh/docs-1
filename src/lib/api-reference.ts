@@ -32,6 +32,64 @@ export const GENERATED_HTTP_API: DocSource = {
   origin: "root",
 };
 
-export function renderHttpApi(_rawJson: string): { body: string } | { error: string } {
-  throw new Error("renderHttpApi: not implemented (slice S3)");
+type Json = Record<string, unknown>;
+
+const isObj = (v: unknown): v is Json => typeof v === "object" && v !== null && !Array.isArray(v);
+const str = (v: unknown): string => (typeof v === "string" ? v : "");
+
+/** Markdown-table-cell safe: one line, pipes escaped. */
+const cell = (v: string): string => v.replace(/\s*\n\s*/g, " ").replace(/\|/g, "\\|");
+const code = (v: string): string => "`" + v.replace(/`/g, "'") + "`";
+
+export function renderHttpApi(rawJson: string): { body: string } | { error: string } {
+  let doc: unknown;
+  try {
+    doc = JSON.parse(rawJson);
+  } catch (e) {
+    return { error: `${ENDPOINTS_FILE}: not valid JSON (${(e as Error).message})` };
+  }
+  if (!isObj(doc) || !Array.isArray(doc.operations)) {
+    return { error: `${ENDPOINTS_FILE}: expected an object with an "operations" array` };
+  }
+  const basePath = str(doc.basePath);
+  const out: string[] = [
+    "Every operation the w6w HTTP API exposes to its client libraries. " +
+      "Each entry shows the route, its parameters and what it returns, with the call as " +
+      "spelled in the TypeScript and Python clients and the CLI.",
+    "",
+  ];
+  let n = 0;
+  for (const raw of doc.operations) {
+    if (!isObj(raw)) return { error: `${ENDPOINTS_FILE}: operations[${n}] is not an object` };
+    if (raw.serverImplemented === false) continue;
+    const name = str(raw.name), method = str(raw.method), path = str(raw.path);
+    if (!name || !method || !path) {
+      return { error: `${ENDPOINTS_FILE}: operations[${n}] needs name, method and path` };
+    }
+    n++;
+    out.push(`## ${name}`, "", `${code(`${method} ${basePath}${path}`)}`, "");
+    const summary = str(raw.summary);
+    if (summary) out.push(summary, "");
+    const params = Array.isArray(raw.params) ? raw.params.filter(isObj) : [];
+    if (params.length) {
+      out.push("| Parameter | In | Type | Required |", "|---|---|---|---|");
+      for (const p of params) {
+        out.push(
+          `| ${code(cell(str(p.name)))} | ${cell(str(p.in))} | ${cell(str(p.type))} | ${
+            p.required === true ? "yes" : "no"
+          } |`,
+        );
+      }
+      out.push("");
+    }
+    const returns = str(raw.returns);
+    if (returns) out.push(`**Returns:** ${code(returns)}`, "");
+    const naming = isObj(raw.naming) ? raw.naming : {};
+    const names: [string, string][] = [["TypeScript", "ts"], ["Python", "python"], ["CLI", "cli"]];
+    const lines = names.filter(([, k]) => str(naming[k])).map(([l, k]) =>
+      `- ${l}: ${code(str(naming[k]))}`
+    );
+    if (lines.length) out.push(...lines, "");
+  }
+  return { body: out.join("\n").replace(/\n+$/, "\n") };
 }
