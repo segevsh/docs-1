@@ -119,5 +119,5 @@ If your client supports per-tool auto-approval, approve **only** `w6w_api_get`,
 
 - **[Quickstart](/quickstart/)** — the same account over the SDK/CLI, if you'd rather call it
   directly than through a model.
-- **[Browse the apps](/apps)** — what each connected app's actions look like, so you know what a
+- **[Browse the apps](https://w6w.io/apps)** — what each connected app's actions look like, so you know what a
   tool call will actually touch.

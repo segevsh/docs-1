@@ -62,9 +62,9 @@ no `--action` needed since each of those has exactly one operation.
 
 ## Where to next
 
-- **[Browse the apps](/apps)** — the ready-made integrations, and what each one's actions,
+- **[Browse the apps](https://w6w.io/apps)** — the ready-made integrations, and what each one's actions,
   connections, and health checks look like.
-- **[Build a w6w app](/docs/guides/build-a-w6w-app)** — the full agent-ready guide for authoring a
+- **[Build a w6w app](/guides/build-a-w6w-app/)** — the full agent-ready guide for authoring a
   new integration as code, if the app you need isn't built yet.
 - **The App contract** and **Composition** sections in the rail — the RFCs behind Action, Auth,
   Function, Endpoint, and Workflow, if you want the spec, not just the shape.

@@ -1,9 +1,18 @@
 ---
-sourceRepo: "w6w-io/w6w-core"
-sourcePath: "docs/build-a-w6w-app.md"
-syncedAt: "2026-07-27T03:00:03Z"
+key: "build-a-w6w-app"
 title: "Build a w6w app"
 section: "guides"
+description: ""
+format: "markdown"
+shared: true
+order: null
+position: 1
+sourceRepo: "w6w-io/w6w-core"
+sourcePath: "docs/build-a-w6w-app.md"
+sourceSha: "6d6b0d9e21998ac2ab17be25ab115927f9bb90cc"
+sourceRefSha: "f9fedb91ed74f7fed849c6b4d14eed7f04119644"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/f9fedb91ed74f7fed849c6b4d14eed7f04119644/docs/build-a-w6w-app.md"
+syncedAt: "2026-07-27T03:00:03Z"
 ---
 
 # Build a w6w App — Agent Instructions

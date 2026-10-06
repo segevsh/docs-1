@@ -1,9 +1,18 @@
 ---
-sourceRepo: "w6w-io/w6w-core"
-sourcePath: "rfcs/app.md"
-syncedAt: "2026-06-01T02:16:14Z"
+key: "app"
 title: "App"
 section: "app-contract"
+description: ""
+format: "markdown"
+shared: true
+order: null
+position: 2
+sourceRepo: "w6w-io/w6w-core"
+sourcePath: "rfcs/app.md"
+sourceSha: "c48ec10b7efdfb6e32b449eba69fe99956b00b34"
+sourceRefSha: "f9fedb91ed74f7fed849c6b4d14eed7f04119644"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/f9fedb91ed74f7fed849c6b4d14eed7f04119644/rfcs/app.md"
+syncedAt: "2026-06-01T02:16:14Z"
 ---
 
 # RFC: App

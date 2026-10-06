@@ -1,9 +1,18 @@
 ---
-sourceRepo: "w6w-io/w6w-core"
-sourcePath: "rfcs/engine.md"
-syncedAt: "2026-08-11T03:16:34Z"
+key: "engine"
 title: "Engine"
 section: "host-runtime"
+description: ""
+format: "markdown"
+shared: true
+order: null
+position: 18
+sourceRepo: "w6w-io/w6w-core"
+sourcePath: "rfcs/engine.md"
+sourceSha: "8d2c37faa4487d163f8bb0cb6e01c10060c46b55"
+sourceRefSha: "f9fedb91ed74f7fed849c6b4d14eed7f04119644"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/f9fedb91ed74f7fed849c6b4d14eed7f04119644/rfcs/engine.md"
+syncedAt: "2026-08-11T03:16:34Z"
 ---
 
 # RFC: Engine

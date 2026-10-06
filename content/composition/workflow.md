@@ -1,9 +1,18 @@
 ---
-sourceRepo: "w6w-io/w6w-core"
-sourcePath: "rfcs/workflow.md"
-syncedAt: "2026-08-21T02:20:33Z"
+key: "workflow"
 title: "Workflow"
 section: "composition"
+description: ""
+format: "markdown"
+shared: true
+order: null
+position: 12
+sourceRepo: "w6w-io/w6w-core"
+sourcePath: "rfcs/workflow.md"
+sourceSha: "0850842af3794e51e908c3a27a7e5c7ce48fa645"
+sourceRefSha: "f9fedb91ed74f7fed849c6b4d14eed7f04119644"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/f9fedb91ed74f7fed849c6b4d14eed7f04119644/rfcs/workflow.md"
+syncedAt: "2026-10-04T22:19:44Z"
 ---
 
 # RFC: Workflow
@@ -105,7 +114,8 @@ The engine never touches the outside world directly. Every operational effect �
 |---|---|---|---|
 | `manifestVersion` | string | ✅ | Core spec version. `"2"` for the workflow model. |
 | `id` | string | ✅ | Host-issued opaque id. Stable across renames. |
-| `name` | string | ✅ | Machine name. Unique within the host. Lowercase, kebab-case. |
+| `name` | string | ✅ | Machine name. Not enforced unique by the host — `key` (below) is the enforced, unique machine name. Lowercase, kebab-case. See [Amendment — 2026-09-02: the Workflow key field](#amendment--2026-09-02-the-workflow-key-field). |
+| `key` | string | ⬜ | Machine-readable identifier, optional — a Workflow may have none. When set: matches `/^[a-z][a-z0-9-]{2,38}/` (lowercase-first, then lowercase letters/digits/hyphens, no `--` anywhere, no trailing `-`; `_` is illegal), unique per `(account, key)` via a **partial** index (`where key is not null`, since `key` is optional), and validated against the grammar only when first assigned — never re-checked on a later save. See [Amendment — 2026-09-02: the Workflow key field](#amendment--2026-09-02-the-workflow-key-field). |
 | `displayName` | string | ⬜ | Human-facing name. Falls back to `name`. |
 | `description` | string | ⬜ | One-line summary. |
 | `trigger` | [WorkflowTrigger](./trigger.md#workflowtrigger) | ⬜ | How this workflow starts. Absent means manual-only. See [Trigger RFC](./trigger.md). |
@@ -161,6 +171,7 @@ The engine never touches the outside world directly. Every operational effect �
 | `maxAttempts` | number | ✅ | Total attempts including the first. `1` = no retry. |
 | `backoff` | enum | ⬜ | `"fixed"` (default) or `"exponential"`. |
 | `delayMs` | number | ⬜ | Base delay in ms before the first retry. Defaults to `0`. Exponential doubles each attempt. |
+> See [Amendment — 2026-10-04](#amendment--2026-10-04-retrypolicy-well-formedness-and-the-per-wait-ceiling) for the shape rules a host enforces on write and the 300000 ms ceiling on any single computed wait.
 
 Retries are attempted only for errors the runtime classifies as **retryable**. `phase: "auth"` errors are never retried. `phase: "execute"` errors are retried only when the action declared `idempotent: true` or the error itself sets `retryable: true`.
 
@@ -346,6 +357,7 @@ The `@w6w/workflow` reference engine + its test fixtures constitute the executab
 2. **Variables convergence with Param.** `WorkflowVariable` today is a shallow shape. Migrate to the full [Param RFC](./param.md) so variables get validation, dynamic options, and `dependsOn` — at the cost of a manifest-version bump.
 3. **Sub-workflows.** Should a step be able to invoke another workflow (`uses.workflow`) as an alternative to `uses.action`? If so, how do sub-workflow retries and state nest into the parent run?
 4. **Per-run TTL and cleanup.** How long do completed `RunState` records live? Host-configurable; RFC-level default?
+5. **Node placement.** Should the host-level `x-w6w-placement` annotation — a top-level list of node labels a run requires, enforced today by the w6w host's run queue — be promoted to a first-class Workflow field? Promotion makes placement portable across hosts; it also commits every host to a node-label model.
 
 ## Status ladder
 
@@ -1104,3 +1116,147 @@ A host that implements this amendment MUST:
   is `succeeded` in both, with the original error in `stepErrors` and the run-level `error` cleared.
 - Leave the run **failed**, and propagate, when the reroute target itself fails. Reporting
   `succeeded` because the failure handler also failed is the one outcome no author could have meant.
+
+## Amendment — 2026-09-02: the Workflow key field
+
+> This section is **additive** to the [Workflow](#workflow) field table above; it introduces no
+> breaking change and no new host primitive. It adds one optional field, `key`, and corrects one
+> pre-existing sentence about `name` that was never true of any host. Enumerated by grep, not
+> memory — `/usr/bin/grep -n -i 'machine name\|unique' rfcs/workflow.md`, run against the
+> pre-amendment text, finds exactly three hits: `:100` (the `name` row — **corrected** below, its
+> host-wide-uniqueness claim removed because no host has ever enforced it), `:113` (`Step.id` —
+> **left alone**, because it is a different concept: a step's machine name is unique only *within
+> that workflow*, never account-scoped, and no Step ever claims uniqueness against another
+> Workflow's steps), and `:142` (`WorkflowVariable.key` — **left alone**, because it is also a
+> different concept: a variable's reference name inside `vars.<key>`, scoped to the one workflow
+> that declares it, not an account-wide address). The new `key` row this amendment adds to the
+> [Workflow](#workflow) table is this section's own insertion, not one of the three grep hits above
+> (the grep was run against the pre-amendment text). The rest of this RFC, outside the `name` row
+> and the new `key` row, stands unedited.
+
+A Workflow gains an optional `key` — the same machine-readable identifier a
+[Function](./function.md#field-reference) and an [Endpoint](./endpoint.md#field-reference) already
+carry, minus the two things that make theirs mandatory: neither a Function nor an Endpoint can exist
+without one, because both are addressed by it; a Workflow is addressed by neither `name` nor `key`,
+so nothing forces one to exist.
+
+**Grammar.** When present, `key` matches `/^[a-z][a-z0-9-]{2,38}/` — a lowercase letter first,
+lowercase letters/digits/hyphens after, 3 to 39 characters — plus two rules the regex alone does not
+express: no `--` anywhere, and no trailing `-`. `_` is deliberately illegal; it is not a legal DNS
+label character. This is the same `isAccountSlug` grammar a Function's `key` already uses.
+
+**Uniqueness — `(account, key)`, partial.** A host MUST enforce uniqueness on `(account, key)`,
+exactly as [Endpoint's `(account, key)` rule](./endpoint.md#an-endpoint-belongs-to-the-account)
+does, and refuse a colliding save as a caller-visible conflict. Unlike a Function's and an
+Endpoint's `key`, which are always present, a Workflow's `key` is **optional** (above), so the
+enforcing index is **partial** — `where key is not null` — rather than total: two Workflows with no
+`key` never collide with each other or with anything.
+
+**Validated once, on first assignment.** The grammar is checked only at the moment a `key` moves
+from absent/`null` to present, never again on a later save. A value that is already stored can never
+be made un-saveable by a later tightening of the grammar. A Function gates this on `!previous` — the
+row itself is new, because a Function always has a `key` from creation. A Workflow's `key` is
+optional, so its creation and its first key-assignment are two different moments; the gate here is
+therefore the *stored key being `null`*, not the row being new.
+
+**Endpoint is the contrast, not a case this amendment touches.** An Endpoint's `key` is required and
+[immutable after first save](./endpoint.md#key-is-immutable-after-first-save), because it is baked
+into the address `/invoke/{account_slug}/{key}`. A Workflow has no such address, so this amendment
+pins nothing about whether a Workflow's `key` may change after it is first set — only that the
+grammar is not re-checked when it does. `rfcs/endpoint.md` itself is unedited by this amendment.
+
+### Corrected: `name` is not unique
+
+The `name` row's pre-amendment sentence claiming host-wide uniqueness was never true of any host
+implementation — no uniqueness constraint on `name` exists, and the field that sentence meant to
+describe is `key`, this section's own subject. `name` keeps its pre-existing meaning and requiredness
+unchanged: a required, human-authored, lowercase-kebab-case label. Only its uniqueness claim moves,
+from `name` to `key`.
+
+### Conformance (additive)
+
+A host that implements this amendment MUST:
+
+- Enforce `key`'s grammar — `/^[a-z][a-z0-9-]{2,38}/`, no `--`, no trailing `-` — only at the moment
+  a `null`/absent `key` is first set to a non-null value.
+- Enforce `(account, key)` uniqueness with a **partial** index over non-null `key` values, refusing a
+  colliding save as a caller-visible conflict.
+- Never re-validate a stored `key` against the grammar on a save that does not itself change `key`.
+- Never enforce uniqueness on `name`.
+
+## Amendment — 2026-10-04: RetryPolicy well-formedness and the per-wait ceiling
+
+> This section is **additive** to the [RetryPolicy](#retrypolicy) table above. It adds no field and
+> changes no policy's shape. It pins two things the table left open — what shape a host accepts and
+> which step kinds ignore `Step.retry` — and it caps a third the table left unbounded: the table's
+> exponential doubling has no limit, and this section bounds each computed wait. That ceiling is its
+> one behaviour change to a well-formed policy: a computed wait above 300000 ms is cut to 300000 ms.
+> It qualifies every site that reuses `RetryPolicy`, enumerated by grep —
+> `/usr/bin/grep -n 'RetryPolicy\|"retry"\|backoff' rfcs/workflow.md rfcs/function.md rfcs/endpoint.md`,
+> run against the pre-amendment text (line numbers are of that text), plus the `delayMs` row the
+> pattern misses: the [RetryPolicy](#retrypolicy) table (`:150-156`, including the `delayMs` row's
+> "Exponential doubles each attempt"), the [Step](#step) `retry` row (`:120`), the example's
+> `"retry": { "maxAttempts": 3, "backoff": "exponential", "delayMs": 1000 }` (`:74`), the
+> [2026-08-21 amendment](#amendment--2026-08-21-the-run-level-error-handler-workflowretryonerrorreroute)'s
+> `Workflow.retry` (`:1038`) and its `retry` bullet, "with the same backoff `Step.retry` uses"
+> (`:1056-1057`), and the `retry` rows of [function.md](./function.md) (`:483`) and
+> [endpoint.md](./endpoint.md) (`:793`), each of which "Reuses the workflow Step's `RetryPolicy`
+> verbatim" and so inherits this section without an edit of its own. Which failures are retried —
+> the "retryable" paragraph under [RetryPolicy](#retrypolicy) — is outside this amendment and
+> unchanged by it.
+
+### Well-formedness
+
+A `RetryPolicy` is well-formed when:
+
+- `maxAttempts` is an **integer >= 1**. It carries **no upper bound**: the per-wait ceiling below,
+  not an attempt cap, is what keeps a long ladder from waiting unboundedly between two attempts.
+- `delayMs`, when present, is a **finite number >= 0**.
+- `backoff`, when present, is `"fixed"` or `"exponential"`.
+
+An absent or `null` `retry` is not a malformed policy: it means **no retry** — one attempt, exactly
+as the [Step](#step) `retry` row's "Defaults to no retry" already says.
+
+A host MUST reject a malformed policy **on write**, with a `400` whose error names the offending
+field's path, wherever a `RetryPolicy` can be saved: `Step.retry` (on every step of a saved
+workflow), `Function.retry`, `Endpoint.retry`, `Workflow.retry`, and a spec-document import that
+carries any of them. A malformed policy is refused at the door rather than discovered at run time,
+where it would otherwise fail the run or be silently coerced into something its author did not
+write — either way for a reason its author could have been told about when saving it.
+
+### The per-wait ceiling
+
+Any single computed wait between two attempts is capped at **300000 ms** (5 minutes): the host waits
+the smaller of the wait the policy computes and 300000 ms. The cap applies to every author-configured
+retry — `Step.retry`, `Function.retry`, `Endpoint.retry`, `Workflow.retry` — and to the platform's
+own trigger delivery constant ([trigger.md's Retry backoff](./trigger.md#retry-backoff)). It bounds
+each computed wait, not the ladder or the clock: a policy with many attempts still makes every one
+of them, with no computed wait between them longer than five minutes. The actual spacing between two
+attempts can be longer — an attempt takes time of its own, and the trigger dispatcher's wait is a
+minimum (it claims an event again only once its wait has elapsed), not a deadline.
+
+### `@w6w/call` and `@w6w/control` steps
+
+These two step kinds run no retry loop, as the 2026-07-29 amendment's **"Retries come first"**
+paragraph already states (see [Amendment — 2026-07-29: failure-conditioned
+edges](#amendment--2026-07-29-failure-conditioned-edges-edgewhen)); that paragraph governs. A
+`retry` declared on such a step is still subject to the well-formedness rules above, but it is never
+read. Authoring tools SHOULD NOT offer `retry` on these step kinds.
+
+### Conformance (additive)
+
+A host that implements this amendment MUST:
+
+- Reject, on write, a `RetryPolicy` whose `maxAttempts` is not an integer >= 1, whose `delayMs` is
+  present but not a finite number >= 0, or whose `backoff` is present but neither `"fixed"` nor
+  `"exponential"` — with a `400` naming the offending field's path — at every save site listed above.
+- Accept an absent or `null` `retry` as no retry, and accept any integer `maxAttempts` >= 1 with no
+  upper bound.
+- Never compute a wait longer than 300000 ms between two attempts of any retry ladder, authored or
+  platform-owned: cap every computed wait at 300000 ms.
+
+The rest of this RFC — the [RetryPolicy](#retrypolicy) table, the example, the
+[2026-08-21 amendment](#amendment--2026-08-21-the-run-level-error-handler-workflowretryonerrorreroute)
+and the "Retries come first" paragraph — stands unedited, apart from the one pointer line to this
+section added under the [RetryPolicy](#retrypolicy) table; this section qualifies that text rather
+than replacing it.

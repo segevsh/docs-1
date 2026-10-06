@@ -1,9 +1,18 @@
 ---
-sourceRepo: "w6w-io/w6w-core"
-sourcePath: "README.md"
-syncedAt: "2026-08-12T01:32:27Z"
+key: "core"
 title: "w6w-core"
 section: "packages"
+description: ""
+format: "markdown"
+shared: true
+order: null
+position: 0
+sourceRepo: "w6w-io/w6w-core"
+sourcePath: "README.md"
+sourceSha: "32a42aa63250cd0d04fa0a254718224f94d754e5"
+sourceRefSha: "f9fedb91ed74f7fed849c6b4d14eed7f04119644"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/f9fedb91ed74f7fed849c6b4d14eed7f04119644/README.md"
+syncedAt: "2026-08-12T01:32:27Z"
 ---
 
 # core

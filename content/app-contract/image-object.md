@@ -1,9 +1,18 @@
 ---
-sourceRepo: "w6w-io/w6w-core"
-sourcePath: "rfcs/image-object.md"
-syncedAt: "2026-06-01T02:16:14Z"
+key: "image-object"
 title: "ImageObject"
 section: "app-contract"
+description: ""
+format: "markdown"
+shared: true
+order: null
+position: 9
+sourceRepo: "w6w-io/w6w-core"
+sourcePath: "rfcs/image-object.md"
+sourceSha: "67301eca392bdc95841350c7a3afb8259e91d3cf"
+sourceRefSha: "f9fedb91ed74f7fed849c6b4d14eed7f04119644"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/f9fedb91ed74f7fed849c6b4d14eed7f04119644/rfcs/image-object.md"
+syncedAt: "2026-09-19T14:54:47Z"
 ---
 
 # RFC: ImageObject
@@ -94,3 +103,19 @@ MIME type is inferred from the URL extension (`.svg`, `.png`, `.webp`, …). Pub
 | MIME / format hint | **Inferred from extension.** No explicit `type` field for `manifestVersion: "1"`; can be added without breakage if a real ambiguity surfaces. |
 | Density / DPR | **Deferred.** Explicit pixel dimensions in `sizes` (`32x32`, `64x64`) are enough for `v1`. `@2x`-style naming may be layered on later. |
 | Placeholder / blurhash | **Deferred.** Add only when host renderers actually need it. |
+
+## Amendment — 2026-09-19: the `Binary/inline encoding` non-goal still holds
+
+> This section is **additive** — a confirmation, not a change. The [Non-Goals](#non-goals) list
+> above, including its "Binary/inline encoding" line (`:31`), is unedited by this amendment.
+
+The [Non-Goals](#non-goals) list's "Binary/inline encoding" line **still holds, unchanged**: an
+`ImageObject` always references an external resource by path or URL, and this RFC introduces no
+inline-bytes representation for it.
+
+A new, unrelated type, `FileRef` (`@w6w/types`, the runtime value of `core/rfcs/param.md`'s [`file`
+param type](./param.md#file)), does not contradict this non-goal. `FileRef` exists for a different
+purpose — a run-scoped byte reference a workflow step's params or output can carry — and it, too, is
+referenced rather than embedded: a `FileRef` is plain JSON metadata (`kind`, `id`, `contentType`,
+`size`, `filename`, `expiresAt`), never the bytes themselves. `ImageObject` gains no new field, no
+new source, and no path to inline bytes from `FileRef`'s existence.

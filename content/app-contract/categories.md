@@ -1,9 +1,18 @@
 ---
-sourceRepo: "w6w-io/w6w-core"
-sourcePath: "rfcs/categories.md"
-syncedAt: "2026-06-01T02:16:14Z"
+key: "categories"
 title: "Categories"
 section: "app-contract"
+description: ""
+format: "markdown"
+shared: true
+order: null
+position: 8
+sourceRepo: "w6w-io/w6w-core"
+sourcePath: "rfcs/categories.md"
+sourceSha: "e939f43b5435a8dd8493feb32bb35130d83175a9"
+sourceRefSha: "f9fedb91ed74f7fed849c6b4d14eed7f04119644"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/f9fedb91ed74f7fed849c6b4d14eed7f04119644/rfcs/categories.md"
+syncedAt: "2026-06-01T02:16:14Z"
 ---
 
 # Categories
