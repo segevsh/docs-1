@@ -17,15 +17,16 @@ updatedAt: null
 ---
 
 <!--
-  docs.w6w.io page template. Copy this into your repo's `docs/<slug>.md`, list it in
-  `docs/manifest.json` (path, slug, section, title: mirror the frontmatter above), and delete
-  every comment before you ship.
+  docs.w6w.io page template. Copy this into your repo's `docs/` folder, list it in
+  `docs/manifest.json` (path, slug, section, title: mirror the frontmatter above; optional
+  `order`), and delete every comment before you ship. See CONTRIBUTING.md for the manifest.
 
   Frontmatter follows the document model: the SDK's `Doc` plus the provenance fields of
   `DocWithProvenance` (`packages/studio/src/repos/documents.ts`). The body below the frontmatter
   is the document's `content`.
   You write:
-  - `key`: the page's stable key, also its URL slug. Lowercase and hyphenated, unique site-wide.
+  - `key`: the page's stable key: its manifest `slug`, lowercase and hyphenated. Two segments
+    (`workflows/triggers`) make it a sub-page of the first (`workflows`).
   - `title`: the page heading and its label in the side nav.
   - `section`: which nav group the page goes in.
   - `description`: one sentence, used for the page's meta description and section listings.
