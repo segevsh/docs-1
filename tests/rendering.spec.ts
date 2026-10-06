@@ -103,8 +103,18 @@ test.describe("get-started site docs", () => {
 });
 
 test.describe("retired special pages", () => {
-  test("neither /quickstart/ nor /self-hosting/install/ exists any more", async ({ page }) => {
-    expect((await page.goto("/quickstart/"))?.status()).toBe(404);
+  test("/quickstart/ redirects to /get-started/quickstart/ and /self-hosting/install/ is gone", async ({
+    page,
+    request,
+  }) => {
+    // `/quickstart/` is retired, but as a static redirect (`astro.config.mjs`: "/quickstart" →
+    // "/get-started/quickstart/"), not a page — a real host serves Astro's 200 meta-refresh stub,
+    // so assert the redirect itself. `request` skips the browser's meta-refresh, unlike `goto`.
+    const quickstart = await request.get("/quickstart/");
+    expect(quickstart.status()).toBe(200);
+    expect(await quickstart.text()).toContain("url=/get-started/quickstart/");
+
+    // No page and no redirect entry — this one is genuinely gone.
     expect((await page.goto("/self-hosting/install/"))?.status()).toBe(404);
   });
 });
