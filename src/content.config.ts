@@ -100,7 +100,14 @@ const docs = defineCollection({
  */
 const siteDocs = defineCollection({
   loader: glob({ pattern: "*.md", base: CONTENT_ROOT }),
-  schema: z.object({ title: z.string(), description: z.string() }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    /** Set to join the Get started group (rendered at `/get-started/<slug>/`). */
+    section: z.literal("get-started").optional(),
+    /** Rail position within Get started. */
+    order: z.number().int().optional(),
+  }),
 });
 
 export const collections = { docs, siteDocs };

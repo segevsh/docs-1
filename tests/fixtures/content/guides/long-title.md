@@ -1,8 +1,10 @@
 ---
 title: "A deliberately long title meant to wrap across multiple lines in both the rail and the page heading without ever forcing a horizontal scrollbar"
-section: "edge-cases"
+section: "guides"
+order: 2
+summary: "Regression fixture for the rail's horizontal-scroll bug."
 sourceRepo: "w6w-io/docs-test-fixtures"
-sourcePath: "edge-cases/long-title.md"
+sourcePath: "guides/long-title.md"
 syncedAt: "2026-01-01T00:00:00Z"
 ---
 
