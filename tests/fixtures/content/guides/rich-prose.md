@@ -1,8 +1,10 @@
 ---
 title: "Rich prose"
-section: "edge-cases"
+section: "guides"
+order: 1
+summary: "Every markdown element the prose styles cover, on one page."
 sourceRepo: "w6w-io/docs-test-fixtures"
-sourcePath: "edge-cases/rich-prose.md"
+sourcePath: "guides/rich-prose.md"
 syncedAt: "2026-01-01T00:00:00Z"
 ---
 
