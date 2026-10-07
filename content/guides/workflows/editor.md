@@ -111,7 +111,7 @@ id ends in `_copy`) and **Delete**.
 | **If** | Branches on **Condition**: a boolean, or an expression such as a step's output. |
 | **For each** | Runs the following steps once per item in **Items**. |
 | **Parallel** | Runs the following branches at the same time. |
-| **Wait** | Pauses for **Duration**, an ISO-8601 duration such as `PT30S` or `PT5M`. |
+| **Wait** | Pauses for **Duration**, a duration such as `30s`, `1h30m30s`, or `3d30s` (units: weeks, days, hours, minutes, seconds; either case). Toggle between shorthand and a value/unit input, or choose a timestamp. Existing ISO-8601 durations also work. |
 | **Aggregate** | Gathers several incoming results into an **Array** or an **Object** (up to 10 inputs). |
 | **Run script** | Runs JavaScript or Python. The script is a function body; `return` its output. Python has no network access. |
 | **Render template** | Renders a Handlebars **Template** with the **Values** you pass. |
