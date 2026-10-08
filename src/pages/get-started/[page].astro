@@ -1,0 +1,30 @@
+---
+import { getCollection, render } from "astro:content";
+import DocLayout from "../../layouts/DocLayout.astro";
+
+/**
+ * Site-authored Get started pages: root `content/*.md` carrying `section: "get-started"`, at
+ * `/get-started/<slug>/`. A root siteDoc without `section` is not routed. A `docs`-collection
+ * page with the same `get-started/<slug>` id routes via `[...slug].astro`, so it is skipped here.
+ */
+export async function getStaticPaths() {
+  const entries = await getCollection("docs");
+  const docIds = new Set(entries.map((e) => e.id));
+  const pages = (await getCollection("siteDocs")).filter(
+    (d) => d.data.section === "get-started" && !docIds.has(`get-started/${d.id}`),
+  );
+  return pages.map((entry) => ({ params: { page: entry.id }, props: { entry, entries } }));
+}
+
+const { entry, entries } = Astro.props;
+const { Content } = await render(entry);
+---
+
+<DocLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  entries={entries}
+  currentId={`get-started/${entry.id}`}
+>
+  <Content />
+</DocLayout>

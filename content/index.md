@@ -1,13 +1,24 @@
 ---
 title: "w6w docs"
-description: "Documentation for every open-source w6w package, imported straight from each repo's own docs/ folder."
+description: "Documentation for w6w — central API management for every API your product runs on."
 ---
 
 # w6w docs
 
-This is the public documentation site for w6w's open-source packages. Every page below is
-imported directly from the `docs/` folder of the package repo it describes — see
-[CONTRIBUTING.md](https://github.com/w6w-io/docs/blob/main/CONTRIBUTING.md) for the convention
-that makes that possible, and for which repos are in scope.
+w6w manages every API your product runs on in one place. Start with
+[What is w6w](/get-started/what-is-w6w/), then pick an area:
 
-Browse the sections in the rail to the side once docs have been imported.
+## Start here
+
+- [Quickstart](/get-started/quickstart/) — run w6w in the cloud in a few minutes.
+- [Self-host w6w](/self-hosting/install/) — install and operate w6w yourself.
+- [Connect an app / call any API](/guides/call-any-api/) — put w6w in front of your first API.
+
+- [Get started](/get-started/) — what w6w is and its core concepts.
+- [Guides](/guides/) — task-oriented how-tos.
+- [Clients](/clients/) — SDK, CLI, Python and React wrappers.
+- [Self-hosting](/self-hosting/) — install, configure and operate w6w yourself.
+- [Build apps](/build-apps/) — write integrations for the catalog.
+- [Specification](/reference-spec/) — the RFCs defining the platform.
+- [HTTP API reference](/reference-api/) — the server's API.
+- [Package reference](/reference-packages/) — the shared packages.

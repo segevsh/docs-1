@@ -1,0 +1,507 @@
+---
+key: "host-runtime/hook-runtime"
+title: "Hook Runtime"
+section: "reference-spec"
+description: ""
+summary: null
+format: "markdown"
+shared: true
+order: 0
+position: 16
+sourceRepo: "w6w-io/w6w-core"
+sourcePath: "rfcs/hook-runtime.md"
+sourceSha: "edc4aed4c5abd0209f2a09674a0be95eb27083fb"
+sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/hook-runtime.md"
+syncedAt: "2026-10-04T19:45:45Z"
+---
+
+# RFC: Hook Runtime
+
+**Status:** Final
+**Author:** Segev Shmueli
+**Date:** 2026-06-01
+
+## Summary
+
+A **Hook Runtime** is the contract the platform offers to publisher-authored code. Action `execute`, Param `options.source` and `validation.hook`, Action `output.source`, Auth `sign`/`exchange`/`refresh`/`revoke`/`test`/`preflight`/`afterConnect` — every hook in the spec — runs against the same module format, ambient API, error shape, timeout policy, and sandbox posture.
+
+This RFC defines that runtime once so the other RFCs can reference it instead of redefining the cross-cutting parts per hook.
+
+## Motivation
+
+Action, Auth, and Param each declare hooks. They each leave "how the hook actually executes" to a future runtime RFC. That gap is now load-bearing: the reference implementation has shipped a sandbox, a fetch proxy, a credential-isolation model, and a default error envelope, and every other RFC implicitly depends on those choices. Without a Hook Runtime RFC, hosts that want to claim spec compliance have no testable surface — and publishers writing portable apps have no contract.
+
+A single Hook Runtime RFC means:
+
+- One module format. One ambient API. One error shape. Portable across compliant hosts.
+- The per-hook RFCs (Action, Auth, Param) define *what* the hook is for; this RFC defines *how* it runs.
+- The reference implementation in `@w6w/runtime` becomes a conformance target, not the de-facto spec.
+
+## Goals
+
+- Define the **module format** a hook file is published as.
+- Define the **ambient API** (`HookContext`) every hook receives.
+- Define the **per-hook type registry** so publishers get publish-time type-checking.
+- Define the **error shape** for hook failures and how phases propagate.
+- Define **timeouts**, **cancellation**, and **resource limits**.
+- Define the **sandbox posture** — what hooks can and cannot do.
+- Define **credential isolation**: which hook ever sees the live credential, and the runtime invariants that guarantee it cannot leak.
+
+## Non-Goals
+
+- Specifying *which* sandbox technology a host uses (Deno Worker, V8 isolate, Wasm, container). The contract is observable behavior, not implementation.
+- Specifying the storage of hook source code, transport, signing, or distribution — host concerns.
+- Replacing the per-hook semantics defined in Action/Auth/Param/Connection.
+
+## Module format
+
+A hook is a value addressable from an App's entry module. There are two equivalent ways to surface it; a compliant host MUST accept both.
+
+### A. Path reference (declarative manifests)
+
+The legacy form used by the per-RFC examples. Configuration declares a path; the runtime imports the file at that path and uses its default export.
+
+```json
+"execute": "./actions/send-message.ts"
+```
+
+```ts
+// ./actions/send-message.ts
+export default async function (input, ctx) { /* ... */ }
+```
+
+### B. Co-located function (code-first apps)
+
+The form the reference implementation uses. The hook is a property on an Action/Auth object exported from the app's entry module.
+
+```ts
+// ./index.ts — the entry module
+import type { AppDefinition } from "@w6w/types";
+
+const app: AppDefinition = {
+  actions: [
+    {
+      key: "send-message",
+      type: "perform",
+      title: "Send Message",
+      params: [/* ... */],
+      execute: async (input, ctx) => { /* ... */ },
+    },
+  ],
+};
+export default app;
+```
+
+Both forms are logically equivalent. The runtime resolves either to a callable of the same signature and invokes it under the same contract.
+
+### Language
+
+A hook MUST be loadable as an **ES module** by the runtime. The reference runtime is Deno-based and accepts TypeScript and JavaScript source modules directly. WASM as a hook target is a non-goal for `manifestVersion: "1"`; it may be layered on later without breaking change because the function signature is data-shaped (plain serializable input/output).
+
+## Ambient API: `HookContext`
+
+Every hook receives two arguments — a per-hook `input` and an ambient `ctx`. The `input` shape is fixed by the hook kind (see [Hook registry](#hook-registry)). The `ctx` is the same shape for every hook:
+
+```ts
+interface HookContext {
+  /** Web Fetch, mediated by the host (egress allowlist + signing). */
+  fetch: typeof fetch;
+
+  /** Structured log line routed back to the host. */
+  log: (
+    level: "debug" | "info" | "warn" | "error",
+    message: string,
+    data?: unknown,
+  ) => void;
+
+  /** Redacted Connection projection, when one was supplied. Never carries the credential. */
+  connection?: RedactedConnection;
+
+  /** Read-only, host-issued metadata about this call. Pure data, never an authority. */
+  invocation?: InvocationContext;
+
+  /** Non-portable, host-provided capabilities. Empty in core; hosts augment it. See [Host extensions](#host-extensions). */
+  host?: HostExtensions;
+
+  /** The Connection's byte stream, already opened and handshaken by the host. See [`ctx.socket`](#ctxsocket). */
+  socket?: SocketHandle;
+}
+```
+
+### `ctx.fetch`
+
+The hook's only network primitive. The host:
+
+1. Resolves the URL's host against the App's `network.allow` allowlist (App RFC). Hosts not on the list reject with `egress_denied`.
+2. For action `execute`: passes the request through the App's Auth `sign` hook before the actual fetch. The action never holds the credential.
+3. For `refresh` / `exchange` / `preflight`: performs the request without signing (the hook itself is constructing the credential).
+4. For `sign` itself: `ctx.fetch` is **not available** — see [Credential isolation](#credential-isolation).
+
+The hook sees a normal `Response`. The credential and the egress check are the host's job.
+
+### `ctx.socket`
+
+A host-mediated byte stream to the Connection's configured target — the socket analogue of
+`ctx.fetch`. The host owns the real connection (`Deno.connect` / `Deno.connectTls` or an
+implementation's equivalent); the sandbox holds only a message channel to it, exactly as it holds
+only a message channel to the real HTTP client behind `ctx.fetch`. `SocketHandle`
+(`write`/`read`/`close`) has **no `open()`** — opening is entirely the host's job, never something
+the sandbox can initiate or redirect (see [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/hooks.ts)).
+
+Before `execute()` runs, the host, in order:
+
+1. Reads `Connection.target` ([Connection RFC §Field reference](/reference-spec/app-contract/connection/#field-reference)) —
+   never the credential.
+2. Performs the [target check](#the-target-check) below.
+3. Opens the real connection and drives the Auth `handshake` hook ([Auth RFC](/reference-spec/app-contract/auth/)) to
+   completion: call the hook, send its returned `send` bytes over the socket, feed the server's
+   reply back as the next call's `received`, and repeat until the hook returns `{ done: true }`.
+4. Only then hands `execute()` a live `ctx.socket`.
+
+`ctx.socket` is present **only** for action `execute`, and only when the App declares the `socket`
+capability ([App manifest](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/app.ts)'s `capabilities.socket`) and the Connection
+carries a `target`.
+
+**Not a `ctx.host` extension.** `ctx.socket` is a **core, portable capability**, available on any
+compliant host that implements the `socket` capability — the same way `ctx.fetch` is.
+[`ctx.host`](#host-extensions) exists for the opposite case: non-portable, per-deployment
+capabilities a specific host bolts on for its own apps. A host must not fold socket support into
+`ctx.host` — that would make every socket-backed app non-portable, which defeats the point of
+specifying it here.
+
+**Lifetime.** A socket is not a second timeout domain. It lives for exactly one `execute()` call and
+dies with that call's worker at the same default every hook gets — **30 000 ms**
+([Timeouts and cancellation](#timeouts-and-cancellation)), host-overridable per call. A long-running
+query over `ctx.socket` is bound by the same clock a long-running `ctx.fetch` call is.
+
+### The target check
+
+`Connection.target` needs its own checkpoint mechanism, distinct from `network.allow`, for four
+reasons:
+
+**(a) Different source of truth.** A static per-App `network.allow` list suits a fixed vendor host
+(every install of a Slack app reaches `slack.com`). It does not suit a socket target: `host`/`port`/
+`database`/`tlsMode` are **user-configured, per-Connection** values (which Postgres instance *this*
+user pointed the Connection at), so the host checks `Connection.target` itself — read without ever
+decrypting `credential` — rather than a manifest-declared allowlist.
+
+**(b) One checkpoint, not two.** `ctx.fetch` needs two checkpoints (`runtime.ts:294-321` before
+`sign` runs, and `runtime.ts:168-174` on the actual outgoing request) because **both** the action's
+request *and* `sign`'s rewrite can move the destination — two untrusted mutation points. The socket
+target check needs exactly **one**, immediately before the real connect, because there are **zero**
+untrusted mutation points: the sandbox never supplies a target at all (`HandshakeStep` carries only
+bytes — see [Auth RFC](/reference-spec/app-contract/auth/) — never a host, port, or URL), so nothing downstream of the host's
+own read of `Connection.target` can change what gets connected to.
+
+**(c) Never implicit, not blocked outright.** A loopback or private-range target is not refused
+by policy alone — it is refused unless requested. The host **resolves** the target hostname and
+checks the *resolved* addresses (not the literal hostname string), so a public-looking name that
+resolves into private space (DNS rebinding) is refused exactly as `localhost` is — unless
+`target.allowPrivate === true`. The host then connects to the address it just checked, never
+re-resolving, so there is no window between the check and the connect for the answer to change.
+
+**(d) The v1 boundary.** This single-checkpoint design depends on the handshake never redirecting
+the target mid-session. A protocol whose handshake needs to hand back a *different* target partway
+through (Redis Cluster's `MOVED`/`ASK` redirects) breaks it — `HandshakeStep` has nowhere to carry a
+new target, and `ConnectionTarget` is read-only input to `handshake`. Such a protocol would need
+`ctx.fetch`'s two-checkpoint pattern back: a first check on the configured target, and a second on
+whatever the handshake redirected to. Out of scope for `manifestVersion: "1"` — noted here so a
+future RFC revisiting this does not have to rediscover it.
+
+### `ctx.log`
+
+Lines are structured: `{ level, message, data? }`. Hosts MUST surface these to the operator (typically into the Run's step log, per the future Run RFC). Hooks SHOULD NOT log the credential or any field they were given through `connection`'s redacted projection that would round-trip to a credential — but the runtime cannot enforce this on its own and treats log payloads as untrusted operator-visible text.
+
+### `ctx.connection`
+
+The redacted Connection projection (Connection RFC §Redacted projection). Present when the Invocation supplied one. The `credential` field is always absent. Hooks that need the credential (`sign`, `refresh`, `revoke`) receive it in their `input` instead.
+
+### `ctx.invocation`
+
+The Invocation's `context` ([Invocation RFC](/reference-spec/host-runtime/invocation/)) — read-only, host-issued metadata, never an authority. `invocationId` is stable per Invocation: use it as an **idempotency key** for `perform` actions (e.g. an `Idempotency-Key` header) so a retried call doesn't double-write. `runId`/`stepId` correlate the hook's `ctx.log` lines and downstream requests back to the Run that drove them. `trigger` (`workflow | editor | api | replay | test`) lets an action soften real side-effects under `editor`/`test` previews. Present for action `execute` (populated from the Invocation's `context`); absent for standalone auth-phase hooks, which are not driven by an Invocation. It carries **no** credential and grants **no** capability, and being plain data it crosses the worker boundary unchanged.
+
+### `ctx.host`
+
+The extension point for **host-specific** capabilities. It is **empty in the reference runtime** — a host adds capabilities to it for its own apps (see [Host extensions](#host-extensions)). Anything a hook reads from `ctx.host` makes the app **non-portable**: it runs only on hosts that provide the same extension. Host extensions are still bound by [credential isolation](#credential-isolation) — they MUST be host-mediated.
+
+### What `ctx` does NOT carry
+
+The runtime intentionally exposes no:
+
+- Environment variables, process info, host config.
+- Direct filesystem access. Read-scope is limited to the app directory; in practice hooks should use module imports, not `fs`.
+- Cryptographic / random / time primitives beyond what the host language provides natively (`globalThis.crypto`, `Date.now()`).
+- Inter-hook persistence. A hook is a pure function over `(input, ctx)`.
+
+The **core** capabilities — `fetch`, `log`, `connection`, `invocation`, `socket`, and any further
+capability introduced by a dated `## Amendment` section below — are a **closed list**: a new
+*portable* capability is added only by amending this RFC (a Final section revision, or an additive
+dated amendment). A host that needs a capability of its own does not invent a new top-level `ctx`
+field — it adds it under [`ctx.host`](#host-extensions), where the non-portability is explicit.
+
+## Host extensions
+
+A host MAY expose capabilities beyond the core set to **its own apps** — e.g. a fetch to internal services with the host's own tokens and headers attached. These live under **`ctx.host`** and are governed by three rules:
+
+1. **Namespaced.** Every host capability is reached as `ctx.host.<name>`. The leading `host.` marks, at the call site, code that has left portable territory. A host MUST NOT add top-level `ctx` fields.
+2. **Non-portable, and typed as such.** `HostExtensions` is empty in `@w6w/types`; the host augments it via TypeScript declaration merging from its own codebase. An app that reads `ctx.host.x` runs only on a host that provides `x`; on any other host the field is absent. Hosts SHOULD grant `ctx.host` capabilities only to apps they trust (e.g. first-party apps), never to untrusted third-party publishers — a privileged internal fetch in untrusted hands is a pivot onto the host's own services.
+3. **Host-mediated — credential isolation still holds.** A host capability that carries a credential MUST perform the privileged work **on the trusted host**, exactly like `ctx.fetch`: the hook calls `ctx.host.cohostFetch(url)`, the call proxies to the host, the host attaches the token and performs it, and the hook receives a plain `Response`. The token MUST NOT be placed into `ctx` (e.g. as a header map) where untrusted sandbox code could read it. A `ctx.host` capability is "`ctx.fetch` with a different egress profile and a host-side signer," not an exception to the [single invariant](#credential-isolation).
+
+Example augmentation (in the host's code, **not** in `@w6w/types`):
+
+```ts
+declare module "@w6w/types" {
+  interface HostExtensions {
+    /** Host-mediated fetch to cohost-internal services; auth injected on the host. */
+    cohostFetch: typeof fetch;
+  }
+}
+```
+
+Hosts MAY require an app to **declare** the host capabilities it uses (a manifest field), so the runtime can refuse to load an app that needs a capability the host does not grant — and refuse to grant privileged ones to untrusted apps. The declaration format is a host/manifest concern, out of scope for this RFC.
+
+## Hook registry
+
+The complete set of hook kinds, their input/output shapes, and the lifecycle phase they belong to. The TypeScript signatures are normative; the JSON sketches show what crosses the worker boundary.
+
+| Kind | Defined by | Input | Output | Phase | Sees credential? |
+|---|---|---|---|---|---|
+| `action.execute` | [Action RFC](/reference-spec/app-contract/action/) | resolved `params` | action `output` | `execute` | No |
+| `action.output.source` | [Action RFC](/reference-spec/app-contract/action/) | `{ form }` | `OutputField[]` | `resolution` | No |
+| `param.options.source` | [Param RFC](/reference-spec/app-contract/param/) | `{ form, dependsOn }` | `Option[]` | `resolution` | No |
+| `param.validation.hook` | [Param RFC](/reference-spec/app-contract/param/) | `{ value, form }` | `{ ok, message? }` | `resolution` | No |
+| `auth.preflight` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ fields? }` | implementation-defined setup data | `auth` | No |
+| `auth.exchange` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ fields?, code?, redirectUri? }` | opaque credential | `auth` | No (constructs it) |
+| `auth.test` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ credential }` | `{ ok, message? }` | `auth` | **Yes** |
+| `auth.afterConnect` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ credential }` | display metadata | `auth` | **Yes** |
+| `auth.sign` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ request, credential }` | `SignableRequest` | `execute` | **Yes** |
+| `auth.handshake` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ credential, target, received?, state? }` | `HandshakeStep` | `execute` | **Yes** |
+| `auth.refresh` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ credential }` | opaque credential | `auth` | **Yes** |
+| `auth.revoke` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ credential }` | `void` | `auth` | **Yes** |
+
+Inputs and outputs MUST be **structured-cloneable** (the union of plain data, ArrayBuffers, Maps, Sets, Dates — no functions, no DOM nodes, no class instances with private state). This is what makes hooks transportable across worker boundaries and serialization-agnostic.
+
+The full TypeScript declarations live in [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/hooks.ts).
+
+## Credential isolation
+
+The single load-bearing invariant of the runtime:
+
+> No code path may both **(a)** hold the live credential **and** **(b)** make an unmediated network call.
+
+Operationally:
+
+1. The **action sandbox** has no network and never receives the credential.
+2. `ctx.fetch` inside the action sandbox proxies to the host. The host, before performing the call, hands the request to `auth.sign` in a **separate sandbox**. That sandbox has the credential but its `ctx.fetch` is removed entirely; it can only return the augmented request.
+3. `auth.refresh`, `auth.exchange`, `auth.preflight`, `auth.test`, `auth.afterConnect`, `auth.revoke` all have the credential and a network-capable `ctx.fetch` — but they are gated to the `auth` phase and only run with explicit host orchestration (an Invocation in `needs_refresh`, a connect/test/disconnect flow). They never run during an Action's `execute`.
+
+A host that violates this invariant is not spec-compliant regardless of which sandbox technology it picks.
+
+## Error shape
+
+Hooks signal failure in one of two ways.
+
+### Throw
+
+Any thrown value (`Error` or otherwise) terminates the hook. The runtime converts it into a typed error:
+
+```ts
+interface W6WError {
+  code: string;         // machine-readable, see Codes table
+  phase: ErrorPhase;    // resolution | auth | execute | output
+  message: string;      // human-readable
+  details?: unknown;    // structured payload, hook-provided when relevant
+}
+```
+
+The phase is assigned by the runtime based on which call site invoked the hook (see [Invocation RFC §Resolution sequence](/reference-spec/host-runtime/invocation/#resolution-sequence)). Hooks may not invent phases.
+
+### Result envelope
+
+A small set of hooks return a result envelope instead of throwing — this is the contract, not a convention:
+
+- `param.validation.hook` returns `{ ok: true } | { ok: false; message: string }`.
+- `auth.test` returns `{ ok: true } | { ok: false; message?: string }`.
+
+A `false` result is a soft failure: the runtime converts it to a typed error (`param_invalid` or `connection_broken` respectively) and rejects the surrounding operation. A throw from these hooks is unexpected and becomes `hook_failed`.
+
+### Codes
+
+| Code | Phase | When |
+|---|---|---|
+| `hook_failed` | call-site's | Unexpected throw inside a hook. `details` carries the original message. |
+| `hook_timeout` | call-site's | Hook ran past `timeoutMs`. |
+| `hook_returned_invalid` | call-site's | Hook returned a value the runtime cannot serialize or that fails the output type check. |
+| `param_invalid` | `resolution` | Declarative validation, validation hook `{ ok: false }`, or supplied value not in the resolved option set. |
+| `connection_pending` / `connection_broken` / `connection_revoked` | `auth` | Connection lifecycle gates ([Invocation RFC](/reference-spec/host-runtime/invocation/)). |
+| `egress_denied` | `execute` | `ctx.fetch` URL host not in the App's `network.allow`. |
+| `invalid_request_url` | `execute` | `ctx.fetch` (or a `sign` hook's return) produced an unparseable URL. |
+| `socket_denied` | `execute` | The pre-connect [target check](#the-target-check) refused `Connection.target` — an unresolvable host, or a resolved loopback/private-range address without `target.allowPrivate`. |
+| `socket_unavailable` | `execute` | The host could not establish the real connection (`Deno.connect`/`Deno.connectTls` refused, timed out, or the App declares no `socket` capability / the Connection carries no `target`). |
+| `socket_failed` | `execute` | An established `ctx.socket` I/O call (`write`/`read`/`close`) failed after the connection was open. |
+| `unknown_app` / `unknown_action` / `unknown_connection` | `resolution` / `auth` | Resolution failure ([Invocation RFC](/reference-spec/host-runtime/invocation/)). |
+
+A failed `auth.handshake` round trip is **not** a new code: like a failed `refresh`, it surfaces as
+the existing `connection_broken` (`runtime.ts:449-451`'s try/catch taxonomy for a failed
+credential-bearing connect hook) — the handshake never gets far enough to hand back a `ctx.socket`,
+so there is no partially-open socket to clean up beyond what that taxonomy already does for `refresh`.
+
+This table is closed for `manifestVersion: "1"`. New codes require an RFC bump.
+
+> **Amended 2026-10-04:** the `hook_failed` row above and its two prose mentions (§Result envelope, §Resource limits) were first published as `hook_threw`. The reference runtime (`run-hook.ts`), the MCP error taxonomy and the conformance tests emit `hook_failed`, so the text was corrected to match; the code itself, its phase and its meaning are unchanged, and no code was added to the table.
+
+## Timeouts and cancellation
+
+Each hook invocation has a timeout in milliseconds. The runtime SHOULD apply a default of **30 000 ms** and MUST allow the host to override per call. When the timeout fires:
+
+1. The hook's sandbox is terminated.
+2. The runtime synthesizes a `hook_timeout` error in the current phase.
+3. If the hook had produced a partial result, it is discarded.
+
+Cancellation by the caller is OPTIONAL for `manifestVersion: "1"`. A host that supports it MUST use the same termination semantics (terminate the sandbox, treat as `hook_timeout`-equivalent with a host-defined code).
+
+## Resource limits
+
+The reference runtime does not enforce CPU or memory caps — Deno workers don't expose those primitives portably. A spec-compliant host MAY enforce additional limits (memory, CPU time, output size) and MUST report them as `hook_failed` or a host-defined extension code with a clear `message`. Such limits MUST NOT cause silent truncation of a hook's return value.
+
+## Sandbox posture
+
+A compliant host MUST guarantee, for every hook invocation:
+
+| Capability | Action sandbox | Sign / handshake sandbox | Other auth hooks |
+|---|---|---|---|
+| Filesystem read | App dir only | App dir only | App dir only |
+| Filesystem write | Denied | Denied | Denied |
+| Network (raw) | Denied | Denied | Denied |
+| `ctx.fetch` | Available, host-mediated, signed | **Removed** | Available, host-mediated, **unsigned** |
+| `ctx.socket` | Available, host-mediated, pre-handshaken | **Removed** | Absent |
+| Environment variables | Denied | Denied | Denied |
+| Subprocess / FFI | Denied | Denied | Denied |
+| Credential | Absent | Present in `input.credential` | Present in `input.credential` |
+| `ctx.file` | Available, host-mediated | **Removed** | **Removed** |
+
+The reference implementation in `@w6w/runtime` runs hooks in Deno Web Workers spawned with the corresponding `permissions` map. Other implementations (V8 isolates with embedder hooks, gVisor-wrapped processes, Wasm with capability imports) are valid provided they produce the same observable behavior.
+
+## Conformance
+
+A host claims compliance with the Hook Runtime by passing the conformance suite shipped in `core/`:
+
+- Module-format loaders for both path-reference and co-located function forms.
+- `HookContext` exposing exactly the documented surface (no extras).
+- The hook registry signatures from [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/hooks.ts).
+- The error shape and the closed `code` set.
+- The timeout default and override mechanism.
+- The sandbox posture matrix, demonstrated by a fixture app that attempts each denied capability and must fail.
+- The credential-isolation invariant, demonstrated by `auth.sign` being unable to perform a network call.
+- The `ctx.socket` capability: a fixture app proving the action sandbox's raw `Deno.connect` still
+  dies (no unmediated network primitive reaches userland, same invariant as `ctx.fetch`), and a
+  fixture proving the pre-connect [target check](#the-target-check) refuses a denied target
+  (loopback/private-range without `allowPrivate`) before any real connect is attempted.
+
+The fixtures live in `core/fixtures/` and are runnable against any host as a black-box test.
+
+## Open questions
+
+None at this time. Future capabilities (Wasm targets, explicit cancellation primitives, per-host extension codes, persisted hook state) will be raised as their own RFCs against a later `manifestVersion`.
+
+## Amendment — 2026-09-19: `ctx.file` and binary-capable `SignableRequest.body`
+
+> This section is **additive** to the Final `HookContext` and sandbox-posture shapes above; it
+> introduces no breaking change to any existing hook. It adds one ambient capability (`ctx.file`) to
+> the closed list referenced at [`## Ambient API: HookContext`](#ambient-api-hookcontext), and
+> corrects `SignableRequest.body`'s documented shape so a `sign` hook can pass binary bytes through
+> unmodified rather than being forced to stringify them.
+
+### `ctx.file`
+
+`HookContext` gains a seventh, optional field, appended after `socket` — this amendment was
+authored concurrently with the `## ctx.socket` capability above, in a separate project; `file` is
+simply the next field appended once both landed, not a claim about its own fixed position:
+
+```ts
+interface HookContext {
+  // ...fetch, log, connection, invocation, host, socket unchanged...
+  file?: FileCapability;
+}
+```
+
+`FileCapability` (`@w6w/types`) is exactly two methods — `read` and `create` — both whole-buffer,
+proxied to the host exactly like `ctx.fetch`: the sandbox posts a request across the worker
+boundary and awaits the host's reply; it never holds a file handle, a path, or a credential.
+
+```ts
+interface FileCapability {
+  read(ref: FileRef | string): Promise<{ ref: FileRef; bytes: Uint8Array }>;
+  create(bytes: Uint8Array, meta: { contentType: string; filename: string }): Promise<FileRef>;
+}
+```
+
+`file` is **optional** because a conforming host need not implement the run file store at all — a
+portable app MUST handle its absence (feature-detect `ctx.file` before calling it, exactly as an
+app must already tolerate an empty `ctx.host`). A host MAY implement the capability yet still
+present `file` as absent, or present-but-refusing, to a hook it does not trust with file access; the
+reference runtime exposes `file` to action `execute` and refuses every call from a hook kind with no
+run to scope files against (see the `ctx.file` row added to [`## Sandbox posture`](#sandbox-posture)
+above).
+
+Two host-enforced ceilings bound the store, exported from `@w6w/types`:
+
+- `FILE_MAX_BYTES = 10 * 1024 * 1024` (10 MiB) — the size of any one file. Enforced on `create`
+  (reject an oversized write) and on `read` (a host MUST NOT have let a larger object into the store
+  in the first place, so the read-side check is defense-in-depth, not a truncation point).
+- `RUN_FILE_MAX_TOTAL_BYTES = 50 * 1024 * 1024` (50 MiB) — the sum of every file one run creates.
+  Enforced on `create` only; a run that has already spent its budget gets a loud rejection, not a
+  silently truncated file.
+
+**Why these numbers, read against [`## Resource limits`](#resource-limits):** that section states
+the reference runtime enforces no memory cap, because Deno workers don't expose one portably — bytes
+a hook reads out of the file store into its own memory are exactly the otherwise-uncapped resource
+that section describes. `FILE_MAX_BYTES` is the file store's own substitute cap: 10 MiB keeps a
+single `ctx.file.read` (and a small number of them outstanding at once, on the architecture
+`## Resource limits` already describes as otherwise unbounded) well inside a Worker's practical
+memory headroom, while comfortably covering what this channel exists for today — generated PDFs,
+CSV exports, small-to-medium media — and staying well short of a size that would make an
+uncapped-memory host start swapping under concurrent Invocations. `RUN_FILE_MAX_TOTAL_BYTES` at 5×
+that ceiling bounds a whole run's cumulative file footprint (a step chain creating several files)
+without turning the per-run store into an unbounded liability on a host with no other cap on it.
+
+### `SignableRequest.body` may be binary
+
+The `sign` hook's own `SignableRequest`, part of [`## Ambient API:
+HookContext`](#ambient-api-hookcontext), is documented today with a `body?: string | null` shape.
+That shape is corrected:
+a `sign` hook's `SignableRequest.body` MAY be a `Uint8Array`, in addition to a `string` or
+`null`/absent. A generic sandbox proxy that string-coerces every outgoing body silently corrupts a
+binary upload before it ever reaches the wire — `sign` MUST receive and return the bytes it was
+given unchanged when the body is binary, exactly as it already passes a string body through
+unchanged today. This is a documentation correction to the ambient contract, not a new capability:
+nothing about `ctx.fetch`'s host-mediated egress model changes, only the shape of data allowed to
+flow through it.
+
+### Sandbox posture — reasoning for the new row
+
+`ctx.file` is **Removed** from the Sign sandbox and from every other auth-phase hook (`refresh`,
+`exchange`, `preflight`, `revoke`), deliberately, for v1: those hooks run outside any Invocation
+([`ctx.invocation`](#ctxinvocation) is documented as absent for them precisely because they are "not
+driven by an Invocation"), and the run file store is scoped to a run — there is no run to scope a
+file read or write against during credential construction. No code needs to move file bytes while
+signing a request or refreshing a token, so removing the capability there costs nothing and keeps
+the credential-construction sandbox's surface exactly as narrow as `ctx.fetch`'s.
+
+As with any host capability, `ctx.file` remains bound by [`## Host extensions`](#host-extensions)
+rule 3: a host MUST NOT place a path, URL, or presigned credential into `ctx` for a sandboxed hook
+to read directly. `ctx.file.read`/`ctx.file.create` proxy to the host exactly as `ctx.fetch` does —
+the host performs the actual storage I/O itself and the sandbox never receives a location or a
+credential it could use unmediated.
+
+### Reconciling `## Open questions`
+
+[`## Open questions`](#open-questions) states that future capabilities "will be raised as their own
+RFCs against a later `manifestVersion`." That sentence describes a **breaking** addition to the
+ambient API; `ctx.file` is not one. Like `action.md`'s `aggregate` control and `interface.md`'s two
+`blob-store@1` amendments, this section adds a capability to `manifestVersion: "1"` through this
+repo's dated-`## Amendment` convention precisely because it is additive — every existing hook that
+never reads `ctx.file` keeps working unchanged, with `file` simply `undefined` on its `ctx`. A
+capability that could not be added without breaking an existing hook is what `## Open questions`
+reserves for a later `manifestVersion`; this one does not qualify.

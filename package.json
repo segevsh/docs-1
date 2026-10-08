@@ -1,6 +1,6 @@
 {
   "name": "@w6w/docs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@11.24.0",
@@ -12,7 +12,7 @@
     "check": "astro check",
     "check:tokens": "node scripts/check-tokens.mjs",
     "import-docs": "node src/lib/import-docs.ts",
-    "test": "node --test src/lib/__tests__/channels.test.ts src/lib/__tests__/doc-sources.test.ts src/lib/__tests__/import-docs.test.ts",
+    "test": "node --test src/lib/__tests__/channels.test.ts src/lib/__tests__/doc-sources.test.ts src/lib/__tests__/import-docs.test.ts src/lib/__tests__/rail.test.ts src/lib/__tests__/link-rewrite.test.ts src/lib/__tests__/api-reference.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium"
   },

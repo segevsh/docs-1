@@ -1,6 +1,7 @@
 ---
-import type { CollectionEntry } from "astro:content";
+import { getCollection, type CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
+import { buildRail } from "../lib/rail.ts";
 
 /**
  * Docs layout: section rail + content. Mirrors the shape of
@@ -11,96 +12,64 @@ import BaseLayout from "./BaseLayout.astro";
 interface Props {
   title: string;
   description?: string;
-  /** Every `docs` entry — the rail is built from this, grouped by `section`. */
+  /** Every `docs` entry — the rail is built from this, grouped by `section`, sub-pages nested. */
   entries: CollectionEntry<"docs">[];
   /** The entry currently being viewed, highlighted in the rail. */
   currentId?: string;
-  /** True on `/quickstart/` itself — highlights the pinned rail link. */
-  quickstartActive?: boolean;
-  /**
-   * The active `/self-hosting/<slug>/` page, if any (T4.1.1, HITL-4) — highlights
-   * the matching link in the pinned "Self-hosting" rail group below. The group
-   * itself always renders, on every `DocLayout` page (including `/quickstart/`),
-   * exactly like the pinned Quickstart link above it.
-   */
-  selfHostingActive?: string;
 }
 
-const { title, description, entries, currentId, quickstartActive, selfHostingActive } =
-  Astro.props;
+const { title, description, entries, currentId } = Astro.props;
 
-/**
- * The five `self-host-*` `siteDocs` pages, in the order they appear in the
- * rail. Hardcoded here rather than read from the `siteDocs` collection —
- * this layout already hardcodes the pinned Quickstart link the same way, and
- * a fixed, small, rarely-changing list needs no dynamic lookup.
- */
-const SELF_HOSTING_PAGES = [
-  { slug: "install", label: "Install" },
-  { slug: "upgrade", label: "Upgrade" },
-  { slug: "config-reference", label: "Config reference" },
-  { slug: "air-gap", label: "Air-gapped install" },
-  { slug: "troubleshooting", label: "Troubleshooting" },
-];
-
-/** Group by `section`, in first-seen order. */
-const grouped = new Map<string, CollectionEntry<"docs">[]>();
-for (const entry of entries) {
-  const list = grouped.get(entry.data.section) ?? [];
-  list.push(entry);
-  grouped.set(entry.data.section, list);
-}
-const sections = [...grouped].map(([section, sectionEntries]) => ({
-  section,
-  entries: sectionEntries,
-}));
+// Site-authored Get started pages (root `content/*.md` with `section: "get-started"`) join the
+// docs entries under `get-started/<slug>`; a docs-collection page with the same id wins.
+const docIds = new Set(entries.map((e) => e.id));
+const siteEntries = (await getCollection("siteDocs"))
+  .filter((d) => d.data.section === "get-started" && !docIds.has(`get-started/${d.id}`))
+  .map((d) => ({
+    id: `get-started/${d.id}`,
+    data: {
+      section: "get-started",
+      title: d.data.title,
+      order: d.data.order,
+      description: d.data.description,
+    },
+  }));
+const areas = buildRail([...entries, ...siteEntries], currentId);
 ---
 
 <BaseLayout title={title} description={description}>
   <div class="docs-layout">
     <nav class="docs-rail" aria-label="Docs">
-      <ul class="docs-rail-pinned">
-        <li>
-          <a href="/quickstart/" aria-current={quickstartActive ? "page" : undefined}>
-            Quickstart
-          </a>
-        </li>
-      </ul>
-      <details class="docs-rail-section" open={Boolean(selfHostingActive)}>
-        <summary>Self-hosting</summary>
-        <ul>
-          {SELF_HOSTING_PAGES.map(({ slug, label }) => (
-            <li>
-              <a
-                href={`/self-hosting/${slug}/`}
-                aria-current={selfHostingActive === slug ? "page" : undefined}
-              >
-                {label}
-              </a>
-            </li>
+      {areas.map(({ id: areaId, title: areaTitle, open, groups }) => (
+        <details class="docs-rail-section" data-area={areaId} open={areaId === "reference" ? open : true}>
+          <summary>{areaTitle}</summary>
+          {groups.map(({ section, title: groupTitle, items }) => (
+            <>
+              {groups.length > 1 || areaId === "reference" ? <h3 class="docs-rail-group">{groupTitle}</h3> : null}
+              <ul data-section={section}>
+                {items.map((item) => (
+                  <li>
+                    <a href={`/${item.id}/`} aria-current={item.active ? "page" : undefined}>
+                      {item.title}
+                    </a>
+                    {item.children.length > 0 && (
+                      <ul class="docs-rail-children" hidden={!item.open}>
+                        {item.children.map((child) => (
+                          <li>
+                            <a href={`/${child.id}/`} aria-current={child.active ? "page" : undefined}>
+                              {child.title}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </>
           ))}
-        </ul>
-      </details>
-      {sections.map(({ section, entries: sectionEntries }) => {
-        const hasActive = sectionEntries.some((entry) => entry.id === currentId);
-        return (
-          <details class="docs-rail-section" open={hasActive}>
-            <summary>{section}</summary>
-            <ul>
-              {sectionEntries.map((entry) => (
-                <li>
-                  <a
-                    href={`/${entry.id}/`}
-                    aria-current={entry.id === currentId ? "page" : undefined}
-                  >
-                    {entry.data.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </details>
-        );
-      })}
+        </details>
+      ))}
     </nav>
     <div class="docs-content">
       <slot />

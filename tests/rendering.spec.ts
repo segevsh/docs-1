@@ -1,23 +1,127 @@
 import { expect, test } from "@playwright/test";
 
 /**
- * Prose rendering + rail layout, against `tests/fixtures/content/edge-cases/`.
+ * Prose rendering + rail layout, against `tests/fixtures/content/` — one fixture page per D-1
+ * area (`guides/`, `clients/`, `self-hosting/`, `build-apps/`, the three `reference-*` sections)
+ * plus a `get-started` site doc, so the rail's area order and the section landings are assertable.
  * ONE SPEC PER CONCERN (mirrors `packages/frontend/packages/web/tests/*.spec.ts`'s own rule) —
  * `channels.spec.ts` is the sibling file for the channel-toggle behavior.
  */
 
 test.describe("homepage", () => {
-  test("renders the fixture intro and lists the edge-cases section", async ({ page }) => {
+  test("renders the fixture intro and links the section landings", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator("h1").first()).toHaveText("w6w docs — e2e fixture site");
-    await expect(page.locator(".docs-index-section h3", { hasText: "edge-cases" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Rich prose", exact: true })).toBeVisible();
+
+    const index = page.locator(".docs-index");
+    await expect(index.getByRole("link", { name: "Get started", exact: true })).toBeVisible();
+    await expect(index.getByRole("link", { name: "Guides", exact: true })).toBeVisible();
+    await expect(index.getByRole("link", { name: "Self-hosting", exact: true })).toBeVisible();
+  });
+});
+
+test.describe("rail areas", () => {
+  test("renders the six areas in pinned order, each with its title (never the raw slug)", async ({ page }) => {
+    await page.goto("/guides/rich-prose/");
+
+    await expect(page.locator(".docs-rail > .docs-rail-section > summary")).toHaveText([
+      "Get started",
+      "Guides",
+      "Clients",
+      "Self-hosting",
+      "Build apps",
+      "Reference",
+    ]);
+  });
+
+  test("Reference is collapsed on a guides page and open on a reference page", async ({ page }) => {
+    const reference = page.locator('.docs-rail-section[data-area="reference"]');
+    const protocolLink = page.locator('.docs-rail a[href="/reference-spec/protocol/"]');
+
+    await page.goto("/guides/rich-prose/");
+    await expect(reference.locator("> summary")).toHaveText("Reference");
+    await expect(reference).toHaveJSProperty("open", false);
+    await expect(protocolLink).toBeHidden();
+
+    // Reference keeps its three titled sub-groups whether or not it is expanded.
+    await expect(reference.locator(".docs-rail-group")).toHaveText([
+      "Specification",
+      "HTTP API & MCP",
+      "Packages",
+    ]);
+
+    await page.goto("/reference-spec/protocol/");
+    await expect(reference).toHaveJSProperty("open", true);
+    await expect(protocolLink).toBeVisible();
+    await expect(protocolLink).toHaveAttribute("aria-current", "page");
+  });
+});
+
+test.describe("section landing pages", () => {
+  test("/guides/ lists its pages in rail order, each with its summary", async ({ page }) => {
+    await page.goto("/guides/");
+
+    await expect(page.locator("h1")).toHaveText("Guides");
+    await expect(page.locator(".section-landing li > a")).toHaveText([
+      "Rich prose",
+      /^A deliberately long title meant to wrap/,
+    ]);
+    await expect(page.locator(".section-landing li > p")).toHaveText([
+      "Every markdown element the prose styles cover, on one page.",
+      "Regression fixture for the rail's horizontal-scroll bug.",
+    ]);
+  });
+
+  test("a page with no summary falls back to its description", async ({ page }) => {
+    await page.goto("/clients/");
+
+    await expect(page.locator("h1")).toHaveText("Clients");
+    await expect(page.locator(".section-landing li > a")).toHaveText(["Web UI"]);
+    await expect(page.locator(".section-landing li > p")).toHaveText([
+      "The browser-based client, for people who work in the UI.",
+    ]);
+  });
+
+  test("/get-started/ lists the get-started site doc", async ({ page }) => {
+    await page.goto("/get-started/");
+
+    await expect(page.locator("h1")).toHaveText("Get started");
+    await expect(page.locator(".section-landing li > a")).toHaveText(["Install the platform"]);
+  });
+});
+
+test.describe("get-started site docs", () => {
+  test("render at /get-started/<slug>/ and sit in the Get started rail group", async ({ page }) => {
+    await page.goto("/get-started/install/");
+
+    await expect(page.locator("h1")).toHaveText("Install the platform");
+
+    const getStarted = page.locator('.docs-rail-section[data-area="get-started"]');
+    await expect(getStarted).toHaveJSProperty("open", true);
+    await expect(getStarted.locator('a[aria-current="page"]')).toHaveText("Install the platform");
+  });
+});
+
+test.describe("retired special pages", () => {
+  test("/quickstart/ redirects to /get-started/quickstart/ and /self-hosting/install/ is gone", async ({
+    page,
+    request,
+  }) => {
+    // `/quickstart/` is retired, but as a static redirect (`astro.config.mjs`: "/quickstart" →
+    // "/get-started/quickstart/"), not a page — a real host serves Astro's 200 meta-refresh stub,
+    // so assert the redirect itself. `request` skips the browser's meta-refresh, unlike `goto`.
+    const quickstart = await request.get("/quickstart/");
+    expect(quickstart.status()).toBe(200);
+    expect(await quickstart.text()).toContain("url=/get-started/quickstart/");
+
+    // No page and no redirect entry — this one is genuinely gone.
+    expect((await page.goto("/self-hosting/install/"))?.status()).toBe(404);
   });
 });
 
 test.describe("rich prose page", () => {
   test("renders every element the .docs-content styles cover", async ({ page }) => {
-    await page.goto("/edge-cases/rich-prose/");
+    await page.goto("/guides/rich-prose/");
 
     await expect(page.locator("h1")).toHaveText("Rich prose");
     await expect(page.locator("h2", { hasText: "Headings and text" })).toBeVisible();
@@ -46,7 +150,7 @@ test.describe("rich prose page", () => {
 
 test.describe("long-title fixture — the rail horizontal-scroll regression", () => {
   test("neither the rail nor the page overflows horizontally", async ({ page }) => {
-    await page.goto("/edge-cases/long-title/");
+    await page.goto("/guides/long-title/");
 
     const rail = page.locator(".docs-rail");
     const [clientWidth, scrollWidth] = await rail.evaluate((el) => [el.clientWidth, el.scrollWidth]);
@@ -59,7 +163,7 @@ test.describe("long-title fixture — the rail horizontal-scroll regression", ()
   });
 
   test("the active rail link is expanded and highlighted", async ({ page }) => {
-    await page.goto("/edge-cases/long-title/");
+    await page.goto("/guides/long-title/");
     const activeLink = page.locator('.docs-rail a[aria-current="page"]');
     await expect(activeLink).toBeVisible();
     await expect(activeLink).toHaveText(/long title/i);
@@ -67,16 +171,17 @@ test.describe("long-title fixture — the rail horizontal-scroll regression", ()
 });
 
 test.describe("rail accordion", () => {
-  test("sections toggle independently — opening one does not close another", async ({ page }) => {
-    await page.goto("/edge-cases/long-title/");
-    const section = page.locator(".docs-rail-section", { has: page.getByText("edge-cases", { exact: true }) });
-    await expect(section).toHaveJSProperty("open", true); // active section starts open
+  test("areas toggle independently — closing one does not close another", async ({ page }) => {
+    await page.goto("/guides/long-title/");
+    const guides = page.locator('.docs-rail-section[data-area="guides"]');
+    const reference = page.locator('.docs-rail-section[data-area="reference"]');
+    await expect(guides).toHaveJSProperty("open", true); // areas outside Reference start open
 
-    // Navigate to a page with a different active section isn't possible here (one section total
-    // in this fixture set) — instead assert manual toggling works: close it, then reopen it.
-    await section.locator("summary").click();
-    await expect(section).toHaveJSProperty("open", false);
-    await section.locator("summary").click();
-    await expect(section).toHaveJSProperty("open", true);
+    await guides.locator("> summary").click();
+    await expect(guides).toHaveJSProperty("open", false);
+    await expect(reference).toHaveJSProperty("open", false); // untouched, not dragged along
+
+    await guides.locator("> summary").click();
+    await expect(guides).toHaveJSProperty("open", true);
   });
 });

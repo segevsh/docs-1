@@ -1,5 +1,6 @@
 import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
+import { SECTIONS } from "./lib/doc-sources.ts";
 
 /**
  * Content collections for docs.w6w.io.
@@ -24,45 +25,66 @@ import { glob } from "astro/loaders";
 const CONTENT_ROOT = process.env.DOCS_CONTENT_DIR ?? "./content";
 
 /**
- * Imported markdown — docs pulled from each in-scope package repo's own
- * `docs/` folder (see `CONTRIBUTING.md` for which repos are in scope and
- * what "in scope" means). T3.1.2's importer writes into this collection
- * against this exact schema; it must not change the schema, only add files
- * that validate against it.
+ * Imported markdown — docs collected from each package's own `docs/` folder (listed in its
+ * `docs/manifest.json`) plus the importer's pinned list (see `CONTRIBUTING.md`).
+ * `src/lib/import-docs.ts` writes into this collection against this exact schema.
  *
- * Matched by the glob pattern below — one directory level under `content/`,
- * i.e. `<section>/<slug>.md` — which is also what keeps this collection from
- * ever matching a root-level hand-authored file (see `siteDocs` below):
- * a root file has no `/` in its path relative to `content/`, so it can't
- * match this pattern, and `siteDocs`'s own pattern can't match a nested one.
- * That mutual exclusion needs no wrapper folder to hold — the shapes alone
- * are disjoint.
+ * Matched by `*\/**\/*.md` — at least one directory level under `content/`, i.e.
+ * `<section>/<slug>.md` and a sub-page's `<section>/<parent>/<child>.md` — which is also what
+ * keeps this collection from ever matching a root-level hand-authored file (see `siteDocs`
+ * below): a root file has no `/` in its path relative to `content/`, so it can't match this
+ * pattern, and `siteDocs`'s own `*.md` can't match a nested one. That mutual exclusion needs no
+ * wrapper folder to hold — the shapes alone are disjoint.
  *
- * ENTIRELY IMPORTER-OWNED: every `<section>/<slug>.md` under `content/` that
- * the importer's source list does not claim is DELETED on the next
- * `pnpm import-docs` run (ported from `import-docs.ts:122-138` in T3.1.2) —
- * scoped to files this pattern matches, so a root-level `siteDocs` file is
- * never a candidate for deletion. Do NOT hand-author a page matching this
- * pattern — see `siteDocs` below for hand-authored content instead.
+ * ENTIRELY IMPORTER-OWNED: every nested `.md` under `content/` that the importer's effective
+ * source list does not claim is DELETED on the next `pnpm import-docs` run — scoped to files
+ * this pattern matches, so a root-level `siteDocs` file is never a candidate for deletion. Do
+ * NOT hand-author a page matching this pattern — see `siteDocs` below for hand-authored content.
  *
- * Strict (not `.passthrough()`): this frontmatter is entirely
- * generator-owned (the importer writes every key), so there is no
- * "upstream declares a key we didn't anticipate" case to guard against.
+ * Strict (not `.passthrough()`): this frontmatter is entirely generator-owned (the importer
+ * writes every key, `renderDocFile` in `src/lib/doc-sources.ts`), so there is no "upstream
+ * declares a key we didn't anticipate" case to guard against. The fields follow the document
+ * model — `Doc` + `DocWithProvenance` in `packages/studio/src/repos/documents.ts` — minus the
+ * server-issued `id`/`createdAt`/`updatedAt`, plus the rail's `order`/`position`.
+ *
+ * `section` is the importer's closed `SECTIONS` enum, so an unknown section in committed content
+ * fails the build. Every key is required (the importer always writes all of them); `summary` and
+ * `order` are nullable, not optional.
  */
 const docs = defineCollection({
-  loader: glob({ pattern: "*/*.md", base: CONTENT_ROOT }),
+  loader: glob({ pattern: "*/**/*.md", base: CONTENT_ROOT }),
   schema: z
     .object({
+      /** The page's stable key — its slug within the section (`workflows/triggers`). */
+      key: z.string(),
       /** Page heading, and the rail's link label for this entry. */
       title: z.string(),
-      /** Groups entries under a heading in the docs rail (e.g. "core", "ui"). */
-      section: z.string(),
-      /** Source repo the content was imported from, e.g. "w6w-io/w6w-core". */
+      /** Groups entries under a heading in the docs rail (e.g. "packages", "studio"). */
+      section: z.enum(SECTIONS),
+      /** One reader-facing sentence; the page's meta description. */
+      description: z.string(),
+      /** One reader-facing line for the section landing page (the manifest's `summary`). */
+      summary: z.string().nullable(),
+      /** Always "markdown" for a docs page. */
+      format: z.string(),
+      /** Always true here — a `shared: false` source is a draft the importer never writes. */
+      shared: z.boolean(),
+      /** Rail position within its level; `null` sorts after every ordered sibling. */
+      order: z.number().int().nullable(),
+      /** Index in the list that declared the entry — the rail's tie-break after `order`. */
+      position: z.number().int(),
+      /** `owner/name` of the repo the content was collected from, e.g. "w6w-io/w6w-core". */
       sourceRepo: z.string(),
       /** Path to the source file within that repo, e.g. "README.md". */
       sourcePath: z.string(),
-      /** ISO date of the source file's last commit. */
-      lastChanged: z.string(),
+      /** Git blob hash of the source file's bytes — a content hash, not a commit SHA. */
+      sourceSha: z.string(),
+      /** The source repo's HEAD commit at collection time — not a content hash. */
+      sourceRefSha: z.string(),
+      /** Link to the source file on GitHub at `sourceRefSha`. */
+      sourceUrl: z.string(),
+      /** ISO date of the source file's last commit — when its content last actually changed. */
+      syncedAt: z.string(),
     })
     .strict(),
 });
@@ -78,7 +100,14 @@ const docs = defineCollection({
  */
 const siteDocs = defineCollection({
   loader: glob({ pattern: "*.md", base: CONTENT_ROOT }),
-  schema: z.object({ title: z.string(), description: z.string() }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    /** Set to join the Get started group (rendered at `/get-started/<slug>/`). */
+    section: z.literal("get-started").optional(),
+    /** Rail position within Get started. */
+    order: z.number().int().optional(),
+  }),
 });
 
 export const collections = { docs, siteDocs };

@@ -1,0 +1,47 @@
+---
+import { getCollection } from "astro:content";
+import DocLayout from "../../layouts/DocLayout.astro";
+import { SECTIONS } from "../../lib/doc-sources.ts";
+import { sectionLanding, type RailEntry } from "../../lib/rail.ts";
+
+/**
+ * `/<section>/` — a landing page per non-empty section, listing its pages (title + summary,
+ * falling back to description) in rail order. A section with no pages gets no landing.
+ */
+export async function getStaticPaths() {
+  const entries = await getCollection("docs");
+  const docIds = new Set(entries.map((e) => e.id));
+  const siteEntries: RailEntry[] = (await getCollection("siteDocs"))
+    .filter((d) => d.data.section === "get-started" && !docIds.has(`get-started/${d.id}`))
+    .map((d) => ({
+      id: `get-started/${d.id}`,
+      data: {
+        section: "get-started",
+        title: d.data.title,
+        order: d.data.order,
+        description: d.data.description,
+      },
+    }));
+  const all = [...entries, ...siteEntries];
+  return SECTIONS.flatMap((section) => {
+    const landing = sectionLanding(all, section);
+    return landing ? [{ params: { section }, props: { landing, entries } }] : [];
+  });
+}
+
+const { landing, entries } = Astro.props;
+---
+
+<DocLayout title={landing.title} entries={entries}>
+  <h1>{landing.title}</h1>
+  <ul class="section-landing">
+    {landing.pages.map((page) => (
+      <li>
+        <a href={`/${page.id}/`}>{page.data.title}</a>
+        {(page.data.summary || page.data.description) && (
+          <p>{page.data.summary || page.data.description}</p>
+        )}
+      </li>
+    ))}
+  </ul>
+</DocLayout>
