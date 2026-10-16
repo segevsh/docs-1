@@ -10,16 +10,16 @@ order: 20
 position: 2
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-hosting/config-reference.md"
-sourceSha: "cb3799c658406ec3961251869b1341334dae1e39"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-hosting/config-reference.md"
-syncedAt: "2026-10-06T21:20:15Z"
+sourceSha: "666d19686e03bcecdc93df7c66e0fd55b580552a"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/self-hosting/config-reference.md"
+syncedAt: "2026-10-15T22:39:16Z"
 ---
 
 
 # Self-host configuration reference
 
-Generated from the host's own configuration module — the generator refuses to write a page that disagrees with what `config.ts` currently reads. See [Install](/self-hosting/install/) for the compose bundle that sets the handful of these you must supply yourself, and [Troubleshooting](/self-hosting/troubleshooting/) for what happens when one of these is wrong.
+Generated from the host's own configuration module — the generator refuses to write a page that disagrees with what `config.ts` currently reads. See [Install](/self-hosting/install/) for the compose bundle that sets the handful of these you must supply yourself (it also passes the optional ones through `.env`; `.env.example` lists them), and [Troubleshooting](/self-hosting/troubleshooting/) for what happens when one of these is wrong.
 
 ## Operator login and sessions
 
@@ -32,10 +32,10 @@ Generated from the host's own configuration module — the generator refuses to 
 | `AUTH_EXCHANGE_TTL_SEC` | 900 | Lifetime of a token minted for one of your own end users through the token-exchange endpoint. |
 | `AUTH_IMPERSONATION_TTL_SEC` | same as AUTH_EXCHANGE_TTL_SEC | Lifetime of an operator impersonation session. |
 | `TENANT_SECRET_ROTATION_OVERLAP_SEC` | 86400 | How long a just-rotated tenant client secret keeps verifying, so an in-flight rotation never breaks a caller mid-request. |
-| `SIGNUP_MODE` | invite-only | Whether an uninvited visitor can self-serve sign up. Only the exact value `open` allows it; anything else, including unset, keeps signup invite-only. |
+| `SIGNUP_MODE` | Self-host: `open` when unset or blank. Cloud: invite-only. | Whether an uninvited visitor can self-serve sign up. The exact value `open` allows it, and so does an unset or blank value on a self-host install; any other value (including `Open`) keeps signup invite-only, and so does unset on cloud. `invite_only` closes registration after setup, and exposing the port with open signup lets any visitor register. |
 | `SIGNUP_TENANT` | `w6w` | Which tenant a fresh signup, or a request that names none, lands in. |
 | `INVITE_TTL_SEC` | 86400 | How long an account invite stays valid. |
-| `OPS_JWT_SECRET` | unset | Signs a separate machine-to-machine edge this host does not mount on a self-host install. Leave it unset; it is still checked at boot for a collision with `JWT_SECRET`. |
+| `OPS_JWT_SECRET` | unset | Signs the `apps:publish` ops tokens for the two artifact-publish routes (`GET /system-ops/apps/digests`, `POST /system-ops/apps/artifacts`) this host serves. Unset, those routes answer 401 to everyone. Must differ from `JWT_SECRET`, or the server refuses to start. |
 | `W6W_DEV_MODE` | off | A local-development escape hatch: while on, boot safety no longer refuses to start on a default/insecure `AUTH_PASSWORD`. Leave it unset (off) on any real deployment. |
 | `W6W_OPERATOR_SESSION_TTL` | `8h` | How long an operator session stays valid. Either a bare number of seconds or a number with an `s`, `m`, `h` or `d` suffix (for example `30m`, `8h`, `7d`), resolving to between one minute and 30 days; anything else — a decimal, a negative number, a unit this page does not list — refuses to start. Signed-in operators can list their own sessions and revoke one. |
 | `W6W_OPERATOR_OIDC_ISSUER` | unset — Operator SSO off | The OpenID Connect issuer your operators sign in through. Unset or blank means operator SSO does not exist on this install at all — the login form is the only way in. Once set, it must be a valid URL using `https:` (`http:` is accepted only while `W6W_DEV_MODE` is on) or the server refuses to start; the rest of the `W6W_OPERATOR_OIDC_*` variables below then become required. |
@@ -51,16 +51,20 @@ Generated from the host's own configuration module — the generator refuses to 
 | `DATABASE_URL` | none — required | The Postgres connection string this host connects with. Boot refuses immediately if it is unset. |
 | `API_PORT` | 8787 | The port the server listens on. |
 | `APPS_STORAGE_DIR` | `./storage/apps` | Where app and asset files are read from. A published self-host image points this at its own baked-in app catalog. |
+| `W6W_BLOB_DRIVER` | `fs` | Where content-addressed blobs are stored: `fs` (a directory on this host) or `gcs` (a Google Cloud Storage bucket). Exactly those two values, lowercase; anything else refuses to start. |
+| `W6W_BLOB_DIR` | `./storage/blobs` | The directory the `fs` blob driver writes into, created if missing. Boot refuses if it cannot be written, and warns when it sits on memory-backed storage (`tmpfs`), where blobs would not survive a restart. Mount persistent storage here. Ignored by the `gcs` driver. A spoke process reads the same variable for its own local directory of built-app code fetched from the hub; that directory is write-once and never pruned. |
+| `W6W_BLOB_GCS_BUCKET` | none — required when the driver is `gcs` | The name of the GCS bucket the `gcs` blob driver uses. A missing or malformed bucket name refuses to start. Ignored by the `fs` driver. |
+| `W6W_EXEC_CACHE_BYTES` | `67108864` (64 MiB) | Byte budget of the in-process cache of built-app code (`app.js`) loaded from the blob store, evicted least-recently-used. A single app larger than the budget still runs, it is just not kept. A positive whole number of bytes; zero, a negative, a fraction, a unit suffix (`64MB`) or exponent notation (`1e6`) refuses to start. Unset or blank uses the default. A spoke process reads this variable too, with the same rules, for its own cache. |
 
 ## Public URLs and Studio
 
 | Variable | Default | What it does |
 | --- | --- | --- |
 | `PUBLIC_BASE_URL` | the local API address | The public URL at which the API's root is reachable, including any proxy path prefix (the self-host bundle sets `https://<domain>/api`). An exposed Endpoint's callable URL is rendered against it, so set this to your real origin or operators will see `localhost` URLs. |
-| `WEBHOOK_BASE_URL` | the local API address | URL template inbound webhook triggers are built from, with an `{id}` placeholder. |
+| `WEBHOOK_BASE_URL` | `<PUBLIC_BASE_URL>/triggers/webhooks/{id}`, else the local API address (the self-host bundle derives `https://<domain>/api/triggers/webhooks/{id}`) | URL template inbound webhook triggers are built from, with an `{id}` placeholder. The self-host bundle derives `https://<domain>/api/triggers/webhooks/{id}` from your domain unless you override it. An app registers this URL with its vendor, so it must be reachable from the internet. |
 | `STUDIO_BASE_URL` | `http://localhost:5173` | Studio's own origin, used to build links such as invite redemption. |
 | `SERVE_STUDIO` | off | Serve a built Studio bundle from this same process at `/`, instead of running Studio as its own deployment. |
-| `STUDIO_DIST_DIR` | `../studio/dist` | Where the built Studio bundle lives. Only read when `SERVE_STUDIO` is on. |
+| `STUDIO_DIST_DIR` | `../studio/dist` in the images; `../studio/packages/studio/dist` when that directory exists (a source checkout) | Where the built Studio bundle lives. Only read when `SERVE_STUDIO` is on, or by the studio-only container mode. |
 
 ## Scheduling and execution
 
@@ -68,6 +72,7 @@ Generated from the host's own configuration module — the generator refuses to 
 | --- | --- | --- |
 | `SCHEDULER_ENABLED` | on | Whether this replica runs the in-process cron scheduler. Every scheduled job is a database-wide advisory-lock singleton, so more than one replica sharing a database never double-fires regardless of this flag. |
 | `RUN_CONCURRENCY_PER_REPLICA` | 5 | How many workflow runs this one replica executes at once. A per-replica budget, separate from the licence's install-wide parallel-execution limit; in a container, size it against the node's `cpuLimit` (its cgroup CPU ceiling), never against `cpus` — see Nodes and the resource scan. |
+| `TRIGGER_MIN_INTERVAL_MS` | 300000 (5 minutes) | The shortest interval a poll trigger subscription may check at, in milliseconds. A whole number of at least `60000` (1 minute); blank or unset means 5 minutes, and anything else refuses to start. A trigger may declare a longer minimum of its own, and the longer of the two applies. Read when a subscription is created, so a change affects new subscriptions only. |
 | `REPLICA_ID` | generated | This replica's single identity: the **node id** it registers under AND the id its claims, logs and admission counters carry. Set it whenever you run more than one replica: it must be stable across restarts and unique per replica. Unset, every boot invents a fresh random id, leaving a `gone` node row behind (hidden from `GET /nodes` unless `?include=gone`, not pruned yet) and a dead admission-counter entry (never cleaned up); two live replicas sharing one id also read and reset each other's counts. |
 
 ## Nodes, labels and resource inventory
@@ -109,10 +114,7 @@ Generated from the host's own configuration module — the generator refuses to 
 | --- | --- | --- |
 | `W6W_INSTALLATION_MODE` | set by the entrypoint | Which profile this process boots as. A published self-host image sets this itself; leave it unset, since a contradicting value refuses to boot. |
 | `W6W_EDGES` | the fixed self-host set | Which API surfaces this process serves. A self-host install always serves exactly the same three; leave it unset. |
-| `W6W_CONTROL_URL` | unset — link off | Base URL of the control plane. With it unset the install is fully local: no licence fetch, usage report or commerce call is ever made. |
-| `W6W_CONTROL_PUBLIC_KEY` | unset — trusts nothing | The vendor's public key (a JWK, or a JSON array of them) this host trusts for licence documents. Without it, every licence — fetched or from a file — is ignored. |
-| `W6W_LICENCE_FILE` | unset | Path to an offline licence file (one signed document). Re-read on every poll tick, so replacing the file takes effect without a restart. |
-| `W6W_USAGE_REPORTING` | off | Turns on hourly usage reporting to the control plane. Self-host is opt-in; only `1`/`true`/`yes`/`on` (case-insensitively) enables it — anything else, including unset, leaves it off. |
+| `W6W_USAGE_REPORTING` | on once linked or licensed, otherwise off | Hourly usage reporting. A cloud installation always reports. Self-host defaults to on once the install is linked or licensed through the Warden, and off otherwise. `0`/`false`/`off`/`no` (case-insensitively) opts out; `1`/`true`/`yes`/`on` opts in. Blank is the same as unset. |
 | `W6W_USAGE_REPORT_INTERVAL_MINUTES` | unset — the governing lease's own cadence, or 720 (twice a day) with none | Self-host only (a cloud installation always reports live and never reads this). May only **shorten** the base cadence, never lengthen it: `0` goes live; `1`–`4` floors to `5`; a value above the base is **clamped** back to the base with a boot-time warning; anything unparsable is ignored with a warning. Never refuses to boot. |
 
 ## App catalog
@@ -197,6 +199,7 @@ The list above is generated by scanning `config.ts` itself, so it can only ever 
 | --- | --- |
 | `W6W_CREDENTIAL_KEY` | 64 hex chars (32 bytes). Encrypts stored connection credentials and vault secrets at rest. Unset or malformed falls back to a well-known development key with a loud warning — never rely on that outside development. |
 | `W6W_CREDENTIAL_KEY_NEXT` | Optional. 64 hex chars (32 bytes), different from `W6W_CREDENTIAL_KEY`. Set it only while rotating the credential key, on every replica, exactly as the rotation runbook in [Upgrade](/self-hosting/upgrade/) describes — the server then reads both keys, and a value that is not 64 hex characters, or that decodes to the same bytes as `W6W_CREDENTIAL_KEY`, refuses to start. Unset in normal operation. |
+| `GOOGLE_APPLICATION_CREDENTIALS` | Optional. Path to a Google service-account key JSON file. Read only when `W6W_BLOB_DRIVER=gcs` and the server runs outside Google Cloud: the blob store signs a token request with that key. On Cloud Run (or any host with a metadata server) leave it unset and the runtime service account's token is used instead. A missing or malformed file refuses to start. |
 | `W6W_HUB_URL` | **Spoke only.** The hub this spoke is enrolled to, as the base URL a browser would reach it at — including any reverse-proxy path prefix (`https://hub.example.com/api` on the published self-host bundle). It must use `https:` with no userinfo, query string or fragment; plain `http:` is accepted only while `W6W_DEV_MODE` is on, and only for development. Every call the spoke makes is signed over this URL's own `/hub/...` path and never over the prefix, so the same hub can be reached through your proxy. A spoke only ever reaches its hub, on your local network — cross-site spokes over the public internet are not supported in this release. |
 | `W6W_HUB_ENROLL_TOKEN` | **Spoke only.** The one-time token that enrolls this spoke with its hub on its first start. An operator mints it in Studio under Settings → Installation → Nodes → **Enroll a spoke**, or through `POST /nodes/enroll-tokens` with an operator token holding `operator:installation` — the response shows the token once. It is single-use and valid for 15 minutes; the spoke exchanges it for its own key so that later starts need no token, and you can remove it from the spoke's environment after enrolling. |
 | `W6W_SPOKE_KEY_FILE` | **Spoke only.** Where the spoke keeps its own key, default `./spoke-key.json`. The spoke mints the key on first enrolment and refuses to start if the file is readable by its group or by other users — mode `0600`, owner-only — and the spoke's own id lives inside that file, so keep the file on persistent storage and never share it between spokes. A read-only mounted secret works too, as long as it already holds an enrolled key file. |

@@ -11,8 +11,8 @@ position: 4
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/integrations/apps.md"
 sourceSha: "47b1d832834759c9a3fa311192aaff51032ba21e"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/integrations/apps.md"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/integrations/apps.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

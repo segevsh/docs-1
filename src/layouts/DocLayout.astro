@@ -14,7 +14,7 @@ interface Props {
   description?: string;
   /** Every `docs` entry — the rail is built from this, grouped by `section`, sub-pages nested. */
   entries: CollectionEntry<"docs">[];
-  /** The entry currently being viewed, highlighted in the rail. */
+  /** The current entry ID, or section slug on a section landing page. */
   currentId?: string;
 }
 
@@ -41,7 +41,7 @@ const areas = buildRail([...entries, ...siteEntries], currentId);
   <div class="docs-layout">
     <nav class="docs-rail" aria-label="Docs">
       {areas.map(({ id: areaId, title: areaTitle, open, groups }) => (
-        <details class="docs-rail-section" data-area={areaId} open={areaId === "reference" ? open : true}>
+        <details class="docs-rail-section" data-area={areaId} open={open}>
           <summary>{areaTitle}</summary>
           {groups.map(({ section, title: groupTitle, items }) => (
             <>

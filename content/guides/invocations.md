@@ -10,10 +10,10 @@ order: 50
 position: 13
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/guides/invocations.md"
-sourceSha: "69b8cac9ea72d3e38a6c826243a7ad69ee8737c5"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/guides/invocations.md"
-syncedAt: "2026-10-06T21:28:00Z"
+sourceSha: "22b52dd80fb98c4e506dce7e399b53076e2e6d52"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/guides/invocations.md"
+syncedAt: "2026-10-13T00:00:14Z"
 ---
 
 
@@ -64,6 +64,32 @@ Two things to keep straight:
 - **A failure carries the frame too.** A failed call's error body includes `invocationId`,
   `status: "failed"` and the timing next to the `error`, so even a call that did not work has a
   receipt.
+
+### What ran: `meta`
+
+The test-invoke route, `POST /apps/<app-id>/actions/<key>/invoke`, adds one more top-level field
+beside `value` and `output`: `meta`, which says what actually ran.
+
+```json
+{
+  "kind": "action",
+  "output": { "text": "hi" },
+  "meta": { "app": "echo-app", "version": "1.0.1", "action": "echo", "connectionId": "conn_8f2a" }
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `app` | The app that ran. |
+| `version` | The app version that was actually loaded: an explicit `version` in the request, else your tenant's pin, else the latest. |
+| `action` | The action key. |
+| `connectionId` | The stored connection the call used, or `null` when it used none (no connection, or an inline one). |
+
+`meta` is on both the success answer and a failure after the call was authorized (the app loaded
+and any connection you named resolved). It is absent for `@w6w/*`
+built-ins and for a call that fails before that point: a policy refusal, an unknown app, version
+or connection. It exists on this route only, not on `/run`, Functions or Endpoints. A connection id is only
+a name: knowing it grants nothing.
 
 ## Read one back
 

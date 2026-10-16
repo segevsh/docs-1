@@ -1,80 +1,113 @@
 # @w6w/docs
 
-Public documentation site for w6w — `docs.w6w.io`. Astro, static-first, single package.
+The source for `docs.w6w.io` lives in this package. It is an Astro static site: package-owned
+Markdown is collected into `content/`, then Astro renders it into `dist/`.
 
-## Running
+## Run locally
 
-```bash
+Use Node 24, as in CI, and the pnpm version declared in `package.json`.
+
+```sh
+# From packages/docs in the monorepo:
 pnpm install
-pnpm dev            # dev server
-pnpm build          # static build -> dist/
-pnpm preview        # serve the build locally
-pnpm check          # astro check (typecheck)
-pnpm check:tokens   # verify src/styles/tokens.css hasn't drifted from w6w-io/w6w-branding
-pnpm import-docs    # collect every pinned + manifest-listed doc from the local checkout into content/
-pnpm test           # node --test the importer's unit suites
+pnpm import-docs --dry-run   # inspect the full collection without writing
+pnpm import-docs             # refresh content/ from sibling packages
+pnpm dev                    # serve the collected content
+pnpm build                  # compile content/ into dist/
+pnpm preview                # serve dist/ locally
+pnpm check                  # Astro type checking
+pnpm test                   # importer, navigation and rendering unit tests
+pnpm check:tokens           # compare vendored tokens with w6w-branding
 ```
 
-## Content
+`dev` and `build` read the current `content/` snapshot; they do not run the importer themselves.
+Run `import-docs` after changing a source package. Node 22 installations without default type
+stripping need `node --experimental-strip-types src/lib/import-docs.ts` for the importer.
 
-`content/` is a sibling of `src/`, not nested under it — a file's path there matches its route
-exactly (`content/packages/core.md` → `/packages/core/`, `content/studio/workflows/triggers.md` →
-`/studio/workflows/triggers/`, `content/quickstart.md` → `/quickstart/`). Two collections read
-from this one root (`src/content.config.ts`), told apart by pattern rather than by a wrapper
-folder:
+## How package docs become pages
 
-- `content/<section>/<slug>.md` and a sub-page's `content/<section>/<parent>/<child>.md` —
-  imported markdown, one file per source doc, matched by `*/**/*.md`. **Entirely
-  importer-owned**: `pnpm import-docs` (`src/lib/import-docs.ts`) deletes anything matching this
-  shape its effective source list doesn't claim. Never hand-author a page here.
-- `content/*.md` (root-level only) — hand-authored pages this site writes itself (`index.md` for
-  `/`, `quickstart.md` for `/quickstart/`), matched by `*.md`. The importer's prune sweep can't
-  reach these — see `content.config.ts`'s own comment for why the two patterns are disjoint by
-  construction, no wrapper folder required.
+1. `src/lib/import-docs.ts` walks the source root, which defaults to the monorepo's `packages/`
+   directory, and finds every `docs/manifest.json`.
+2. Each manifest lists the files to publish, their `section`, `slug`, `title` and navigation
+   order. `src/lib/doc-sources.ts` validates those entries and their source frontmatter. An
+   unlisted Markdown file is not published; `shared: false` leaves a listed page as a draft.
+3. The importer reads the listed files, rewrites relative links, and adds Git provenance. It
+   writes `content/<section>/<slug>.md`, including nested slugs such as `embed/workflows`.
+   The HTTP API reference is generated separately from `wrappers/endpoints.json`.
+4. `src/content.config.ts` loads the generated Markdown into Astro's `docs` collection.
+   `src/pages/[...slug].astro` renders one page per entry at `/<section>/<slug>/`.
+5. `src/lib/rail.ts` builds navigation from the collection metadata. Two-segment slugs nest
+   below their parent; no separate navigation registration is needed.
 
-See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the `docs/` + `docs/manifest.json` convention
-every source package follows, and what makes a doc eligible to land here.
+There is no hard-coded source-page list. The walk skips `node_modules`, `dist`, `build`, all
+hidden directories, and directories containing `.docsignore`. This package has `.docsignore`
+so generated content cannot be collected as another source.
 
-## The importer
+The importer gathers and validates every source before writing. Missing files, duplicate
+routes, orphaned sub-pages, mismatched frontmatter, invalid links or uncommitted source changes
+fail the import without a partial update. `--allow-dirty` permits a local preview of uncommitted
+sources; do not commit generated content from that mode.
 
-CI never runs the importer. You run it locally from a full monorepo checkout and commit the
-resulting `content/` diff — that diff is the review of what gets published.
+### Source root and pruning
 
-```bash
-pnpm import-docs --dry-run   # print what would be written and pruned; write nothing
-pnpm import-docs             # write content/, then review and commit the diff
+The root must contain **all** source repositories as siblings (`core`, `server`, `wrappers`,
+`studio`, `apps`, `ui`). In a standalone checkout, use `--root` or `DOCS_SOURCE_ROOT`:
+
+```sh
+pnpm import-docs --root /path/to/sources --dry-run
+pnpm import-docs --root /path/to/sources
 ```
 
-It collects two kinds of source, all read from the local checkout (no network):
+Do not point a writing import at only `packages/studio`: the importer removes generated pages
+not claimed by the discovered sources. A single-repository root would prune other packages'
+pages. Use the full monorepo `packages/` directory even when only Studio docs changed.
 
-- **Pinned** — `src/lib/doc-sources.ts`'s `DOC_SOURCES`: `core`'s README, its
-  `docs/build-a-w6w-app.md` guide and 17 RFCs, and the `ui` and `wrappers` READMEs.
-- **Discovered** — it walks the source root for every `docs/manifest.json` and imports the files
-  each one lists. The walk never enters `node_modules`, `dist`, `build`, any dot-directory, or
-  any directory holding a `.docsignore` file (that directory and everything under it — this repo
-  has one at its root, so the site never collects itself).
+`content/<section>/...` is importer-owned. Edit each package's original docs, then regenerate;
+do not patch the generated copy. Root-level `content/*.md` contains the site-authored pages
+and is outside the prune sweep. A second import against unchanged sources should report zero
+writes and zero removals.
 
-The source root defaults to the directory this package sits in (the monorepo's `packages/`). From
-a git worktree that isn't true, so point it explicitly with `--root <dir>` or
-`DOCS_SOURCE_ROOT=<dir>`.
+Each generated page records `sourceRepo`, `sourcePath`, `sourceSha` (file content hash),
+`sourceRefSha` (source checkout HEAD), `sourceUrl` and `syncedAt` (the file's last commit date).
+The repository name comes from `upstream`, falling back to `origin`; importing a fork checkout
+does not mean its commit has reached the upstream branch.
 
-Each page is stamped with provenance from git: `sourceRepo` (the enclosing repo's `upstream`
-remote, else `origin`), `sourcePath`, `sourceSha` (the blob hash of the file), `sourceRefSha`
-(that repo's `HEAD`), `sourceUrl`, and `syncedAt` (the file's last commit date).
+## Studio and the embed package
 
-It gathers everything first and writes only if everything validated — one failure (a missing
-file, a bad manifest entry, a path-traversal attempt, a `(section, slug)` collision, a sub-page
-without its parent, frontmatter that disagrees with its manifest entry, or a listed file with
-**uncommitted changes**) leaves `content/` untouched and exits non-zero, naming every failure.
-Pass `--allow-dirty` to collect uncommitted work anyway (for a preview — don't commit what it
-produces). A listed page whose own frontmatter says `shared: false` is skipped and reported. On a
-clean run it also prunes anything under the collection root no published source claims, removing
-folders it leaves empty. `pnpm test` exercises all of this against a fake checkout — no real
-filesystem or git is needed to validate the importer's own logic.
+Studio's public docs are declared in `../studio/docs/manifest.json`. The importer reads that
+manifest from the Studio repository root; it does not need a second manifest inside
+`studio/packages/embed`.
+
+| Studio source | Generated content | Website route |
+| --- | --- | --- |
+| `docs/overview.md` | `content/guides/overview.md` | `/guides/overview/` |
+| `docs/embed/index.md` | `content/clients/embed.md` | `/clients/embed/` |
+| `docs/embed/workflows.md` | `content/clients/embed/workflows.md` | `/clients/embed/workflows/` |
+| `docs/embed/reference.md` | `content/clients/embed/reference.md` | `/clients/embed/reference/` |
+
+The three embed pages appear under **Clients → Embed the workflow editor**; the list/create
+example and API/lifecycle reference are child pages. The separate SDK embedding guide at
+`/guides/embed/` comes from the wrappers repository.
+
+After importing and building, check `dist/clients/embed/index.html`,
+`dist/clients/embed/workflows/index.html` and `dist/clients/embed/reference/index.html`.
+The Clients landing page at `/clients/` should link to the embed parent page.
+
+## CI and deployment
+
+`.github/workflows/deploy.yml` checks out this repository plus the six source repositories
+from `w6w-io`, imports their docs, builds the site, then deploys `dist/` to the Cloudflare Pages
+project `w6w-docs`. It runs on a published release or a `Build + Deploy` workflow dispatch.
+It imports fresh sources in CI, even if the committed local `content/` snapshot is older.
+
+Studio's `.github/workflows/docs-dispatch.yml` dispatches that build when a push to its upstream
+`main` changes `docs/**`. Both workflows have upstream-repository guards. A push to a personal
+fork does not update the live site: the source change must reach `w6w-io/w6w-studio`, and the
+upstream dispatch/deploy must succeed. Cross-repository access uses the configured GitHub App.
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the complete source manifest and frontmatter rules.
 
 ## Design tokens
 
-`src/styles/tokens.css` is a vendored, byte-identical copy of
-`w6w-io/w6w-branding`'s `tokens/tokens.css`, guarded by `scripts/check-tokens.mjs`
-(`pnpm check:tokens`). It is not `@import`ed across the filesystem because this repo's CI
-checks out no sibling `branding` repo — see the file's own header.
+`src/styles/tokens.css` is a vendored copy of `w6w-io/w6w-branding`'s `tokens/tokens.css`,
+checked by `scripts/check-tokens.mjs`. CI does not check out a sibling branding repository.

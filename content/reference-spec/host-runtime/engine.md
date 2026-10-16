@@ -10,10 +10,10 @@ order: 30
 position: 19
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/engine.md"
-sourceSha: "8d2c37faa4487d163f8bb0cb6e01c10060c46b55"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/engine.md"
-syncedAt: "2026-08-11T03:16:34Z"
+sourceSha: "cb6fc8be2c5b17159d50ac30052e910f930cd575"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/engine.md"
+syncedAt: "2026-10-12T22:32:45Z"
 ---
 
 # RFC: Engine
@@ -302,9 +302,11 @@ A host + engine pair conform to this RFC when the following invariants hold:
 2. **Checkpoint durability.** After a process crash, `state.load(runId)` returns a state that reflects the last successful `state.checkpoint()`.
 3. **Retry classification.** `phase: "auth"` errors are never retried. `phase: "execute"` errors are retried only when the action declares `idempotent: true` OR the error object sets `retryable: true`.
 4. **Replay determinism.** Replaying a run reuses recorded `StepExecution.output` verbatim for previously-succeeded steps and produces the same terminal `status`.
+   See [Workflow RFC — Amendment — 2026-10-12: step execution metadata (`steps.<id>.meta`)](/reference-spec/composition/workflow/#amendment--2026-10-12-step-execution-metadata-stepsidmeta): stored `StepExecution.meta` is reused wherever stored `output` is.
 5. **Control set support.** All four canonical controls interpret as specified. Unknown control actions raise `unknown_control` at plan time (never at run time).
 6. **Expression scope.** The engine populates `vars`, `steps`, and `trigger` in every expression evaluation as specified in the [Workflow RFC](/reference-spec/composition/workflow/#expression-markers). Within a `foreach` sub-block, `foreach.item` and `foreach.index` are added.
    See [Workflow RFC — Amendment — 2026-08-11: the multipart expression envelope and the `render` part kind](/reference-spec/composition/workflow/#amendment--2026-08-11-the-multipart-expression-envelope-exprvalue-and-the-render-part-kind-f-3), which adds the `secrets` and `documents` roots to that enumeration and governs it.
+   See [Workflow RFC — Amendment — 2026-10-12: step execution metadata (`steps.<id>.meta`)](/reference-spec/composition/workflow/#amendment--2026-10-12-step-execution-metadata-stepsidmeta), which adds `meta` beside `output` in each `steps` entry of the scope; the engine still populates no new root.
 7. **Cancellation.** When `context.signal` fires, the engine finishes the in-flight step invocation (best-effort abort via the runtime), then transitions the run to `status: "canceled"` and stops.
 8. **Suspend / resume.** After `wait`, the engine may only be resumed via `resume(runId, resumeToken)` where the token matches the one passed to `context.schedule`.
 9. **Error routing** (fixture tag `error-routing`). A step that ends `failed` and declares at least one outgoing edge with `when: "error"` routes down that edge — its `onError` is not consulted — and the step's outgoing `when: "success"` edges are marked skipped; on `succeeded`, the converse. Any `StepError` `phase` routes, and routing happens only after `retry` is exhausted or the error is non-retryable. A step that is the target of both a success edge and an error edge out of the same step executes **exactly once** (skipped edges are keyed by `(from, to, when)`, and a step is skipped only when every one of its incoming edges is skipped). A run whose error branch completes ends `status: "succeeded"` with the failed step's `StepExecution` retained (`status: "failed"`, `error` populated).
@@ -332,3 +334,61 @@ The reference engine's execution model is documented in the workflow repo's `REA
 - `Review` — proposal is feature-complete; soliciting feedback before freeze.
 - `Final` — frozen for `manifestVersion: "2"` (matches the Workflow RFC). Breaking changes require a new RFC and a `manifestVersion` bump.
 - `Superseded` — replaced by another RFC; carry a pointer to its successor.
+
+## Amendment — 2026-10-07: the scheduler and `@w6w/control` · `merge`
+
+> **Additive.** Nothing above is edited. This amendment **supersedes** the following base text:
+>
+> - the canonical-controls list ("the four control actions listed here", the `if`, `foreach`,
+>   `parallel`, `wait` enumeration in Summary, Goals and Conformance 5) — the canonical set also
+>   contains **`aggregate`** (added by the 2026-07-23 additive section but never listed) and **`merge`**;
+> - base line 35, "Extending the control set beyond the canonical four" — the canonical set is no longer
+>   four; and base line 287 (Conformance 5), "All four canonical controls interpret as specified" —
+>   read "all canonical controls", including `aggregate` and `merge`;
+> - the `aggregate` section's description as a standalone control — it is now `merge` without entries
+>   (see below). It stays valid forever, hidden from palettes.
+>
+> Open question 1 of the [Workflow RFC](/reference-spec/composition/workflow/#open-questions) stays open.
+
+### Scheduler
+
+Planning is unchanged. Execution depends on [`Step.fanOut`](/reference-spec/composition/workflow/#amendment--2026-10-07-stepfanout-and-parallel-scheduling):
+
+- A plan with **no** `fanOut: "parallel"` step MUST run the plain `plan.order` loop, observably identical
+  to before this amendment.
+- Otherwise the engine runs the **strand scheduler**: a strand runs one step at a time, always the
+  earliest-in-plan-order ready step assigned to it; a step is ready when every inbound edge is resolved
+  (source terminal or edge skipped). When a `parallel` step completes, its newly-ready direct successors
+  in plan order S1…Sk are placed: S1 continues the strand, S2…Sk open new strands. A join runs once, on
+  the strand of its earliest-plan-order inbound source. No concurrency cap.
+- Checkpoint calls are serialized (one in flight, completion order); `RunStatePatch` is unchanged.
+- On `fail` / `wait` suspension / abort the engine stops launching, drains in-flight steps, then
+  finalizes. Reported error = first failure by plan order; suspend token = first suspended step by plan
+  order; `lastOutput` = last succeeded step by plan order. Replay `from` = the step and all its graph
+  descendants.
+- The engine never reads `ports` (enforcement is editor + import only).
+
+### `@w6w/control` · `merge`
+
+The fan-in join with optional explicit entries. No new reserved `@w6w/*` id; no new host primitive.
+
+**Params:**
+
+| Key | Type | Required | Description |
+|---|---|---|---|
+| `mode` | enum | ✅ | `"array"` or `"object"`. |
+| `entries` | `{ key?: string; value: unknown }[]` | ⬜ | Explicit entries. Absent or empty ⇒ the `aggregate` behaviour. |
+
+**Output:** `{ result }`, referenceable as `steps.<id>.output.result`.
+
+- **No / empty `entries`** — exactly `aggregate`: `array` ⇒ inbound source outputs in incoming-edge
+  order, `undefined` dropped; `object` ⇒ inbound outputs shallow-merged, later edge wins.
+- **With `entries`** — `array` ⇒ the entry values in order, `undefined` dropped; `object` ⇒
+  `{ [key]: value }` in order, `undefined` values omitted. In `object` mode an empty or duplicate `key`
+  raises `param_invalid`.
+- **Single-reference rule (type-preserving).** An entry `value` that is exactly ONE reference — an
+  `ExprValue`, or a template string whose only part is a single run-scope `var` marker with no
+  surrounding text — resolves to the referenced value **type-preserved** (as `{ "$": ref }` does:
+  numbers, objects, arrays, booleans stay themselves). Any other value resolves like every `with`
+  value (templates yield strings).
+- **Equivalence.** `aggregate` ≡ `merge` without entries. Engines SHOULD share one join function.

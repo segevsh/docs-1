@@ -11,8 +11,8 @@ position: 23
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/settings/tokens.md"
 sourceSha: "3dd928ea4d96b3bc9fcaf2cb7df92bd44ea6d0a9"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/settings/tokens.md"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/settings/tokens.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

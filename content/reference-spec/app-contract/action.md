@@ -10,10 +10,10 @@ order: 10
 position: 2
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/action.md"
-sourceSha: "56fd71b91fbf2ab0d8179a480abade596d42ed2f"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/action.md"
-syncedAt: "2026-09-19T14:39:40Z"
+sourceSha: "d586629c3cb5ef96926b563228357eff3d5e4a7c"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/action.md"
+syncedAt: "2026-10-07T02:49:27Z"
 ---
 
 # RFC: Action
@@ -423,3 +423,21 @@ resolves to the `FileRef` — the same six-field JSON object the action produced
 underlying bytes. A step that needs the bytes themselves reads them explicitly through
 [`ctx.file.read`](/reference-spec/host-runtime/hook-runtime/#amendment--2026-09-19-ctxfile-and-binary-capable-signablerequestbody),
 passing the resolved `FileRef` (or its bare `id`).
+
+## Amendment — 2026-10-07: an Action may declare `ports` (P-1)
+
+> This section is **additive**. It **supersedes** the 2026-07-23 amendment line "**Node input/output
+> cardinality** is a property of the workflow **`Step`**, not of the action — an optional
+> `Step.ports?: { in?: number; out?: number }` (omitted ⇒ `{ in: 1, out: 1 }`)" (quoted from
+> [Node cardinality (note)](#node-cardinality-note)). The sentence "Actions are unaffected by how
+> many edges reach the node that uses them" still holds for execution: an action still receives
+> exactly one resolved `with` input. The base text is left in place and read through this amendment.
+
+An Action MAY declare an optional `ports?: Ports` (`Ports = { in?: PortCount; out?: PortCount }`,
+`PortCount = number | "many"`; see [Node Types — P-1 amendment](/reference-spec/composition/node-types/#amendment--2026-10-07-unbounded-out-portcount-and-field-wise-ports-resolution-p-1)).
+It is the action's declared default cardinality for any step that uses it. Resolution is field-wise:
+`Step.ports.x → Action.ports.x → App.ports.x → default` (`in` ⇒ `1`, `out` ⇒ `"many"`). The step
+remains the most specific layer; the superseded "omitted ⇒ `{ in: 1, out: 1 }`" is replaced by
+`{ in: 1, out: "many" }`. `describe()` serves each action with `ports = { ...app.ports, ...action.ports }`
+when either is declared (absent otherwise). Ports are an authoring/import-time concern; the runtime
+never reads them.

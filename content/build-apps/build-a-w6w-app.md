@@ -10,10 +10,10 @@ order: 0
 position: 20
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "docs/build-a-w6w-app.md"
-sourceSha: "3962532168b3cccd9cc787208b5144f116f4f1f8"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/docs/build-a-w6w-app.md"
-syncedAt: "2026-10-06T21:19:19Z"
+sourceSha: "0fe51e22875edb332097009004f4298825080d55"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/docs/build-a-w6w-app.md"
+syncedAt: "2026-10-07T13:33:09Z"
 ---
 
 
@@ -22,7 +22,7 @@ syncedAt: "2026-10-06T21:19:19Z"
 > **Audience: an LLM / coding agent building a w6w App.** This file is written to be pasted into an
 > agent prompt. It is self-contained: the rules, contracts, and examples an agent needs to author a
 > correct App without reading the whole spec. When something here is ambiguous, the RFCs under
-> [`../rfcs/`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/) and the types in [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/) are the source of
+> [`../rfcs/`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/) and the types in [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/packages/types/) are the source of
 > truth.
 
 ## Start from a template — do not scaffold from scratch
@@ -347,9 +347,22 @@ Four things to know:
 
 ## Triggers (advanced / optional)
 
-Apps may also declare `triggers` (what _starts_ a workflow) via `TriggerDefinition` with
-`onSubscribe` / `onUnsubscribe` / `handleIngest` hooks. The starter templates do **not** include
-triggers; add them only when asked, and read [`rfcs/trigger.md`](/reference-spec/composition/trigger/) first.
+Apps may also declare `triggers` (what _starts_ a workflow) via `TriggerDefinition`. A trigger is
+one of two forms, and the loader derives which (`type`) from the hooks you declare:
+
+- **Webhook** — `onSubscribe` registers with the third party (it receives the `callbackUrl` to hand
+  over) and `onUnsubscribe` destroys that registration. They MUST pair: the loader rejects
+  `onSubscribe` without `onUnsubscribe` (`invalid_trigger`). The optional `handleIngest` turns the
+  whole inbound call (`{ method, path, query, headers, body }`) into 0..N events; without it the
+  body is the event. A trigger with no hooks is a plain receiver.
+- **Poll** — `poll({ params, state, subscriptionId }, ctx)` returns `{ events, nextState? }` and the
+  host calls it on an interval (`minIntervalMs` is your floor; the host may set a higher one). Dedupe
+  from your own cursor in `state`. A poll trigger MUST NOT declare `onSubscribe`.
+
+Either form may add `parseOutput`, which reshapes a stored event into the run's `trigger.event`.
+That is five hooks in all: `onSubscribe`, `onUnsubscribe`, `handleIngest`, `poll`, `parseOutput`.
+The starter templates do **not** include triggers; add them only when asked, and read
+[`rfcs/trigger.md`](/reference-spec/composition/trigger/) first.
 
 ## Definition-of-done checklist
 
@@ -370,10 +383,10 @@ triggers; add them only when asked, and read [`rfcs/trigger.md`](/reference-spec
 
 - Templates: [w6w-app-template-node](https://github.com/w6w-io/w6w-app-template-node) ·
   [w6w-app-template-deno](https://github.com/w6w-io/w6w-app-template-deno)
-- Types: [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/) · Runtime: [`@w6w/runtime`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/runtime/)
+- Types: [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/packages/types/) · Runtime: [`@w6w/runtime`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/packages/runtime/)
 - RFCs: [app](/reference-spec/app-contract/app/) · [action](/reference-spec/app-contract/action/) · [auth](/reference-spec/app-contract/auth/) ·
   [param](/reference-spec/app-contract/param/) · [connection](/reference-spec/app-contract/connection/) ·
   [invocation](/reference-spec/host-runtime/invocation/) · [hook-runtime](/reference-spec/host-runtime/hook-runtime/) ·
   [categories](/reference-spec/app-contract/categories/) · [trigger](/reference-spec/composition/trigger/)
-- Working examples: [`fixtures/apps/hello`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/fixtures/apps/hello/) (no-auth) ·
-  [`fixtures/apps/sendgrid`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/fixtures/apps/sendgrid/) (apiKey + sign)
+- Working examples: [`fixtures/apps/hello`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/fixtures/apps/hello/) (no-auth) ·
+  [`fixtures/apps/sendgrid`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/fixtures/apps/sendgrid/) (apiKey + sign)

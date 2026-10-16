@@ -11,8 +11,8 @@ position: 8
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/image-object.md"
 sourceSha: "67301eca392bdc95841350c7a3afb8259e91d3cf"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/image-object.md"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/image-object.md"
 syncedAt: "2026-09-19T14:54:47Z"
 ---
 

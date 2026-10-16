@@ -11,8 +11,8 @@ position: 10
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/guides/connect-mcp.md"
 sourceSha: "b17ff025c7f647cd2c7e2b552ca14d2bec2139d6"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/guides/connect-mcp.md"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/guides/connect-mcp.md"
 syncedAt: "2026-10-06T21:36:52Z"
 ---
 

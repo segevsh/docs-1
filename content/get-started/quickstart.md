@@ -11,8 +11,8 @@ position: 13
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/quickstart.md"
 sourceSha: "f258ace45e772ef7998101220e61fb1258bb0b7f"
-sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/quickstart.md"
+sourceRefSha: "73d1fae563271498c8f9c6d92f213ad19903fee3"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/73d1fae563271498c8f9c6d92f213ad19903fee3/docs/quickstart.md"
 syncedAt: "2026-10-06T21:21:51Z"
 ---
 

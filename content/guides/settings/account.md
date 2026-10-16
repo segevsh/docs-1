@@ -11,8 +11,8 @@ position: 21
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/settings/account.md"
 sourceSha: "0a008defbaeb4d477413c79e22d851e1a2d0f829"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/settings/account.md"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/settings/account.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

@@ -10,10 +10,10 @@ order: 40
 position: 11
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/workflows/runs.md"
-sourceSha: "90a58c13d8b1e02ad8532e96d7af626ed0f23fe6"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/workflows/runs.md"
-syncedAt: "2026-10-06T21:18:40Z"
+sourceSha: "8a292af55f343a0fe621e85c64320b45c2b08225"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/workflows/runs.md"
+syncedAt: "2026-10-13T02:16:44Z"
 ---
 
 
@@ -29,13 +29,17 @@ that sends an email really sends it.
 
 1. Select the step and click **Test-run this step** in its toolbar, or open **Edit step** and go to
    the **Test** tab.
-2. Under **Incoming state**, choose what the step receives: click an earlier step's chip to reuse
-   its last saved test result, or expand **Override the incoming state** and type JSON.
-3. Click **Test** (or **▶ Run**).
+2. Under **Incoming state**, choose what the step receives: click an earlier step's chip to fill
+   the override with its last saved test result, or expand **Override the incoming state** and type JSON.
+3. Click **Test** (or **▶ Run**). The Test also sends, automatically, the saved output and
+   metadata of every earlier step whose saved test captured them, whether or not you click a chip.
+   A `{{ }}` reference to metadata or output the saved test lacks reads as empty text; a
+   `{ "$": ... }` binding to it is refused and asks you to re-run that upstream test. A malformed
+   expression is reported as a request error before the action runs.
 
 {% endwebui %}
 
-How you know it worked: **Test run: &lt;step id&gt;** shows **Result** and any **Console output**.
+How you know it worked: **Test run: &lt;step id&gt;** shows **Result**, the step's **Metadata**, and any **Console output**.
 If it failed, it shows the error code and message instead.
 
 The test uses the configuration saved on the step; only the incoming state changes between tests.
@@ -69,7 +73,17 @@ The run log opens beside the canvas while a run is in progress.
 - Errors are listed first: the run's own error, then each failed step's code and message.
 - Below that, one row per step, with a status (**Pending**, **Running**, **Succeeded**,
   **Failed**, **Skipped**, **Queued** or **Canceled**) and its timing.
-- Expand a row to see the step's **Input** and **Output**, with every expression already resolved.
+- Expand a row to see the step's **Input** and **Output**, with every expression already resolved,
+  and **Metadata** (app, version, action, connection) when the run recorded it. A failed step may
+  show the metadata of its last attempt; a row with none recorded shows no block. Built-in
+  (`@w6w/*`), Function and Workflow steps show no Metadata.
+  Any input value that reads a vault secret, including a string with a secret inside it like
+  `Bearer {{ secrets.API_KEY }}`, is shown as `[redacted]`. The step still sent the real value, and
+  the run record and logs never store it.
+
+The same per-step `steps.<id>.meta` also appears in the run results
+returned by `?wait=true`, on the latest or a specific version's
+run route (a wait that times out returns no steps).
 
 Click **×** to close it. To reopen an older run, click **Execution history** in the header, pick
 the run and click **Open in visual editor**. The canvas then shows that run's colours and log.
@@ -82,6 +96,7 @@ the run and click **Open in visual editor**. The canvas then shows that run's co
 | `The incoming state must be a JSON object to run.` | The override text isn't a JSON object. | Wrap it in `{ … }`. |
 | `This step is missing required configuration — set it on the Configure tab.` | A required parameter has no value. | Fill it on **Configure**. |
 | `Run failed without reporting a reason.` | The run stopped before any step reported an error. | Open **Execution history** for details, and check the trigger's sample values. |
+| `steps.<id>.meta.*` reads empty in a step test | The earlier step's saved test predates metadata. | Test that earlier step again. |
 | A run uses old settings | You ran before saving. | Save, then click **Run** again. |
 | **Execution history** is greyed out | The workflow hasn't run yet. | Click **Run** once. |
 

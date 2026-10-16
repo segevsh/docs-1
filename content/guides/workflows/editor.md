@@ -10,10 +10,10 @@ order: 10
 position: 8
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/workflows/editor.md"
-sourceSha: "d57af397dc5c71bb5ae7fe5a4852741f5f232f34"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/workflows/editor.md"
-syncedAt: "2026-10-06T21:18:40Z"
+sourceSha: "0a710246a3a5c402f4f06beb8f97b101d3e18ab1"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/workflows/editor.md"
+syncedAt: "2026-10-13T12:10:33Z"
 ---
 
 
@@ -91,7 +91,8 @@ Double-click a step, or select it and click **Edit**. The **Edit step** dialog h
 - **Test**: run this one step. See [Run and debug](/guides/workflows/runs/).
 
 Rename a step with the pencil next to its id. Step ids are how later steps refer to its output, as
-in `steps.<id>.output`.
+in `steps.<id>.output`. A step id can't contain a dot (`.`), since the dot separates the parts of
+that reference, so the editor refuses a rename that has one.
 
 **Node settings** controls what happens when the step fails:
 
@@ -142,6 +143,7 @@ anything you need first.
 | `No apps registered yet. Register one from the Apps page first.` | No apps are available to you. | See [Apps](/guides/integrations/apps/). |
 | `This app needs a connection before its actions can run.` | No integration exists for this app. | Click **Create connection**. |
 | `the id “…” is already taken by another edge.` | Two step ids combine into an arrow id that clashes. | Rename one of the steps it connects. |
+| `A step id can't contain a dot (.).` | You typed a dot in a step id. | Rename the step without a dot. |
 | `Invalid JSON: …` when saving | The raw definition has a syntax error. | Fix the JSON, or reload the page. |
 | The canvas is read-only and **+ Step** is gone | A run is in flight. | Wait for it to finish or click **Stop this run**. |
 

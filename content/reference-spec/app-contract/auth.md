@@ -10,10 +10,10 @@ order: 30
 position: 4
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/auth.md"
-sourceSha: "49b0d08f5a291cad787d62f3dfd6cd8095ebb7eb"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/auth.md"
-syncedAt: "2026-09-19T13:49:21Z"
+sourceSha: "6f20688a5dbd243bd6475dd4651497e9d820ef11"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/auth.md"
+syncedAt: "2026-10-13T12:19:41Z"
 ---
 
 # RFC: Auth
@@ -309,6 +309,21 @@ Hooks make these first-class instead of workarounds.
 | `scopeSeparator`   | string   | ⬜       | Separator used when joining scopes. Defaults to `" "`. |
 | `pkce`             | boolean  | ⬜       | Enable PKCE. Defaults to `true`.                       |
 | `extraAuthParams`  | object   | ⬜       | Extra query params appended to the authorization URL.  |
+| `setup`            | object   | ⬜       | Display-only client-registration guidance; see [`oauth2.setup`](#oauth2setup). |
+
+#### `oauth2.setup`
+
+An optional block of guidance for registering an OAuth client with the vendor. It is **display-only**: no flow, hook or runtime path reads it, and it plays no part in the `preflight` lifecycle phase (that is a hook that runs at connect time; `setup` here is only text a host may show). Hosts treat every field as **untrusted** and fall back per field when one is missing or unusable. A validator still rejects a malformed block. Every field is optional.
+
+| Field              | Type   | Description                                                                   |
+| ------------------ | ------ | ----------------------------------------------------------------------------- |
+| `consoleUrl`       | URL    | Vendor developer console. Must be an absolute `https:` URL.                   |
+| `instructions`     | string | Plain-text steps for creating the client.                                     |
+| `clientIdHint`     | string | Plain-text hint for the client id.                                            |
+| `clientSecretHint` | string | Plain-text hint for the client secret.                                        |
+| `redirectUriHint`  | string | Plain-text hint for the redirect URI the vendor asks for.                     |
+| `extraHint`        | string | Plain-text hint for anything else the vendor asks for.                        |
+| `extraTemplate`    | object | Suggested `extra` object for a tenant OAuth app (a plain object, not an array). |
 
 ### `apiKey`
 

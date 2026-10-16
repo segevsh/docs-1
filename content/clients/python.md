@@ -10,10 +10,10 @@ order: 40
 position: 11
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/python/index.md"
-sourceSha: "d271475d8d44fa693fd6f071700755e8cc3904ed"
-sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients/python/index.md"
-syncedAt: "2026-10-06T21:19:03Z"
+sourceSha: "51ee62e971a6017d9673358145fe8f8d799c445e"
+sourceRefSha: "73d1fae563271498c8f9c6d92f213ad19903fee3"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/73d1fae563271498c8f9c6d92f213ad19903fee3/docs/clients/python/index.md"
+syncedAt: "2026-10-14T21:51:44Z"
 ---
 
 
@@ -246,8 +246,8 @@ minted = exchange_token(
 token, expires_in = minted["token"], minted["expiresIn"]
 ```
 
-Then give the client a callable instead of a string. It's called before every request, and with
-`force_refresh=True` when a refresh is needed:
+Then give the client a callable instead of a string. It's called before every authenticated request (not cached or shared by the client — cache inside
+your callable), and with `force_refresh=True` when a refresh is needed:
 
 ```python
 def supply_token(force_refresh: bool = False) -> str:

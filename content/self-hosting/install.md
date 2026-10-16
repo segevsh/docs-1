@@ -10,10 +10,10 @@ order: 10
 position: 1
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-hosting/install.md"
-sourceSha: "6a34dda53fd7e17926d3b0b45bac2f1ad65a25b8"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-hosting/install.md"
-syncedAt: "2026-10-06T21:21:22Z"
+sourceSha: "4f537b088ff01bd4f9ad77d90be3fceff4b2c547"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/self-hosting/install.md"
+syncedAt: "2026-10-12T02:44:51Z"
 ---
 
 
@@ -87,11 +87,19 @@ docker run --rm --env-file ./host.env --entrypoint deno w6w-server:self-host tas
 
 This step needs no network beyond the database it is pointed at.
 
+With the default schema (`public`), passing `--db-user` makes that role the **owner of the new database**, because Postgres 15 and later lets only the database owner create objects in `public`, so the admin user must be a superuser (or a member of that role); with any other `--schema` the admin stays the owner.
+
 ### 3. Configure and start
 
 ```sh
-docker run -d --name w6w --env-file ./host.env -p 8787:8787 w6w-server:self-host
+docker run -d --name w6w --env-file ./host.env -e SIGNUP_MODE=open -p 8787:8787 w6w-server:self-host
 ```
+
+`SIGNUP_MODE=open` is shown explicitly, though it is also what an unset or blank value means on a
+self-host install: the first visitor registers the first account, which has to be possible on an
+empty install. `SIGNUP_MODE=invite_only` closes registration once setup is done, and exposing the
+port with open signup lets any visitor register, so set `invite_only` after you have created your
+account if the server is reachable by anyone you do not trust.
 
 On start the server applies any migration that landed after the database was bootstrapped, which is
 why no separate migrate step exists, and then serves HTTP. `GET /health` answers without a token;
@@ -214,7 +222,8 @@ Refusing to start: schema "w6w" has no w6w install — run deno task install --e
 
 The self-host compose bundle has a variant for this shape: no Postgres service of its own, the same
 `--existing-db` install step run once against the database you manage, and the app role's own
-credentials (never a superuser's) handed to the server. Its header lists the environment it expects.
+credentials (never a superuser's) handed to the server. Its header lists the environment it expects,
+and both compose files pass the same optional settings through `.env`.
 
 ## Deploying Studio
 

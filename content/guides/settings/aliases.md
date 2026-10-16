@@ -11,8 +11,8 @@ position: 28
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/settings/aliases.md"
 sourceSha: "2253cb6625b6722b8297ac6ec1f3b0c0a8ddf149"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/settings/aliases.md"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/settings/aliases.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

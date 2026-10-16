@@ -75,7 +75,7 @@ export interface RailGroup {
 export interface RailArea {
   id: string;
   title: string;
-  /** The page being viewed is somewhere in this area (Reference renders collapsed otherwise). */
+  /** The current page or section landing belongs to this area; all other areas start collapsed. */
   open: boolean;
   groups: RailGroup[];
 }
@@ -129,7 +129,12 @@ function buildGroup(
   };
 
   const items = [...topLevel].sort(compare).map(item);
-  return { section, title: sectionTitle(section), open: items.some((i) => i.open), items };
+  return {
+    section,
+    title: sectionTitle(section),
+    open: currentId === section || items.some((i) => i.open),
+    items,
+  };
 }
 
 export function buildRail(entries: RailEntry[], currentId?: string): RailArea[] {

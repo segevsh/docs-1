@@ -11,8 +11,8 @@ position: 6
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/data-display.md"
 sourceSha: "7a314bc0e99c77d2cac5a8b4d21f9badb783fa32"
-sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/data-display.md"
+sourceRefSha: "e92cde6c34aa1b66ff8a59828e74e307b0f6a01a"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/e92cde6c34aa1b66ff8a59828e74e307b0f6a01a/docs/components/data-display.md"
 syncedAt: "2026-10-06T21:20:06Z"
 ---
 

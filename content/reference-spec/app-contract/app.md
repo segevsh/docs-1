@@ -10,10 +10,10 @@ order: 0
 position: 1
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/app.md"
-sourceSha: "c48ec10b7efdfb6e32b449eba69fe99956b00b34"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/app.md"
-syncedAt: "2026-06-01T02:16:14Z"
+sourceSha: "0b3b2c0148b05ad9da25971f822a090171afe018"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/app.md"
+syncedAt: "2026-10-07T02:49:27Z"
 ---
 
 # RFC: App
@@ -196,3 +196,17 @@ These field names are **reserved** by this spec. Hosts MUST NOT repurpose them; 
 | Deprecation lifecycle | `classification.maturity: "deprecated"` plus optional `classification.successor` (reverse-DNS id). |
 | Asset resolution | Paths resolve **relative to the manifest file** by default; the optional top-level `assetsRoot` overrides the base directory. Absolute URLs are passed through. |
 | Signing & provenance | **Deferred** to a follow-up RFC. `signature` and `attestations` are reserved as field names. |
+
+## Amendment — 2026-10-07: App-level `ports` defaults (P-1)
+
+> This section is **additive**; no existing line is changed. It extends the manifest `Shape`
+> with one optional field.
+
+An App MAY declare an optional top-level `ports?: Ports` (`Ports = { in?: PortCount; out?: PortCount }`,
+`PortCount = number | "many"`; see [Node Types — P-1 amendment](/reference-spec/composition/node-types/#amendment--2026-10-07-unbounded-out-portcount-and-field-wise-ports-resolution-p-1)).
+App ports are **defaults**, folded **per field** into every action the app serves: an action's own
+`ports.x` wins over `App.ports.x`, which wins over the global default (`in` ⇒ `1`, `out` ⇒ `"many"`),
+and a `Step.ports.x` wins over all. Concretely `describe()` serves each action with
+`ports = { ...app.ports, ...action.ports }` when either is declared (absent otherwise), so
+consumers of an app's actions see the folded value without resolving the app themselves. This
+supersedes, for apps, the 2026-07-23 action.md position that cardinality belongs to the `Step` alone.

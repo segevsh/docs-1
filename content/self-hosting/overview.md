@@ -10,10 +10,10 @@ order: 0
 position: 0
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-hosting/overview.md"
-sourceSha: "0a979e8eec44b5d0775e78dad539fd7a695470ee"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-hosting/overview.md"
-syncedAt: "2026-10-06T21:23:31Z"
+sourceSha: "d9872d3e2ff75347bbad127903a0e284f234409b"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/self-hosting/overview.md"
+syncedAt: "2026-10-08T11:46:48Z"
 ---
 
 
@@ -100,7 +100,8 @@ and offers an optional `monitoring` profile (Prometheus plus Grafana on loopback
 
 Families exposed: `w6w_run_queue_depth`, `w6w_runs_running_by_tenant`, `w6w_sync_in_flight`,
 `w6w_admission_refusals_total`, `w6w_http_request_duration_seconds`, `w6w_licence_state`,
-`w6w_usage_report_last_sent_age_seconds` and `w6w_nodes`.
+`w6w_usage_report_last_sent_age_seconds`, `w6w_nodes` and `w6w_schema_context_violations_total`
+(queries on this replica that touched a tenant-scoped table with no schema context).
 
 ## Usage reporting
 

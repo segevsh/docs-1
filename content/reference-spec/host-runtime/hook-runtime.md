@@ -10,10 +10,10 @@ order: 0
 position: 16
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/hook-runtime.md"
-sourceSha: "edc4aed4c5abd0209f2a09674a0be95eb27083fb"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/hook-runtime.md"
-syncedAt: "2026-10-04T19:45:45Z"
+sourceSha: "584fe9ef2d72b4c96d70a0d8492f7497fade244c"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/hook-runtime.md"
+syncedAt: "2026-10-07T13:33:09Z"
 ---
 
 # RFC: Hook Runtime
@@ -147,7 +147,7 @@ A host-mediated byte stream to the Connection's configured target — the socket
 implementation's equivalent); the sandbox holds only a message channel to it, exactly as it holds
 only a message channel to the real HTTP client behind `ctx.fetch`. `SocketHandle`
 (`write`/`read`/`close`) has **no `open()`** — opening is entirely the host's job, never something
-the sandbox can initiate or redirect (see [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/hooks.ts)).
+the sandbox can initiate or redirect (see [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/packages/types/src/hooks.ts)).
 
 Before `execute()` runs, the host, in order:
 
@@ -160,7 +160,7 @@ Before `execute()` runs, the host, in order:
 4. Only then hands `execute()` a live `ctx.socket`.
 
 `ctx.socket` is present **only** for action `execute`, and only when the App declares the `socket`
-capability ([App manifest](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/app.ts)'s `capabilities.socket`) and the Connection
+capability ([App manifest](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/packages/types/src/app.ts)'s `capabilities.socket`) and the Connection
 carries a `target`.
 
 **Not a `ctx.host` extension.** `ctx.socket` is a **core, portable capability**, available on any
@@ -279,10 +279,15 @@ The complete set of hook kinds, their input/output shapes, and the lifecycle pha
 | `auth.handshake` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ credential, target, received?, state? }` | `HandshakeStep` | `execute` | **Yes** |
 | `auth.refresh` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ credential }` | opaque credential | `auth` | **Yes** |
 | `auth.revoke` | [Auth RFC](/reference-spec/app-contract/auth/) | `{ credential }` | `void` | `auth` | **Yes** |
+| `trigger.onSubscribe` | [Trigger RFC](/reference-spec/composition/trigger/) | `{ params, subscriptionId, callbackUrl, hostUrl }` | opaque state | `execute` | **Yes** |
+| `trigger.onUnsubscribe` | [Trigger RFC](/reference-spec/composition/trigger/) | `{ params, state, subscriptionId }` | `void` | `execute` | **Yes** |
+| `trigger.handleIngest` | [Trigger RFC](/reference-spec/composition/trigger/) | `{ raw: TriggerCall, params, state, subscriptionId }` | `Event[]` | `execute` | No |
+| `trigger.poll` | [Trigger RFC](/reference-spec/composition/trigger/) | `{ params, state, subscriptionId }` | `{ events, nextState? }` | `execute` | **Yes** |
+| `trigger.parseOutput` | [Trigger RFC](/reference-spec/composition/trigger/) | `{ call, normalized, subscriptionId }` | output value | `execute` | No |
 
 Inputs and outputs MUST be **structured-cloneable** (the union of plain data, ArrayBuffers, Maps, Sets, Dates — no functions, no DOM nodes, no class instances with private state). This is what makes hooks transportable across worker boundaries and serialization-agnostic.
 
-The full TypeScript declarations live in [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/hooks.ts).
+The full TypeScript declarations live in [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/packages/types/src/hooks.ts).
 
 ## Credential isolation
 
@@ -389,7 +394,7 @@ A host claims compliance with the Hook Runtime by passing the conformance suite 
 
 - Module-format loaders for both path-reference and co-located function forms.
 - `HookContext` exposing exactly the documented surface (no extras).
-- The hook registry signatures from [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/types/src/hooks.ts).
+- The hook registry signatures from [`@w6w/types`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/packages/types/src/hooks.ts).
 - The error shape and the closed `code` set.
 - The timeout default and override mechanism.
 - The sandbox posture matrix, demonstrated by a fixture app that attempts each denied capability and must fail.

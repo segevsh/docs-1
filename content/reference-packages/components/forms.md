@@ -10,10 +10,10 @@ order: 30
 position: 7
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/forms.md"
-sourceSha: "37cef01997c709be0ae7951c92db74507fa051d1"
-sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/forms.md"
-syncedAt: "2026-10-06T21:20:06Z"
+sourceSha: "0fe20afccf8ee3d8869d7a53345cfad252638423"
+sourceRefSha: "e92cde6c34aa1b66ff8a59828e74e307b0f6a01a"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/e92cde6c34aa1b66ff8a59828e74e307b0f6a01a/docs/components/forms.md"
+syncedAt: "2026-10-12T22:39:54Z"
 ---
 
 
@@ -110,6 +110,12 @@ const [values, setValues] = useState<Record<string, unknown>>({});
 
 Text fields accept expressions (`vars.region`, `steps.fetch.output.id` and so on), with a picker fed
 by [`ExpressionOptionsProvider`](/reference-packages/components/providers/#expressionoptionsprovider).
+
+A `json` parameter, or a `group` parameter shown as JSON, has a ƒx button too. It opens the picker
+with each upstream step's **Entire output** (and its fields) and, on a pick, stores exactly
+`{ "$": "steps.<id>.output" }` as the value. The field then shows that reference with **Edit**,
+**Clear** and a preview of the resolved JSON. **Clear** goes back to the JSON you had typed. In
+`readOnly` mode the reference and preview show, without the buttons.
 
 ## `PropertyEntryForm`
 

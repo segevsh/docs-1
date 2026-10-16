@@ -10,10 +10,10 @@ order: 80
 position: 12
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/executions.md"
-sourceSha: "473fc5e2bdca984e15186f8c24a8a192d53d0b01"
-sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/executions.md"
-syncedAt: "2026-10-06T21:20:06Z"
+sourceSha: "db02ecb6e9a605b77552b3be82e796f660adb661"
+sourceRefSha: "e92cde6c34aa1b66ff8a59828e74e307b0f6a01a"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/e92cde6c34aa1b66ff8a59828e74e307b0f6a01a/docs/components/executions.md"
+syncedAt: "2026-10-12T22:57:29Z"
 ---
 
 
@@ -128,7 +128,7 @@ beside the [workflow canvas](/reference-packages/components/flow-editor/).
 
 | Prop | Type | What it does |
 | --- | --- | --- |
-| `steps` | `{ id, label?, status, startedAt?, finishedAt?, input?, output?, error? }[]` | Required. In run order. `status` is a step status (`pending`, `running`, `succeeded`, `failed` or `skipped`). |
+| `steps` | `{ id, label?, status, startedAt?, finishedAt?, input?, output?, meta?, error? }[]` | Required. In run order. `status` is a step status (`pending`, `running`, `succeeded`, `failed` or `skipped`). `meta` (`{ app, version, action, connectionId }`) adds a Metadata block after Output; it is hidden when `meta` is absent. |
 | `runError` | `{ message, code?, phase?, retryable? }` | Why the run itself failed, shown above the steps. |
 | `stepErrors` | `{ stepId, label?, error }[]` | Failures the run recorded and continued past (a step with `onError: "continue-record"`). |
 | `emptyLabel` | `ReactNode` | Shown when `steps` is empty. |

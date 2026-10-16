@@ -54,6 +54,16 @@ test("Reference is open only when the viewed page is inside it", () => {
   assert.equal(onRef.find((a) => a.id === "guides")!.open, false);
 });
 
+test("a section landing opens only its area without selecting a document", () => {
+  const entries = [entry("guides/a"), entry("clients/b"), entry("reference-api/c")];
+  for (const [section, area] of [["clients", "clients"], ["reference-api", "reference"]]) {
+    const rail = buildRail(entries, section);
+    assert.deepEqual(rail.filter((item) => item.open).map((item) => item.id), [area]);
+    assert.ok(rail.flatMap((item) => item.groups).flatMap((group) => group.items)
+      .every((item) => !item.active && !item.open));
+  }
+});
+
 test("sectionLanding lists top-level pages in rail order; empty/unknown sections give null", () => {
   const entries = [entry("guides/b", 2), entry("guides/a", 1), entry("guides/a/child", 0), entry("bogus/x")];
   const landing = sectionLanding(entries, "guides")!;

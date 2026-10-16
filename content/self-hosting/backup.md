@@ -10,10 +10,10 @@ order: 40
 position: 4
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-hosting/backup.md"
-sourceSha: "09d7a94bc6fa35dea87a8b301cb9dcbbe526ca0c"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-hosting/backup.md"
-syncedAt: "2026-10-06T21:22:18Z"
+sourceSha: "d073c7bdab079cd5f29da8140c714c361e1c253a"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/self-hosting/backup.md"
+syncedAt: "2026-10-08T11:57:45Z"
 ---
 
 
@@ -132,6 +132,12 @@ the middle one.
    stopped. It sweeps every existing row onto NEXT, then re-checks every row's ciphertext. Only a
    clean verify pass prints `SAFE TO PROMOTE.` and exits 0. Otherwise it prints
    `Rotation incomplete — do not promote W6W_CREDENTIAL_KEY_NEXT yet.` and exits 1. Re-run it.
+
+   The sweep covers the shared schema **and every provisioned tenant schema**, `ready` and `failed`
+   alike (a disabled tenant's schema included). The boot key audit and the `backfill:*` commands
+   cover the same set. An error in one schema, other than a refusal, is recorded against that schema
+   and makes the command exit 1, but the run carries on with the remaining schemas. `SAFE TO
+   PROMOTE.` prints only when every schema verified.
 3. **Promote, on every replica:** set `W6W_CREDENTIAL_KEY` to the value of
    `W6W_CREDENTIAL_KEY_NEXT`, unset `W6W_CREDENTIAL_KEY_NEXT`, restart.
 

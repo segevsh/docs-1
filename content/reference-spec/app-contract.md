@@ -11,8 +11,8 @@ position: 0
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "docs/app-contract.md"
 sourceSha: "248ff160f4372b1f800aaad2b082017710206e1a"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/docs/app-contract.md"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/docs/app-contract.md"
 syncedAt: "2026-10-06T21:19:19Z"
 ---
 

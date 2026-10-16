@@ -11,8 +11,8 @@ position: 1
 sourceRepo: "w6w-io/w6w-apps"
 sourcePath: "docs/publishing.md"
 sourceSha: "abb73e9581aed74c4b7296487a8bea542725ab63"
-sourceRefSha: "c3526851298a1ea383ca47ffa3ef048bbb5506e7"
-sourceUrl: "https://github.com/w6w-io/w6w-apps/blob/c3526851298a1ea383ca47ffa3ef048bbb5506e7/docs/publishing.md"
+sourceRefSha: "d76f39bc60cf7a2364b81bcdcc41e216a3f8c636"
+sourceUrl: "https://github.com/w6w-io/w6w-apps/blob/d76f39bc60cf7a2364b81bcdcc41e216a3f8c636/docs/publishing.md"
 syncedAt: "2026-10-06T21:20:18Z"
 ---
 

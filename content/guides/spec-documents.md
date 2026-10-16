@@ -10,10 +10,10 @@ order: 70
 position: 15
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/guides/spec-documents.md"
-sourceSha: "81d1d744c92862bcbe4532f888cb68012a64f405"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/guides/spec-documents.md"
-syncedAt: "2026-10-06T21:29:52Z"
+sourceSha: "d0d2431c237c95da097ffc9058edfbc2a1de56ae"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/guides/spec-documents.md"
+syncedAt: "2026-10-13T12:11:42Z"
 ---
 
 
@@ -167,7 +167,7 @@ An unresolved entry carries a `reason`:
 | Status | `error.code` | When |
 |---|---|---|
 | `400` | `invalid_body` | The body was not JSON. |
-| `400` | `invalid_spec_document` | `specVersion` is not `"2"`, `kind` is not `function`, `endpoint` or `workflow`, `callable` is not an object, or the definition's retry settings are malformed. The message says which. |
+| `400` | `invalid_spec_document` | `specVersion` is not `"2"`, `kind` is not `function`, `endpoint` or `workflow`, `callable` is not an object, the definition's retry settings are malformed, or a workflow step id contains `.`. The message says which. |
 | `400` | `spec_secret_refused` | The document contains a secret value. The message names where (the path only). Remove it and import again. |
 | `404` | `unknown_function`, `unknown_workflow`, `unknown_endpoint` | On export: no such resource in your account. |
 | `409` | `function_key_conflict`, `endpoint_key_conflict`, `workflow_key_conflict` | Your account already has a resource with that `key`. Change the key in the document and import again. |
