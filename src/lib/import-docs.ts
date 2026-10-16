@@ -5,7 +5,8 @@
 // content collection (`content/<section>/<slug>.md`, a sub-page at
 // `content/<section>/<parent>/<child>.md` — `content/` is a sibling of `src/`, matched by
 // `content.config.ts`'s `*/**/*.md` pattern). Local runs refresh the committed snapshot; the
-// deployment workflow also imports fresh sibling source checkouts before building the site.
+// deployment workflow can refresh sibling source checkouts on a source-repo dispatch. Main
+// pushes and releases build the committed snapshot without requiring private source access.
 //
 // DISCOVERY, GATED BY THE MANIFEST. The walk finds every `docs/manifest.json` under the root,
 // never descending into `node_modules`, `dist`, `build`, any dot-directory, or any directory

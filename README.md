@@ -95,15 +95,29 @@ The Clients landing page at `/clients/` should link to the embed parent page.
 
 ## CI and deployment
 
-`.github/workflows/deploy.yml` checks out this repository plus the six source repositories
-from `w6w-io`, imports their docs, builds the site, then deploys `dist/` to the Cloudflare Pages
-project `w6w-docs`. It runs on a published release or a `Build + Deploy` workflow dispatch.
-It imports fresh sources in CI, even if the committed local `content/` snapshot is older.
+`.github/workflows/deploy.yml` builds the site and deploys `dist/` to the Cloudflare Pages
+project `w6w-docs`. Pushes to upstream `main` and published releases deploy the committed
+`content/` snapshot. Run the local importer before committing source documentation updates.
+
+A `Build + Deploy` workflow dispatch defaults to `refresh_sources=true`: it checks out all six
+source repositories from `w6w-io` and imports their current docs before building. Missing source
+credentials fail that refresh; there is no silent fallback to older content. To deliberately
+publish the reviewed snapshot without private source access:
+
+```sh
+gh workflow run "Build + Deploy" --repo w6w-io/docs --ref main -f refresh_sources=false
+```
 
 Studio's `.github/workflows/docs-dispatch.yml` dispatches that build when a push to its upstream
 `main` changes `docs/**`. Both workflows have upstream-repository guards. A push to a personal
 fork does not update the live site: the source change must reach `w6w-io/w6w-studio`, and the
 upstream dispatch/deploy must succeed. Cross-repository access uses the configured GitHub App.
+
+Publishing needs `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`. Source refresh additionally
+needs `APP_ID` and `APP_PRIVATE_KEY`, with the App granted **Contents: read** on the six source
+repositories. Source dispatchers need App credentials with **Actions: write** on `w6w-io/docs`
+and an enabled docs-dispatch workflow. A merged PR alone does not prove the deployment completed:
+check the downstream **Build + Deploy** run and the production pages.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the complete source manifest and frontmatter rules.
 
