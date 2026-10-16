@@ -1,14 +1,20 @@
 name: Build + Deploy
 
 on:
-  # Ship on a deliberate GitHub Release, not on every push to main — a merge to main stages
-  # content; a published release is the actual "make this live" signal.
+  # Merging frontend or collected-content changes must update the public site too.
+  push:
+    branches: [main]
   release:
     types: [published]
   # Dispatched by T4.1.1's cross-repo workflows after a docs source repo publishes new content:
   # `gh workflow run "Build + Deploy" --repo w6w-io/docs`. This literal (both the "Build + Deploy"
   # name above and this trigger) is the calling interface — do not rename either.
   workflow_dispatch:
+    inputs:
+      refresh_sources:
+        description: Import the latest package docs before deploying (requires the source-repo App credentials)
+        type: boolean
+        default: true
 
 # Supersede an in-progress run when a newer one starts on the same ref. A docs rebuild has no
 # partial-application hazard, so superseding an in-flight run is the right default.
@@ -18,9 +24,7 @@ concurrency:
 
 jobs:
   build-and-deploy:
-    # Fork guard: this workflow reaches PRODUCTION and a personal fork carries none of the
-    # secrets it needs, so on a fork it fails loudly on every push instead of doing nothing.
-    # Mirrors every other deploy workflow in this codebase.
+    # Deploy only from the upstream repository; personal forks skip this job.
     #
     # NOTE the spelling: every sibling repo in this workspace follows the `w6w-io/w6w-*`
     # pattern, but this one does not — the GitHub repo is simply `w6w-io/docs`. The Cloudflare
@@ -55,10 +59,11 @@ jobs:
         run: pnpm check:tokens
         working-directory: sources/docs
 
-      # D-7: the source repos are private, so the default workflow token (scoped to this repo only) cannot
-      # read them and no personal token is used. Mint a GitHub App installation token scoped to exactly the
-      # six repos the importer reads.
+      # Main pushes and releases publish the reviewed content/ snapshot. Source-repo dispatches
+      # refresh it first; a manual dispatch can also publish the snapshot with refresh_sources=false.
+      # Private source checkouts require an App installation with Contents: read on these six repos.
       - name: Mint source-repo token
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         id: app-token
         uses: actions/create-github-app-token@v2
         with:
@@ -70,6 +75,7 @@ jobs:
       # Full history (fetch-depth 0): the importer stamps each page with its source file's last
       # commit date and refuses a dirty listed file.
       - name: Checkout core
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         uses: actions/checkout@v6
         with:
           repository: w6w-io/w6w-core
@@ -77,6 +83,7 @@ jobs:
           path: sources/core
           fetch-depth: 0
       - name: Checkout server
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         uses: actions/checkout@v6
         with:
           repository: w6w-io/w6w-server
@@ -84,6 +91,7 @@ jobs:
           path: sources/server
           fetch-depth: 0
       - name: Checkout wrappers
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         uses: actions/checkout@v6
         with:
           repository: w6w-io/w6w-wrappers
@@ -91,6 +99,7 @@ jobs:
           path: sources/wrappers
           fetch-depth: 0
       - name: Checkout studio
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         uses: actions/checkout@v6
         with:
           repository: w6w-io/w6w-studio
@@ -98,6 +107,7 @@ jobs:
           path: sources/studio
           fetch-depth: 0
       - name: Checkout apps
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         uses: actions/checkout@v6
         with:
           repository: w6w-io/w6w-apps
@@ -105,6 +115,7 @@ jobs:
           path: sources/apps
           fetch-depth: 0
       - name: Checkout ui
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         uses: actions/checkout@v6
         with:
           repository: w6w-io/w6w-ui
@@ -113,6 +124,7 @@ jobs:
           fetch-depth: 0
 
       - name: Import docs from the source repos
+        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         run: node src/lib/import-docs.ts --root "$GITHUB_WORKSPACE/sources"
         working-directory: sources/docs
 
@@ -120,11 +132,8 @@ jobs:
         run: pnpm build
         working-directory: sources/docs
 
-      # Deploy on the two triggers that mean "ship this": a published release (ref is the
-      # release tag, e.g. `refs/tags/v1.2.3` — not `refs/heads/main`, so no branch check applies
-      # there), or a workflow_dispatch — which T4.1.1's cross-repo callers always send with
-      # `--ref main`, so THAT trigger still gets the branch check. A PR build (there is no
-      # `pull_request` trigger on this workflow at all) must never deploy.
+      # Main pushes and source-repo dispatches deploy the current site. Published releases
+      # retain their tag-based deployment path. Pull requests never deploy.
       # `wrangler-action@v3`'s own default (3.90.0) fails ALL Pages deploys against this
       # account's API token with "Authentication error [code: 10000]" -- reproduced with two
       # different, otherwise-working tokens, so it's not a token-scope problem. wrangler 4.127.1
@@ -133,7 +142,7 @@ jobs:
       - name: Deploy
         if: |
           github.event_name == 'release' ||
-          (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main')
+          ((github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main')
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -33,10 +33,12 @@ node src/lib/import-docs.ts --root <dir> --dry-run
 node src/lib/import-docs.ts --root <dir> --allow-dirty   # local preview only
 ```
 
-`content/` is committed and must equal a fresh import (a second run reports 0 written). CI does not
-trust the committed copy blindly: `.github/workflows/deploy.yml` mints a GitHub App installation token
-(`APP_ID` / `APP_PRIVATE_KEY`, owner `w6w-io`), checks out the six source repos beside this one, runs
-the import, then builds.
+`content/` is committed and must equal a fresh import (a second run reports 0 written). Main pushes
+and releases deploy this reviewed snapshot. A source-repo dispatch defaults to
+`refresh_sources=true`: `.github/workflows/deploy.yml` mints a GitHub App installation token
+(`APP_ID` / `APP_PRIVATE_KEY`, owner `w6w-io`, Contents: read on the source repos), checks out the
+six source repos beside this one, runs the import, then builds. A manual dispatch with
+`refresh_sources=false` deploys the committed snapshot without reading private source repos.
 
 ## Convention
 
