@@ -11,8 +11,8 @@ position: 13
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/server-resources.md"
 sourceSha: "90fcb7e4a541c0bddf2dcc491e5005595c6d3009"
-sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/server-resources.md"
+sourceRefSha: "e92cde6c34aa1b66ff8a59828e74e307b0f6a01a"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/e92cde6c34aa1b66ff8a59828e74e307b0f6a01a/docs/components/server-resources.md"
 syncedAt: "2026-10-06T21:20:06Z"
 ---
 

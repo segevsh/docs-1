@@ -10,10 +10,10 @@ order: 20
 position: 3
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/param.md"
-sourceSha: "88eb6b26a379cf53271e1a4b1c249aa5162d4373"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/param.md"
-syncedAt: "2026-09-20T03:58:03Z"
+sourceSha: "0b9135e56ba0155aa2d621eb3f95120e710b9f6c"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/param.md"
+syncedAt: "2026-10-12T23:27:22Z"
 ---
 
 # RFC: Param
@@ -179,7 +179,7 @@ A form is `Param[]`. The surface that owns the form (Action, Trigger, Auth, …)
 | `repeat` | boolean | ⬜ | Allow multiple values (array of `type`). UI renders as an add/remove list. |
 | `ui` | string | ⬜ | Render hint — see UI hints by type. |
 | `dependsOn` | string[] | ⬜ | Keys of other params. Disabled until all listed keys have values; changes invalidate cached `options` and re-run `validate`. |
-| `showIf` | [JSONLogic](https://jsonlogic.com) rule | ⬜ | Conditional visibility based on other field values. Evaluated against the current form state; truthy → visible. The platform ships a JSONLogic engine in [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/expr/README.md). |
+| `showIf` | [JSONLogic](https://jsonlogic.com) rule | ⬜ | Conditional visibility based on other field values. Evaluated against the current form state; truthy → visible. The platform ships a JSONLogic engine in [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/packages/expr/README.md). |
 | `options` | Options | ⬜ | For choice types. Static list or dynamic hook source. |
 | `validation` | Validation | ⬜ | Declarative rules and/or a custom hook. |
 | `children` | Param[] | ⬜ | Nested params for `type: "group"` (nested object) or `type: "section"` (flat, layout-only). |
@@ -207,6 +207,8 @@ A form is `Param[]`. The surface that owns the form (Action, Trigger, Auth, …)
 | `code` | string | Code with language via `ui` (e.g. `"code:sql"`). |
 | `group` | object | Nested form. Value is a `Record<string, unknown>` whose keys are the `key`s of the params in `children`. See [Groups](#groups). |
 | `section` | — (layout only) | Layout-only container of `children`. `section: "collapsible"` renders a titled, collapsed-by-default disclosure; `section: "group"` a `layout` row/stack. Children's values live in the **enclosing** form (not nested under the section's `key`). See [Sections](#sections). |
+
+See [Amendment — 2026-10-12: whole-value bindings for `json` and `group`](#amendment--2026-10-12-whole-value-bindings-for-json-and-group): an authored `json` or `group` value may be a whole-value `$` binding.
 
 ### UI hints
 
@@ -389,7 +391,7 @@ Circular dependencies are rejected at manifest load time.
 
 | Question | Resolution |
 |---|---|
-| `showIf` expression language | **JSONLogic.** The reference engine ships as [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/packages/expr/README.md). No bespoke mini-language. |
+| `showIf` expression language | **JSONLogic.** The reference engine ships as [`@w6w/expr`](https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/packages/expr/README.md). No bespoke mini-language. |
 | Grouping / sections / tabs | **Resolved.** Added `type: "section"` (`section: "collapsible"` disclosure / `section: "group"` row/stack layout) as a layout-only container — its children's values stay flat in the enclosing form. See [Sections](#sections). Tabs still deferred. |
 | i18n on Param | **Deferred to the enclosing manifest's `localizations` block.** No per-Param locale object — avoids double-sourcing translations. |
 | `repeat` vs nested schema | Added a `group` type that takes a nested `Param[]` via `children`. Lists of structured items use `type: "group", repeat: true`. |
@@ -429,3 +431,15 @@ questions this RFC left open. They are recorded here so a second implementation 
 The rest of this RFC — including the five `repeat` lines noted above — stands unedited; this
 amendment only makes explicit how a `group`/`repeat` param renders and scopes, on top of what
 [Groups](#groups) and the [Field reference](#field-reference) already specify.
+
+
+## Amendment — 2026-10-12: whole-value bindings for `json` and `group`
+
+This amendment is additive. The `json` row of [Types](#types) still reads "any", and the preceding
+amendment's closing sentence is unaffected. What a form *authors* for a `json` or `group` param, when
+the param belongs to a workflow step, may be a whole-value binding — an object whose single key is
+`$` or `$expr` — in place of a literal. It resolves, before
+validation and invocation, to whatever value the referenced path holds; validation then applies the
+param's existing declarative checks, with no deep shape validation of the resolved value. The semantics, including the single-pass resolution rule and what a
+single-step test must do, are specified by the Workflow RFC's
+[whole-value bindings amendment](/reference-spec/composition/workflow/#amendment--2026-10-12-whole-value-bindings-for-json-and-group-params) and are not restated here.

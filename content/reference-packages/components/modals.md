@@ -10,10 +10,10 @@ order: 60
 position: 10
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/modals.md"
-sourceSha: "0e0419ec5bc477a2b23cfa75bf1c598608cf5268"
-sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/modals.md"
-syncedAt: "2026-10-06T21:20:06Z"
+sourceSha: "cd15b802564a245bc959bedac805e78b4a3c5bb2"
+sourceRefSha: "e92cde6c34aa1b66ff8a59828e74e307b0f6a01a"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/e92cde6c34aa1b66ff8a59828e74e307b0f6a01a/docs/components/modals.md"
+syncedAt: "2026-10-07T13:31:18Z"
 ---
 
 
@@ -148,6 +148,11 @@ anywhere you need a step or a target.
 | `workflowId`, `stepId` | `string` | The step's place in a saved workflow, so a previously saved passing test counts. |
 | `upstreamSteps` | `{ id, label? }[]` | Earlier steps, so `steps.<id>.output` references resolve in a test. |
 | `theme` | `"light" \| "dark"` | |
+
+With a `workflowId`, the Triggers tab also lists app triggers. A webhook trigger is added with one
+click. A poll trigger first asks "Check every … minutes" (default 5, or the trigger's
+`minIntervalMs` if higher) and creates the subscription with that interval sent as `intervalMs`, in
+milliseconds. The host enforces its own minimum and the picker shows its refusal as-is.
 
 `BuiltStep` is a step without its id: `{ uses: { app, action, connection? }, with?, retry?,
 onError?, notes? }`.

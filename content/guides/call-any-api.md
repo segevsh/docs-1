@@ -10,10 +10,10 @@ order: 10
 position: 9
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/guides/call-any-api.md"
-sourceSha: "af3887131c8de95cb7101951f6ec3faa8fd0043e"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/guides/call-any-api.md"
-syncedAt: "2026-10-06T21:22:44Z"
+sourceSha: "46981bf876beea7f888d57fa73381000bc9fe2f7"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/guides/call-any-api.md"
+syncedAt: "2026-10-07T12:22:58Z"
 ---
 
 
@@ -205,11 +205,12 @@ Errors come back as `{ "error": { "code": "…", "message": "…" } }`. The ones
 | `404` | `unknown_connection`, `unknown_function`, `unknown_endpoint`, `unknown_workflow` | Nothing by that name in your account. |
 | `409` | `ambiguous_key` | The same key exists in two of your projects — use the ID. |
 | `422` | `function_incomplete`, `function_disabled`, `function_not_published` | The Function exists but cannot run yet. |
-| `424` | (the app's own code) | The app or its vendor refused the call — a wrong scope, a bad parameter. The message is the vendor's reason. |
+| `424` | (the app's own code), `fetch_failed` | The app or its vendor refused the call — a wrong scope, a bad parameter; the message is the vendor's reason. `fetch_failed` means the app's source could not be fetched. |
 | `429` | `concurrency_exceeded` and others | You are over a limit. Honour the `Retry-After` header. |
 
 A `424` is deliberately a 4xx: it is almost always something to fix in the call or the connection,
-not a w6w outage. Failures carry the same `invocationId` a success does, so you can look the attempt
+not a w6w outage. The exception is `fetch_failed`: the host serving the app's source (GitHub, for
+example) did not answer, so retry later. Failures carry the same `invocationId` a success does, so you can look the attempt
 up afterwards.
 
 ## Next

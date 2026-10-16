@@ -10,10 +10,10 @@ order: 20
 position: 12
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/workflow.md"
-sourceSha: "0850842af3794e51e908c3a27a7e5c7ce48fa645"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/workflow.md"
-syncedAt: "2026-10-04T22:19:44Z"
+sourceSha: "9ef4a23e2fabfe11ae4c872ff95983373c79de15"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/workflow.md"
+syncedAt: "2026-10-13T12:10:09Z"
 ---
 
 # RFC: Workflow
@@ -129,7 +129,7 @@ The engine never touches the outside world directly. Every operational effect �
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `id` | string | ✅ | Machine name. Unique within the workflow. Downstream expressions reference outputs as `steps.<id>.output`. |
+| `id` | string | ✅ | Machine name. Unique within the workflow. MUST NOT contain `.`: downstream expressions reference outputs as `steps.<id>.output`, a path resolvers split on `.`, so a dotted id could never be addressed. Hosts refuse a dotted id when the workflow is saved. |
 | `uses` | object | ✅ | `{ app, action, connection? }`. Fully names the [Invocation](/reference-spec/host-runtime/invocation/) target. |
 | `uses.app` | string | ✅ | App id (registry-resolved). |
 | `uses.action` | string | ✅ | Action key within the app. |
@@ -239,6 +239,8 @@ The engine writes a **checkpoint** through `WorkflowContext.state.checkpoint()` 
 | `error` | [StepError](#steperror) | Present on `failed`. |
 | `startedAt`, `finishedAt` | ISO-8601 | When the last attempt started / finished. |
 
+See [Amendment — 2026-10-12: step execution metadata (`steps.<id>.meta`)](#amendment--2026-10-12-step-execution-metadata-stepsidmeta), which adds an optional `meta` field to this record.
+
 #### StepError
 
 | Field | Type | Description |
@@ -251,6 +253,8 @@ The engine writes a **checkpoint** through `WorkflowContext.state.checkpoint()` 
 ### Replay
 
 Replay re-executes a completed or failed run **without re-invoking actions**. The engine walks the plan; for each step that succeeded in the original run, it uses the recorded `StepExecution.output` verbatim. Steps that were pending or failed run fresh. This makes replays cheap and reproducible even when upstream apps have changed.
+
+See [Amendment — 2026-10-12: step execution metadata (`steps.<id>.meta`)](#amendment--2026-10-12-step-execution-metadata-stepsidmeta): stored `meta` is reused wherever stored `output` is.
 
 ## Expression markers
 
@@ -278,6 +282,8 @@ interface RunScope {
 Expression semantics — operators, coercion, error handling — are specified by `@w6w/expr` (JSONLogic-based). This RFC only pins the marker convention and the scope shape.
 See [Amendment — 2026-08-11: the multipart expression envelope and the `render` part kind](#amendment--2026-08-11-the-multipart-expression-envelope-exprvalue-and-the-render-part-kind-f-3), which specifies the multipart envelope and declares two further run-scope roots (`secrets`, `documents`) — the `RunScope` block above is incomplete rather than exhaustive, and that section governs where the two disagree.
 See [Amendment — 2026-08-14: root-anchored template strings in `with` values](#amendment--2026-08-14-root-anchored-template-strings-in-with-values), which specifies when a **string** `with` value resolves against the run scope — the marker table's `anything else` row above is incomplete rather than exhaustive, and that section governs where the two disagree.
+See [Amendment — 2026-10-12: step execution metadata (`steps.<id>.meta`)](#amendment--2026-10-12-step-execution-metadata-stepsidmeta), which adds an optional `meta` beside `output` in each `steps` entry of the scope above.
+See [Amendment — 2026-10-12: whole-value bindings for `json` and `group` params](#amendment--2026-10-12-whole-value-bindings-for-json-and-group-params), which lets a `json` or `group` param's whole value be a `$` marker resolving type-preserved.
 
 ## Host contract — `WorkflowContext`
 
@@ -327,6 +333,8 @@ interface WorkflowContext {
 | `queue` | ⬜ | Required only for hosts that support fan-out / parallel branches. |
 | `signal` | ⬜ | When provided, the engine polls between steps and aborts cleanly on signal. |
 
+See [Amendment — 2026-10-12: step execution metadata (`steps.<id>.meta`)](#amendment--2026-10-12-step-execution-metadata-stepsidmeta), which adds the optional `onExecuted` member to the `invoke` request.
+
 ## Conformance
 
 A host conforms to this RFC when:
@@ -338,6 +346,7 @@ A host conforms to this RFC when:
 - **Replay determinism** — replaying a run yields the same terminal `status` and, for succeeded steps, the same `output`, without calling `execute` again.
 - **Expression scope** — the engine populates `vars`, `steps`, and `trigger` in every expression evaluation as specified.
   See [Amendment — 2026-08-11: the multipart expression envelope and the `render` part kind](#amendment--2026-08-11-the-multipart-expression-envelope-exprvalue-and-the-render-part-kind-f-3), which adds the `secrets` and `documents` roots to that enumeration and governs this bullet.
+- **Step metadata** — applies only to an engine/host pair that implements step metadata, which is optional (an older host that never calls `onExecuted` remains conformant). See [Amendment — 2026-10-12: step execution metadata (`steps.<id>.meta`)](#amendment--2026-10-12-step-execution-metadata-stepsidmeta): `meta` is host-supplied, allowlisted to four keys, and published only for succeeded app steps.
 
 The `@w6w/workflow` reference engine + its test fixtures constitute the executable version of this contract.
 
@@ -1261,3 +1270,204 @@ The rest of this RFC — the [RetryPolicy](#retrypolicy) table, the example, the
 and the "Retries come first" paragraph — stands unedited, apart from the one pointer line to this
 section added under the [RetryPolicy](#retrypolicy) table; this section qualifies that text rather
 than replacing it.
+
+## Amendment — 2026-10-07: `Step.fanOut` and parallel scheduling
+
+> **Additive.** Adds one Step field and the scheduling semantics behind it. Nothing above is edited;
+> this section **supersedes** the following base text, which is left in place:
+>
+> - the Step table row for `ports` ("Omitted ⇒ `{ in: 1, out: 1 }`") — the default is now
+>   `{ in: 1, out: "many" }`, see the [Node Types RFC 2026-10-07 amendment](/reference-spec/composition/node-types/#ports--cardinality);
+> - the sentence "v0 executes them sequentially; parallel scheduling of independent branches is an
+>   engine-level enhancement that consumes the same plan" — a step opts into parallel execution of its
+>   successors with `fanOut: "parallel"`; absent, execution stays sequential.
+>
+> [Open question 1](#open-questions) (a workflow-level default concurrency) **remains open**.
+> `fanOut` is the **per-step** answer; it does not decide the workflow-level one.
+
+### Step field
+
+| Field | Type | Req | Description |
+|---|---|---|---|
+| `fanOut` | `"sequential" \| "parallel"` | ⬜ | How the step's **direct successors** run. Absent ⇒ `"sequential"`. Governs the successors on **both** lanes (the normal lane and the `Edge.when` failure lane). |
+
+### Semantics
+
+- **Absent / sequential.** A plan containing no `parallel` step executes exactly as before: the
+  plan's `order`, one step at a time. Engines MUST keep this path observably identical.
+- **Strands.** Otherwise the engine runs **strands**. One strand runs the roots. A strand runs one step
+  at a time — always the earliest-in-plan-order step that is ready and assigned to it. A step is
+  **ready** when every inbound edge is *resolved* (its source reached a terminal status, or the edge was
+  skipped).
+- **Opening strands.** When a `parallel` step completes, its newly-ready direct successors, in plan
+  order, S1…Sk: S1 continues the strand, S2…Sk each open a new strand. The newly-ready successors of a
+  sequential step stay on its strand.
+- **Join once.** A step with indegree > 1 runs **once**, on the strand of its earliest-plan-order inbound
+  source. There is no concurrency cap.
+- **Checkpoints** are serialized: one call in flight at a time, in completion order. `RunStatePatch` is
+  unchanged.
+- **Drain.** On a plain `fail`, a `wait` suspension or an abort the engine stops launching new steps,
+  lets in-flight steps finish, then finalizes.
+- **Deterministic reporting.** The reported error is the first failure **by plan order**. A suspension
+  returns one token — that of the first suspended step by plan order; other `wait`s re-run after resume.
+  `lastOutput` is the output of the last succeeded step by plan order. These do not depend on timing.
+- **Replay.** `from` replays that step **plus all its graph descendants**; the positional rule
+  ("that step and every later plan step") is the special case for a sequential plan.
+- **Ports.** `fanOut` and `ports.out` are independent: `out` bounds how many edges may leave a lane
+  (enforced by editor and import only); `fanOut` decides how those successors run.
+
+
+## Amendment — 2026-10-12: step execution metadata (`steps.<id>.meta`)
+
+> **Additive.** This section adds an optional, host-supplied record of *which app version, action and
+> stored connection a step actually ran with*, readable beside the step's `output`. It edits no
+> sentence above and adds no run-scope root. It qualifies the base text enumerated by grep —
+> `/usr/bin/grep -n 'steps\.\(<\|[a-z]\)\|StepExecution\|RunScope\|{ output' rfcs/workflow.md rfcs/engine.md`,
+> run against the pre-amendment text (line numbers are of that text). In this file: the checkpoint
+> sentence (`:47`), the `steps.fetch.output.items` example (`:82`), the [Step](#step) `id` row (`:114`),
+> the `RunState.steps` row (`:206`), the [StepExecution](#stepexecution) table (`:212`, which gains the
+> optional field `meta`), [Replay](#replay) (`:235`), the marker table's path-sugar row (`:243`), the
+> `RunScope` block (`:253`) and its `steps` line (`:255`, whose entry shape is **widened** to
+> `{ output; meta? }`), the pointer line closing [Expression markers](#expression-markers) (`:261`),
+> the failure-lane paragraph that retains the failed step's `StepExecution` (`:424`), the
+> [2026-08-11 amendment](#amendment--2026-08-11-the-multipart-expression-envelope-exprvalue-and-the-render-part-kind-f-3)'s
+> governing clause (`:535`), marker table (`:558`) and `steps.<id>.output.content` sentence (`:594`),
+> its [Run-scope roots](#run-scope-roots) section (`:673`), and the
+> [2026-08-14 amendment](#amendment--2026-08-14-root-anchored-template-strings-in-with-values)'s
+> eight-member `RunScope` list and its canonical-type rule (`:802`, `:810`, `:815`) and closed root
+> set (`:901`). In engine.md: `engine.md:56` (replay logic), `engine.md:62` (credentials and
+> connections — reconciled explicitly below), `engine.md:170` (failed step retained),
+> `engine.md:194` (`if` output), `engine.md:210` (`foreach` sub-block records), `engine.md:264` and
+> `engine.md:274` (`aggregate`), `engine.md:286` (invariant 4, replay), `engine.md:292` (error
+> routing) and `engine.md:362` (`merge` output). It also clarifies the Concept sentence "Whatever
+> the action returns becomes the step's `output`" (`:41`): `output` remains exactly the action's
+> return value, and `meta` is never part of it. The [Action](/reference-spec/app-contract/action/), [Endpoint](/reference-spec/composition/endpoint/),
+> [Function](/reference-spec/composition/function/), [Node Types](/reference-spec/composition/node-types/) and [Trigger](/reference-spec/composition/trigger/) RFCs inherit
+> this section without an edit of their own. Every line above stands unedited, and no enumerated
+> line is excluded from this amendment's reach.
+
+### Shape
+
+```ts
+interface StepMeta {
+  app: string;                  // canonical app id
+  version: string;              // the app version the host actually loaded
+  action: string;               // the executed action key
+  connectionId: string | null;  // the STORED connection id used; null when none
+}
+```
+
+- `StepExecution` gains an optional field `meta?: StepMeta`.
+- A scope entry becomes `steps: Record<string, { output: unknown; meta?: StepMeta }>`. The `steps`
+  root is the same root; `meta` lives under it, so `{ "$": "steps.fetch.meta.version" }` and
+  `{{ steps.fetch.meta.action }}` are ordinary paths.
+- The host reports meta through an optional member of the `invoke` request on
+  [`WorkflowContext`](#host-contract--workflowcontext): `onExecuted?: (meta: StepMeta) => void`.
+  `invoke` still returns the action's output, unchanged.
+
+### Fields
+
+- `app` — the canonical app id the step invoked.
+- `version` — the app version the host actually **loaded** to run the step. It is **not** the
+  workflow's revision. Version-selection policy is unchanged by this section and a `Step` gains no
+  `uses.version` field.
+- `action` — the executed action key.
+- `connectionId` — the **stored** connection id used for the invocation. It is `null` when the step
+  used no connection, a host-synthesised credential, or an inline credential.
+
+### Ownership and allowlist
+
+- Meta is **host-supplied only**, through `onExecuted`. An engine MUST NOT read it from the value
+  `invoke` returns, and MUST NOT sniff `meta` or `output` keys in action data: an action whose own
+  output has a `meta` field never collides with `steps.<id>.meta`.
+- A `StepMeta` has **exactly these four keys**; an engine drops anything else it receives. Meta MUST
+  NOT carry credentials, tokens, headers or connection objects.
+- A connection id is **data and grants nothing**. This is consistent with
+  [engine.md](/reference-spec/host-runtime/engine/) "the engine never sees a credential or a connection": the engine still
+  sees no credential and no connection object, performs no decryption, and cannot use an id to obtain
+  one; an opaque id string is an identifier the host chose to report, nothing more.
+- **Normalisation.** The engine normalises what a host reports: a missing or non-string
+  `connectionId` becomes `null`; a report lacking a string `app`, `version` or `action` is
+  **discarded** and the step records no meta. A report whose `app`, `version` or `action` is not a
+  string of at most 256 characters is likewise discarded; a `connectionId` that is not a string of at
+  most 256 characters becomes `null`. A string of exactly 256 characters is kept; 257 is over the cap.
+- Within one attempt the host SHOULD call `onExecuted` at most once, no later than the moment `invoke`
+  settles. If it calls more than once, the engine keeps the FIRST report and ignores later ones. This
+  holds even when the first report is discarded by the normalisation above: the attempt then records no
+  meta, and a later call in that attempt does not replace that outcome.
+  An `invoke` that settles without calling it yields a step with no meta; that is not an error.
+
+### Visibility
+
+- A **succeeded** app step publishes `meta` beside `output` in the expression scope **before**
+  downstream steps are evaluated.
+- A **failed** step MAY record its last attempt's meta on its `StepExecution`. Its scope entry stays
+  exactly as it was before this amendment and carries no `meta`.
+- **Skipped** steps carry no meta. So do `@w6w/*` host-internal steps, Function and Workflow callable
+  steps, and engine control steps: they are not an app version run against a stored connection, and
+  neither side reports for them (an engine need not attach `onExecuted` to a `@w6w/*` app id).
+
+### Absence
+
+Absent meta reads like any absent path: `{ "$": "steps.<id>.meta.version" }` and JSONLogic `var`
+yield `null`. Records written before this amendment stay valid. Nothing is backfilled and no `null`
+filler stands in for a missing `meta`. `meta` lives under the existing `steps` root; the closed root
+set declared by the 2026-08-14 amendment is unchanged, and this section declares no new root.
+
+### Retries, recovery and concurrency
+
+- Meta describes the **attempt that produced the output**. Each attempt has its own callback; a
+  report from a superseded attempt is ignored.
+- A checkpoint persists `meta` with the `StepExecution` it belongs to.
+- Resume and [replay](#replay) reuse the stored `meta` wherever they reuse the stored `output`; a
+  step that is executed again captures fresh meta.
+- Parallel strands and `foreach` iterations never share a callback: each invocation gets its own.
+- A step inside a sub-block publishes `meta` into its inner scope exactly as it publishes `output`.
+  This section makes no persistence claim for sub-block records beyond what already holds for
+  their `output`.
+
+### Conformance (additive)
+
+An engine + host pair that implements step metadata MUST:
+
+- take meta only from `onExecuted`, never from the invoke result, and keep the four allowlisted keys;
+- apply the normalisation above (a non-string or over-256-character `connectionId` becomes `null`; an
+  incomplete or over-cap report is discarded) and keep the first report of an attempt;
+- publish `meta` into scope for succeeded app steps only, and reuse stored meta wherever stored output
+  is reused.
+
+## Amendment — 2026-10-12: whole-value bindings for `json` and `group` params
+
+> **Additive.** Qualifies the [Expression markers](#expression-markers) section's treatment of a
+> `with` value for parameters of type `json` or `group` (see [Param RFC](/reference-spec/app-contract/param/#types)). It adds no
+> marker, no `ExprValue` variant and no scope root, and edits no sentence above.
+
+A `json` or `group` param's **entire value** may be a `{ "$" }` marker (or a `{ "$expr" }` marker).
+It resolves **type-preserved** — an object, array, `null`, boolean or number stays itself — **before**
+validation and before invocation, exactly as a marker resolves anywhere else in `with`.
+
+- The whole-output form an editor writes is `{ "$": "steps.<id>.output" }`. Meta is reached the same
+  way, e.g. `{ "$": "steps.<id>.meta" }` (see the
+  [step metadata amendment](#amendment--2026-10-12-step-execution-metadata-stepsidmeta)).
+- `ExprValue` and template strings are unchanged and stay **string-producing**: see
+  [An `ExprValue` always resolves to a single string](#an-exprvalue-always-resolves-to-a-single-string).
+  A structured value is reached through a marker, never through an envelope or a `{{ … }}` template.
+- Literal JSON that holds an object with a single key `$` or `$expr` anywhere **is** a marker. There is
+  no escape form.
+- **Full-run semantics are unchanged.** A `$` binding to an absent, skipped or failed upstream path
+  resolves to `null`, as a marker always has. When a required-param failure then traces to such a
+  binding, an engine SHOULD name the step the binding points at in the failure message.
+
+### Conformance (additive)
+
+A host that offers a **single-step test** of a workflow step against supplied state MUST:
+
+- resolve the step's authored `$` and `$expr` markers (and `ExprValue`s) as a run would, in **one
+  pass**: values produced by resolution are never re-walked, so a payload that contains
+  `{ "$": … }` or `{{ … }}` reaches the action verbatim;
+- fail **before invocation**, naming the step, when a `$` binding references a step that has no
+  output in the supplied state. This differs deliberately from a full run, which resolves the same
+  binding to `null`: a test has no run to fall back on, and a run's behaviour is unchanged for
+  compatibility;
+- resolve a recorded `null` output to `null`;
+- never hand an unresolved marker or `ExprValue` to the action in a `json` or `group` param.

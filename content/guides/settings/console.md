@@ -10,10 +10,10 @@ order: 70
 position: 26
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/settings/console.md"
-sourceSha: "553e3823cdfb86d7aa3292e892ebcbf186a72031"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/settings/console.md"
-syncedAt: "2026-10-06T21:18:40Z"
+sourceSha: "089c9251a6c5ddea369e12771264dec6527e1fd5"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/settings/console.md"
+syncedAt: "2026-10-13T12:51:49Z"
 ---
 
 
@@ -45,10 +45,19 @@ How you know it worked: the tenant is listed as active.
 
 - **Rename slug** changes the tenant's short name.
 - **Disable** turns the tenant off; **Enable** turns it back on.
+- A tenant's **Status** shows its schema: **shared schema**, **provisioning**, **schema ready** or
+  **schema failed**, plus **detached** for a disabled tenant whose schema is kept.
+- **Retry schema** appears when a tenant's schema failed to set up. Click it, then check the badge
+  once the list refreshes: a retry that fails again still shows **schema failed**.
+- Open a tenant whose schema is ready and click **Export schema** to download a dump of it. If the
+  host refuses (for example its PostgreSQL client is too old, or a key rotation is running), the
+  reason is shown and nothing is downloaded.
 - Open a tenant for three tabs:
   - **Access**: its backend credentials (**Rotate client secret**), the identity providers it
     accepts (**Register IdP**, with **JWKS URI**, **Audience**, **Subject claim** and **Account
-    claim**), a **Custom authorizer**, and its OAuth clients.
+    claim**), a **Custom authorizer**, and its OAuth clients. When you register an OAuth client, the form
+    shows the app's **Callback URL** once you have entered the app id and auth key; register that
+    URL with the provider.
   - **Apps policy**: which apps the tenant can see. Switch between allowing everything and an
     allow list, **Add an app**, pin a version, and **Block** or **Hide** an app.
   - **Usage**: the tenant's usage events, in total and for the last 30 days. This is an operator

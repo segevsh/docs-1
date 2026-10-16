@@ -11,8 +11,8 @@ position: 7
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/categories.md"
 sourceSha: "e939f43b5435a8dd8493feb32bb35130d83175a9"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/categories.md"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/categories.md"
 syncedAt: "2026-06-01T02:16:14Z"
 ---
 

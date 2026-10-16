@@ -32,7 +32,7 @@ export async function getStaticPaths() {
 const { landing, entries } = Astro.props;
 ---
 
-<DocLayout title={landing.title} entries={entries}>
+<DocLayout title={landing.title} entries={entries} currentId={landing.section}>
   <h1>{landing.title}</h1>
   <ul class="section-landing">
     {landing.pages.map((page) => (

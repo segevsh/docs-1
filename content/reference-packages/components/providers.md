@@ -10,10 +10,10 @@ order: 0
 position: 4
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/providers.md"
-sourceSha: "f780a9fed9b01a34adf76d641c63a335556e5b17"
-sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/providers.md"
-syncedAt: "2026-10-06T21:20:06Z"
+sourceSha: "52ba530cf461fd03c7910ce2eb5d0cefde825228"
+sourceRefSha: "e92cde6c34aa1b66ff8a59828e74e307b0f6a01a"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/e92cde6c34aa1b66ff8a59828e74e307b0f6a01a/docs/components/providers.md"
+syncedAt: "2026-10-13T14:15:57Z"
 ---
 
 
@@ -77,10 +77,10 @@ Errors reject with `ApiError`, which carries:
 | `message` | The server's message, or a description naming the method and URL. |
 | `body` | The parsed error body, when there was one. A failed action invoke carries its `logs` and `apiCalls` here. |
 
-What it implements: every required `W6WApi` member (below), plus `listApps` and `listTestRuns`.
+What it implements: every required `W6WApi` member (below), plus `listApps`, `listAppsByIds` and `listTestRuns`.
 What it doesn't, and what that means:
 
-- No `listAppsPage` or `listAppsByIds`, so `AppPicker` loads the whole catalog up front (it pages
+- No `listAppsPage`, so `AppPicker` loads the whole catalog up front (it pages
   through `GET /apps` 200 at a time, up to 20 pages) and filters in the browser.
 - No trigger members (`listTriggerApps`, `getAppTriggers`, `listSubscriptionsForWorkflow`,
   `createSubscription`), so the step builder doesn't show the app-triggers section.
@@ -139,13 +139,13 @@ feature-detected: a component that finds one missing falls back or hides that fe
 | --- | --- | --- |
 | `listApps()` | Optional | `AppPicker`, `AddConnectionModal`, `StepBuilderModal` when the paged members are missing |
 | `listAppsPage(opts)` | Optional | `AppPicker` and the step builder's Apps/AI tabs: server-side search, category and cursor paging |
-| `listAppsByIds(ids)` | Optional | `AddConnectionModal`'s `initialAppId`, the step builder's connected-apps tab |
+| `listAppsByIds(ids)` | Optional | `AddConnectionModal`'s `initialAppId`, and the step builder's connected-apps tab, which reads each connection's inline `app` first and calls this only for rows lacking it. `createW6WApi` implements it (one `GET /apps?ids=` per 100 ids) |
 | `getAppAuth(appId)` | Yes | `AddConnectionModal`, `StepBuilderModal` |
 | `createConnection(appId, body)` | Yes | `AddConnectionModal` (API-key and similar auth) |
 | `startAppOAuthFlow(appId, authKey, body)` | Yes | `AddConnectionModal` (OAuth) |
 | `getAppActions(appId)` | Yes | `StepBuilderModal` |
 | `listConnectionsForApp(appId)` | Yes | `StepBuilderModal`, `WorkflowFlowEditor` |
-| `listConnections()` | Yes | The step builder's connected-apps tab |
+| `listConnections()` | Yes | The step builder's connected-apps tab (rows may carry an inline `app` meta) |
 | `invokeAction(appId, actionKey, params, opts)` | Yes | `ActionTestForm`, step tests in the builder and canvas |
 | `listSavedTests`, `createSavedTest`, `updateSavedTest`, `deleteSavedTest`, `recordTestRun` | Yes | `ActionTestForm` |
 | `listTestRuns(connectionId)` | Optional | `ActionTestForm`'s run history |

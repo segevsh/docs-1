@@ -11,8 +11,8 @@ position: 3
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/self-hosting/upgrade.md"
 sourceSha: "5be482a0d3cac3880aa613f35987a70e746bcc9d"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/self-hosting/upgrade.md"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/self-hosting/upgrade.md"
 syncedAt: "2026-10-06T21:22:18Z"
 ---
 

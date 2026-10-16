@@ -10,10 +10,10 @@ order: 0
 position: 0
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "endpoints.json"
-sourceSha: "b7e7dd1fc861eb7770dc442a020b486ef0598c80"
-sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/endpoints.json"
-syncedAt: "2026-10-02T15:56:29Z"
+sourceSha: "8a1afe37e3e75bbd62f4719f908267ba5095d140"
+sourceRefSha: "73d1fae563271498c8f9c6d92f213ad19903fee3"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/73d1fae563271498c8f9c6d92f213ad19903fee3/endpoints.json"
+syncedAt: "2026-10-14T19:27:57Z"
 ---
 
 Every operation the w6w HTTP API exposes to its client libraries. Each entry shows the route, its parameters and what it returns, with the call as spelled in the TypeScript and Python clients and the CLI.
@@ -41,6 +41,38 @@ List the caller's connections (credentials redacted).
 - TypeScript: `client.connections.list()`
 - Python: `client.connections.list()`
 - CLI: `w6w connections list`
+
+## connections.get
+
+`GET /connections/{id}`
+
+Fetch one connection (credentials redacted).
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `ConnectionSummary`
+
+- TypeScript: `client.connections.get(id)`
+- Python: `client.connections.get(id)`
+- CLI: `w6w connections get <id>`
+
+## connections.delete
+
+`DELETE /connections/{id}`
+
+Delete a connection.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `void`
+
+- TypeScript: `client.connections.delete(id)`
+- Python: `client.connections.delete(id)`
+- CLI: `w6w connections delete <id>`
 
 ## workflows.list
 
@@ -71,6 +103,7 @@ Enqueue a workflow run; optionally wait for a terminal state.
 | `variables` | body | object | no |
 | `trigger` | body | string | no |
 | `input` | body | object | no |
+| `allowUnpublished` | body | boolean | no |
 
 **Returns:** `RunResult`
 
@@ -177,6 +210,125 @@ Delete an archived workflow.
 - TypeScript: `client.workflows.delete(id)`
 - Python: `client.workflows.delete(id)`
 - CLI: `w6w workflows delete <id>`
+
+## workflows.listVersions
+
+`GET /workflows/{id}/versions`
+
+List a workflow's published versions.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `VersionList`
+
+- TypeScript: `client.workflows.listVersions(id)`
+- Python: `client.workflows.list_versions(id)`
+- CLI: `w6w workflows versions <id>`
+
+## workflows.getVersion
+
+`GET /workflows/{id}/versions/{n}`
+
+Read one published version of a workflow, with its definition.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+| `n` | path | integer | yes |
+
+**Returns:** `VersionDetail`
+
+- TypeScript: `client.workflows.getVersion(id, n)`
+- Python: `client.workflows.get_version(id, n)`
+- CLI: `w6w workflows version <id> <n>`
+
+## workflows.publish
+
+`POST /workflows/{id}/publish`
+
+Publish the workflow's stored definition as a new immutable version.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `PublishResult`
+
+- TypeScript: `client.workflows.publish(id)`
+- Python: `client.workflows.publish(id)`
+- CLI: `w6w workflows publish <id>`
+
+## workflows.revert
+
+`POST /workflows/{id}/versions/{n}/revert`
+
+Rewrite the live workflow from a published version.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+| `n` | path | integer | yes |
+
+**Returns:** `RevertResult`
+
+- TypeScript: `client.workflows.revert(id, n)`
+- Python: `client.workflows.revert(id, n)`
+- CLI: `w6w workflows revert <id> <n>`
+
+## workflows.enable
+
+`POST /workflows/{id}/enable`
+
+Enable the workflow's invocability.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `void`
+
+- TypeScript: `client.workflows.enable(id)`
+- Python: `client.workflows.enable(id)`
+- CLI: `w6w workflows enable <id>`
+
+## workflows.disable
+
+`POST /workflows/{id}/disable`
+
+Disable the workflow's invocability.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `void`
+
+- TypeScript: `client.workflows.disable(id)`
+- Python: `client.workflows.disable(id)`
+- CLI: `w6w workflows disable <id>`
+
+## workflows.runVersion
+
+`POST /workflows/{id}/versions/{n}/run`
+
+Run one published version of a workflow.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+| `n` | path | integer | yes |
+| `wait` | query | boolean | no |
+| `variables` | body | object | no |
+| `trigger` | body | string | no |
+| `input` | body | object | no |
+
+**Returns:** `RunResult`
+
+- TypeScript: `client.workflows.runVersion(id, n, opts?)`
+- Python: `client.workflows.run_version(id, n, wait=False, variables=None, trigger=None, input=None)`
+- CLI: `w6w workflows run-version <id> <n> [--wait] [--input <json>]`
 
 ## documents.list
 
@@ -393,6 +545,7 @@ Run one Function by its key (or id) and return its output.
 |---|---|---|---|
 | `idOrKey` | path | string | yes |
 | `inputs` | body | object | no |
+| `allowUnpublished` | body | boolean | no |
 
 **Returns:** `unknown`
 
@@ -477,6 +630,138 @@ Delete a Function.
 - Python: `client.functions.delete(id)`
 - CLI: `w6w functions delete <id>`
 
+## functions.archive
+
+`POST /functions/{id}/archive`
+
+Archive a Function — the required step before deleting it.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `FunctionDefinition`
+
+- TypeScript: `client.functions.archive(id)`
+- Python: `client.functions.archive(id)`
+- CLI: `w6w functions archive <id>`
+
+## functions.listVersions
+
+`GET /functions/{id}/versions`
+
+List a function's published versions.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `VersionList`
+
+- TypeScript: `client.functions.listVersions(id)`
+- Python: `client.functions.list_versions(id)`
+- CLI: `w6w functions versions <id>`
+
+## functions.getVersion
+
+`GET /functions/{id}/versions/{n}`
+
+Read one published version of a function, with its definition.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+| `n` | path | integer | yes |
+
+**Returns:** `VersionDetail`
+
+- TypeScript: `client.functions.getVersion(id, n)`
+- Python: `client.functions.get_version(id, n)`
+- CLI: `w6w functions version <id> <n>`
+
+## functions.publish
+
+`POST /functions/{id}/publish`
+
+Publish the function's stored definition as a new immutable version.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `PublishResult`
+
+- TypeScript: `client.functions.publish(id)`
+- Python: `client.functions.publish(id)`
+- CLI: `w6w functions publish <id>`
+
+## functions.revert
+
+`POST /functions/{id}/versions/{n}/revert`
+
+Rewrite the live function from a published version.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+| `n` | path | integer | yes |
+
+**Returns:** `RevertResult`
+
+- TypeScript: `client.functions.revert(id, n)`
+- Python: `client.functions.revert(id, n)`
+- CLI: `w6w functions revert <id> <n>`
+
+## functions.enable
+
+`POST /functions/{id}/enable`
+
+Enable the function's invocability.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `void`
+
+- TypeScript: `client.functions.enable(id)`
+- Python: `client.functions.enable(id)`
+- CLI: `w6w functions enable <id>`
+
+## functions.disable
+
+`POST /functions/{id}/disable`
+
+Disable the function's invocability.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `void`
+
+- TypeScript: `client.functions.disable(id)`
+- Python: `client.functions.disable(id)`
+- CLI: `w6w functions disable <id>`
+
+## functions.runVersion
+
+`POST /functions/{id}/versions/{n}/invoke`
+
+Run one published version of a Function and return its output.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+| `n` | path | integer | yes |
+| `inputs` | body | object | no |
+
+**Returns:** `unknown`
+
+- TypeScript: `client.functions.runVersion(id, n, opts?)`
+- Python: `client.functions.run_version(id, n, payload=None)`
+- CLI: `w6w functions run-version <id> <n> [--payload <json>]`
+
 ## endpoints.run
 
 `POST /endpoints/{idOrKey}/invoke`
@@ -493,6 +778,178 @@ Run one Endpoint by its key (or id); the envelope's kind says which arm answered
 - TypeScript: `client.endpoints.run(name, opts?)`
 - Python: `client.endpoints.run(name, payload=None)`
 - CLI: `w6w endpoints run <name> [--payload <json>]`
+
+## team.members.list
+
+`GET /me/account/members`
+
+List the caller's account team: every active member and their role.
+
+**Returns:** `TeamMember[]`
+
+- TypeScript: `client.team.members()`
+- Python: `client.team.members()`
+- CLI: `w6w team members`
+
+## team.invites.create
+
+`POST /me/account/invites`
+
+Invite someone to the caller's account, or mint an open, shareable invite link.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `email` | body | string | no |
+| `role` | body | string | no |
+
+**Returns:** `TeamInviteWithLink`
+
+- TypeScript: `client.team.invite(input)`
+- Python: `client.team.invite(email=None, role=None)`
+- CLI: `w6w team invite [--email <email>] [--role <role>]`
+
+## team.invites.list
+
+`GET /me/account/invites`
+
+List the caller's account's open (pending, unrevoked, unexpired) invites.
+
+**Returns:** `TeamInvite[]`
+
+- TypeScript: `client.team.invites()`
+- Python: `client.team.invites()`
+- CLI: `w6w team invites`
+
+## team.invites.revoke
+
+`DELETE /me/account/invites/{id}`
+
+Revoke a pending invite before it is redeemed.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `id` | path | string | yes |
+
+**Returns:** `void`
+
+- TypeScript: `client.team.revokeInvite(id)`
+- Python: `client.team.revoke_invite(id)`
+- CLI: `w6w team revoke-invite <id>`
+
+## team.members.updateRole
+
+`PATCH /me/account/members/{userId}`
+
+Change a team member's role.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `userId` | path | string | yes |
+| `role` | body | string | yes |
+
+**Returns:** `TeamMember`
+
+- TypeScript: `client.team.setRole(userId, role)`
+- Python: `client.team.set_role(user_id, role)`
+- CLI: `w6w team set-role <userId> --role <role>`
+
+## team.members.remove
+
+`DELETE /me/account/members/{userId}`
+
+Remove a member from the caller's account.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `userId` | path | string | yes |
+
+**Returns:** `void`
+
+- TypeScript: `client.team.removeMember(userId)`
+- Python: `client.team.remove_member(user_id)`
+- CLI: `w6w team remove-member <userId>`
+
+## apps.byIds
+
+`GET /apps`
+
+Resolve a set of app ids to their catalog summaries.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `ids` | query | string | yes |
+
+**Returns:** `AppSummary[]`
+
+- TypeScript: `client.apps.byIds(ids, opts?)`
+- Python: `client.apps.by_ids(ids)`
+- CLI: `w6w apps by-ids <ids>`
+
+## dashboard.stats
+
+`GET /dashboard/stats`
+
+Account-scoped dashboard rollup over the run ledger.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `from` | query | string | no |
+| `to` | query | string | no |
+| `bucket` | query | string | no |
+
+**Returns:** `DashboardStats`
+
+- TypeScript: `client.dashboard.stats(opts?)`
+- Python: `client.dashboard.stats(from_=None, to=None, bucket=None)`
+- CLI: `w6w dashboard stats [--from <iso>] [--to <iso>] [--bucket day|week]`
+
+## projects.list
+
+`GET /projects`
+
+List the account's active projects.
+
+**Returns:** `Project[]`
+
+- TypeScript: `client.projects.list(opts?)`
+- Python: `client.projects.list()`
+- CLI: `w6w projects list`
+
+## reliability.list
+
+`GET /reliability/services`
+
+Reliability board for a project and an explicit set of apps.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `project` | query | string | yes |
+| `apps` | query | string | yes |
+| `days` | query | string | no |
+| `limit` | query | string | no |
+
+**Returns:** `ReliabilityServices`
+
+- TypeScript: `client.reliability.list(project, appIds, opts?)`
+- Python: `client.reliability.list(project, app_ids, days=None, limit=None)`
+- CLI: `w6w reliability list --project <id> --apps <ids> [--days <n>] [--limit <n>]`
+
+## reliability.members
+
+`GET /reliability/services/members`
+
+List the app ids a project's calls touch.
+
+| Parameter | In | Type | Required |
+|---|---|---|---|
+| `project` | query | string | yes |
+| `days` | query | string | no |
+
+**Returns:** `ReliabilityServiceMembers`
+
+- TypeScript: `client.reliability.members(project, opts?)`
+- Python: `client.reliability.members(project, days=None)`
+- CLI: `w6w reliability members --project <id> [--days <n>]`
 
 ## run
 

@@ -10,10 +10,10 @@ order: 40
 position: 14
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "rfcs/trigger.md"
-sourceSha: "26b6dba7340c7e573ef60a3b1994a46677a53d55"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/rfcs/trigger.md"
-syncedAt: "2026-10-04T22:25:56Z"
+sourceSha: "4ad51bcedd5fbb4ff32ed7e4ba898cb9b746dca8"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/rfcs/trigger.md"
+syncedAt: "2026-10-07T13:36:57Z"
 ---
 
 # RFC: Trigger
@@ -405,6 +405,81 @@ The reference test fixtures for the manager + HTTPS adapter constitute the execu
 4. **Event schema evolution.** When a trigger's `output` shape changes across app versions, do stored events carry the app version they were normalized against?
 5. **Subscription-level enable/disable vs. workflow-level.** Pausing a workflow disables all its subscriptions; pausing a subscription disables events into that workflow. Which is authoritative when both toggle?
 6. **HMAC / signing convention.** Should the RFC standardize a signing hook (`verifySignature?(headers, rawBody) → boolean`) instead of leaving it to `handleIngest`? Standardization means the adapter can reject before `handleIngest`, saving compute; the cost is a second hook per trigger.
+
+## Amendment — 2026-10-07: webhook and poll forms, whole-call ingest, output parser
+
+> This amendment supersedes the following passages of the body above, which remain for history:
+>
+> - "A transport adapter (v1: HTTPS endpoint at `POST /triggers/webhooks/:subscriptionId`) receives raw input." (Concept step 1) and the HTTPS adapter's `POST /triggers/webhooks/:subscriptionId` route line: the listener accepts any method.
+> - "`POST /triggers/webhooks/:subscriptionId` that returns 200 has produced at least one row in `trigger_events` with `status ∈ { received, dispatching, dispatched, failed }`" (Conformance): the status set also contains `ignored`, and the method is any.
+> - "**Response**: 200 on successful commit, 400 if `handleIngest` throws (body carries the error), 404 if the subscription is unknown, 429 on host back-pressure." (HTTPS adapter, Response): an ingest-parser throw is no longer a 400. The call is recorded as one `failed` row in `trigger_events` and the listener answers 200.
+> - "POST   /triggers/webhooks/:subscriptionId       — public inbound webhook (no auth header; id is the secret)" (route list): the listener accepts any method on that path, not `POST` only.
+> - The `onUnsubscribe` row, "Optional; MUST be provided when `onSubscribe` allocates external resources.": `onUnsubscribe` MUST be provided whenever `onSubscribe` is.
+> - The `handleIngest` row, "string (path) \| function | ✅": `handleIngest` is optional.
+> - "Request body: passed to `handleIngest(raw: <parsed JSON or text>)`." and the `handleIngest` input `raw: unknown; // whatever the transport adapter received`: `raw` is the whole call, not the body only.
+> - "### Poller (future)": polling is specified here.
+> - Open question 2, "Poll trigger lifecycle": answered here (the `poll` hook, in this RFC).
+>
+> The code-shape signatures below follow `@w6w/types` (`(input, ctx)`), not the `ctx`-inside-input pseudo-types in the body.
+
+### Two forms
+
+Every trigger is exactly one of two forms. The host-derived `type` (`"webhook" | "poll"`) is set by the loader — `"poll"` iff the module declares `poll`, else `"webhook"` — and overwrites any authored value. It is serialized into the trigger config.
+
+| Form | Hooks | Rule |
+|---|---|---|
+| **webhook** | `onSubscribe` + `onUnsubscribe`, optional `handleIngest`, optional `parseOutput` | `onSubscribe` and `onUnsubscribe` MUST pair: whatever is registered must be destroyable. A trigger with no hooks is a plain receiver and is a webhook. |
+| **poll** | `poll`, optional `parseOutput` | MUST NOT declare `onSubscribe` (nothing is registered, so nothing is destroyed). |
+
+The loader rejects a violating module with `LoadError("invalid_trigger")`.
+
+### Signatures
+
+```ts
+type TriggerCall = {
+  method: string; path: string;
+  query: Record<string, string>; headers: Record<string, string>;
+  body: unknown;
+};
+
+type HandleIngestHook<P, S, E> = (
+  input: { raw: TriggerCall; params: P; state: S; subscriptionId: string }, ctx: HookContext,
+) => E[] | Promise<E[]>;
+
+type PollHook<P, S, E> = (
+  input: { params: P; state: S; subscriptionId: string }, ctx: HookContext,
+) => { events: E[]; nextState?: S } | Promise<{ events: E[]; nextState?: S }>;
+
+type ParseOutputHook<E, O> = (
+  input: { call: unknown; normalized: E; subscriptionId: string }, ctx: HookContext,
+) => O | Promise<O>;
+```
+
+`Trigger` also gains `type?: "webhook" | "poll"` (host-derived) and `minIntervalMs?: number`. `TriggerDefinition.handleIngest`, `.poll` and `.parseOutput` are all optional. For `parseOutput`, `call` is the stored, masked `TriggerCall` for a webhook-type row, and the polled event for a poll-type row.
+
+### Processing order
+
+ingest parser (`handleIngest`) → store → dispatch → `parseOutput` → the run's `trigger.event`. With no `handleIngest`, the call body is the normalized event; with no `parseOutput`, the event is the stored normalized value.
+
+### Listener
+
+The HTTPS listener accepts any method, and passes the whole call (method, path, query, headers, body) to `handleIngest`. The stored copy of the call has credential headers masked; the ingest parser sees the unmasked call.
+
+### Polling
+
+The host calls `poll` on the subscription's interval. `nextState` is persisted atomically with the events it accompanies; the app dedupes from its own cursor, because a retried check re-runs from the last persisted state. `minIntervalMs` is a vendor floor; the host's own floor is host policy and the larger of the two applies.
+
+### Dependencies
+
+A subscription depends on the principals it was built from (its workflow, its connection). When ANY of those principals is deleted, the subscription is destroyed (`onUnsubscribe` runs first, for webhook-type rows).
+
+### Archived and disabled apps
+
+A call to a webhook whose app is archived or disabled is stored, then marked `ignored`. The subscription is never destroyed on that account, and a poll subscription is not run.
+
+### Call record
+
+A stored call is immutable: its subscription, raw call, normalized event and receipt time never change. Only its delivery `status` moves, and `ignored` joins the status set (`received`, `dispatching`, `dispatched`, `failed`, `ignored`).
 
 ## Status ladder
 

@@ -11,8 +11,8 @@ position: 15
 sourceRepo: "w6w-io/w6w-core"
 sourcePath: "docs/host-runtime.md"
 sourceSha: "4936e0665c7570123b2f00799bc024616c446954"
-sourceRefSha: "ff3ac94f02edb9606dc4f9488c7ca15b0ae84299"
-sourceUrl: "https://github.com/w6w-io/w6w-core/blob/ff3ac94f02edb9606dc4f9488c7ca15b0ae84299/docs/host-runtime.md"
+sourceRefSha: "1d2b8d07bacd84694e7d355cde99cda0d726d888"
+sourceUrl: "https://github.com/w6w-io/w6w-core/blob/1d2b8d07bacd84694e7d355cde99cda0d726d888/docs/host-runtime.md"
 syncedAt: "2026-10-06T21:19:19Z"
 ---
 

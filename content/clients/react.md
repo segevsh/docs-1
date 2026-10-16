@@ -10,10 +10,10 @@ order: 20
 position: 5
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/react/index.md"
-sourceSha: "098837a2fbe133edf12e745c85d9dc4ee4f1ca96"
-sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients/react/index.md"
-syncedAt: "2026-10-06T03:44:44Z"
+sourceSha: "14249bade571535ec87bf0fe033626729c90230e"
+sourceRefSha: "73d1fae563271498c8f9c6d92f213ad19903fee3"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/73d1fae563271498c8f9c6d92f213ad19903fee3/docs/clients/react/index.md"
+syncedAt: "2026-10-14T22:44:16Z"
 ---
 
 
@@ -55,9 +55,15 @@ export function App() {
 }
 ```
 
-`token` takes a string, or a function that returns one. A function can be async, and it's called
-before every request, so a rotated token is used on the next call. Until it returns a token, read
+`token` takes a string, or a function that returns one. The function may be async. It is called
+whenever a request needs a token, and concurrent requests share one in-flight call. The result is
+not cached once it settles, so a rotated token is picked up on the next request. Until it returns a token, read
 hooks stay in their loading state instead of sending a request without one.
+
+For per-user sessions minted by your backend, pass `getSession` instead of `token`: one callback
+that calls your session endpoint. The provider caches the session, renews it before it expires and
+re-checks on tab resume, and `useW6WSession()` reports its status. It needs `@w6w/react` 0.9.13 or
+later. See [Next.js and token minting](/clients/react/nextjs/).
 
 ## 3. Read data with a hook
 
@@ -146,6 +152,43 @@ function SendWelcome({ email }: { email: string }) {
 `useW6WClient()` returns the same `W6WClient` the hooks use. Everything on the
 [Node SDK](/clients/node/) pages works on it, including `client.request()` for routes no method
 wraps yet.
+
+## Edit workflows with a typed shape
+
+The Node SDK returns a workflow definition as an untyped object, so that a newer server's extra
+fields never break your app. If you pass definitions to or from the `@w6w/ui` flow editor,
+convert them with `toFlowWorkflow` and `fromFlowWorkflow` rather than casting:
+
+```tsx
+import { fromFlowWorkflow, toFlowWorkflow, WorkflowShapeError } from "@w6w/react";
+
+const { workflow } = await client.workflows.get(id);
+try {
+  const flow = toFlowWorkflow(workflow);
+  // Give `flow` to the editor, and get an edited copy back.
+  await client.workflows.update(id, fromFlowWorkflow(edited));
+} catch (err) {
+  if (err instanceof WorkflowShapeError) console.error(err.issues); // [{ path, message }]
+}
+```
+
+`toFlowWorkflow` checks that `manifestVersion`, `id` and `name` are strings and that `steps` is
+an array of objects that each have a string `id`. If `edges`, `settings` or `variables` are
+present, they must be an array, an object and an array. When something is wrong, the error's
+`issues` lists every problem, each with a `path` and a `message`. It doesn't look inside a step's
+`uses`. Keys it doesn't know about, such as `retry`, `onError` or your own `x-` fields, pass through
+unchanged in both directions, so converting there and back gives you the same definition.
+
+`createW6WUiAdapter` is tested at run time against the `@w6w/ui` contract it implements: every
+member is present as a function, forwards its arguments to the expected request, and hands the
+server's error body to the caller as `err.body`.
+
+The adapter is the supported way to connect the UI to w6w. Most of its members run on the
+Studio-internal `client.console.*` calls, which can change without notice, so pass
+`createW6WUiAdapter(client)` to the UI as it is. Don't call the console namespace yourself or add
+members to the adapter. `listAppsByIds` and `listConnections` use the public
+`client.apps.byIds` and `client.connections.list`. For a workflow or Function editor, see
+[Embed w6w in your product](/guides/embed/).
 
 ## Handle errors
 

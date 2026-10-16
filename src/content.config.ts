@@ -25,8 +25,8 @@ import { SECTIONS } from "./lib/doc-sources.ts";
 const CONTENT_ROOT = process.env.DOCS_CONTENT_DIR ?? "./content";
 
 /**
- * Imported markdown — docs collected from each package's own `docs/` folder (listed in its
- * `docs/manifest.json`) plus the importer's pinned list (see `CONTRIBUTING.md`).
+ * Imported markdown — docs listed in each package's `docs/manifest.json`, plus the HTTP API
+ * reference generated from the wrappers endpoint catalog (see `CONTRIBUTING.md`).
  * `src/lib/import-docs.ts` writes into this collection against this exact schema.
  *
  * Matched by `*\/**\/*.md` — at least one directory level under `content/`, i.e.

@@ -10,10 +10,10 @@ order: 200
 position: 17
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/secrets-and-variables.md"
-sourceSha: "45be5a12d26fb67782e3730690c8d08b544157fd"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/secrets-and-variables.md"
-syncedAt: "2026-10-06T21:18:40Z"
+sourceSha: "1193cabc8092b80e548dc19d58028424b23d7a70"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/secrets-and-variables.md"
+syncedAt: "2026-10-07T12:52:16Z"
 ---
 
 
@@ -81,6 +81,20 @@ Studio. Use it as `{{ secrets.openai_api_key }}`.
 Never put a secret's value in a variable, a document or a parameter typed in plain text. Those are
 stored and shown as plaintext.
 
+## Where a secret can be used
+
+Reference a secret directly in the step that sends it, such as an HTTP request or an app action.
+Run records and logs show `[redacted]` in its place.
+
+A step is refused with a parameter error when it would store the secret with the run:
+
+- a **Merge** step's entries
+- a **For each** step's items
+- steps that copy their settings into their output: **Set data**, **Render template**,
+  **Respond to Webhook** and the trigger steps
+
+To use a secret in one of these flows, reference it in the step that sends it instead.
+
 ## Rotate a secret
 
 1. Click **Rotate** on the secret's row.
@@ -105,6 +119,7 @@ it fail on their next run, so search your workflows first.
 | The name is refused | It uses capitals, dashes or spaces, or starts with a digit. | Use lowercase letters, digits and underscores. |
 | A step still uses the old value | It ran before you saved, or it refers to a different name. | Check the reference in the step, then run again. |
 | A delete seems to do nothing | The delete failed without an error message. | Reload the page to check, and try again. |
+| A step fails with `… cannot read a vault secret` or `… refused: … read a vault secret` | The step would store the secret in the run record: a **Merge** entry, a **For each** item, or a **Set data**, **Render template**, **Respond to Webhook** or trigger step. | Remove the secret from that step and reference it in the step that sends it, such as the HTTP request. |
 
 ## Where to next
 

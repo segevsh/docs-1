@@ -10,10 +10,10 @@ order: 40
 position: 8
 sourceRepo: "w6w-io/w6w-ui"
 sourcePath: "docs/components/editors.md"
-sourceSha: "5fdb933b439d48be40b911d2c5d358d73a15713c"
-sourceRefSha: "54d47d26d77159d29efc25187d8cb2786e2afef3"
-sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/54d47d26d77159d29efc25187d8cb2786e2afef3/docs/components/editors.md"
-syncedAt: "2026-10-06T21:20:06Z"
+sourceSha: "076d5caba22881f39c7802f3f9300a2944a2efed"
+sourceRefSha: "e92cde6c34aa1b66ff8a59828e74e307b0f6a01a"
+sourceUrl: "https://github.com/w6w-io/w6w-ui/blob/e92cde6c34aa1b66ff8a59828e74e307b0f6a01a/docs/components/editors.md"
+syncedAt: "2026-10-12T22:39:54Z"
 ---
 
 
@@ -50,6 +50,13 @@ import "@w6w/ui/code.css";
 
 `CodeBlock` is exported from the root `@w6w/ui` too, so you don't need a second import when you
 already load the full library.
+
+Every line and every token `CodeBlock` renders carries an explicit React key, including repeated,
+blank and whitespace-only lines, so the block raises no key warning. If your console shows a
+`Each child in a list should have a unique "key" prop` warning that names `Highlight`, it is not
+this component: it comes from a different renderer, either `Highlight` from `prism-react-renderer`
+used directly with the library's documented spread pattern, or an older copy of `CodeBlock`. Import
+`CodeBlock` from `@w6w/ui/code` and pin a current commit of `w6w-ui`.
 
 ## `JsonEditor`
 

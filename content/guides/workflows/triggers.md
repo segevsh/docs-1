@@ -10,10 +10,10 @@ order: 20
 position: 9
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/workflows/triggers.md"
-sourceSha: "42765a1d92120ca283d53288c576ea0e64ddaba3"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/workflows/triggers.md"
-syncedAt: "2026-10-06T21:18:40Z"
+sourceSha: "b80d879e7fdaf15f753a2259a8ab78b582e63890"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/workflows/triggers.md"
+syncedAt: "2026-10-07T16:37:53Z"
 ---
 
 
@@ -92,6 +92,9 @@ Some apps declare events you can subscribe to, such as a new message in a chat a
 1. On the **Triggers** tab, under **App triggers**, search **Search apps with triggers…** and pick
    an app.
 2. Pick the event.
+3. If the event is one W6W checks for rather than one the app pushes, a **Check every N minutes**
+   field appears. Set how often W6W looks for new events. There is a minimum interval, and anything
+   below it is refused.
 
 This creates a **subscription** that binds the app's event to this workflow. It doesn't add a step
 to the canvas. Each time the event fires, the workflow runs with the event's payload available as
@@ -103,7 +106,10 @@ Subscriptions have their own page, which isn't in the sidebar. Open
 `https://<your-studio-host>/<account-id>/<project-id>/subscriptions`.
 
 - **Active subscriptions** lists each one: the app, the event key, the workflow it starts, and
-  whether it's **enabled** or **disabled**.
+  whether it's **enabled** or **disabled**. It also shows the event's type (`webhook` or `poll`),
+  **Every N min** for a poll event, and a status tag. No tag means the subscription is registered
+  and ready. **pending** means registration hasn't finished, **destroying** means it's being
+  removed, and **failed** means registration didn't work, with the reason shown underneath.
 - **Copy URL** copies the subscription's webhook address, to paste into the vendor's webhook
   settings. Treat it like a password.
 - **Delete** removes the subscription. The workflow stops receiving that event.
@@ -124,6 +130,7 @@ How you know it worked: the subscription appears under **Active subscriptions** 
 | `No apps declare triggers yet.` | None of your registered apps offers events. | Use a **Webhook** trigger and point the vendor at its URL. |
 | The webhook URL answers `401` | The request didn't carry what **Authentication** requires. | Send the header, Basic credentials or JWT you configured. |
 | The webhook answers but no run appears | The method isn't in **HTTP Methods**, the request came from an address outside **IP allow list**, or the workflow is disabled or archived. | Check those settings, and that the workflow is published and enabled. |
+| A subscription is tagged **failed** | The app refused or couldn't complete registration, for example because of a missing or invalid connection. The reason is shown under the row. | Fix what the message names, then delete the subscription and add it again. |
 | `No subscriptions yet — bind a trigger to a workflow above.` | Nothing is subscribed in this project. | Add one with **+ Add subscription** or from the **Triggers** tab. |
 
 ## Where to next

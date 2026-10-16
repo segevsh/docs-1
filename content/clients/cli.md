@@ -10,10 +10,10 @@ order: 30
 position: 8
 sourceRepo: "w6w-io/w6w-wrappers"
 sourcePath: "docs/clients/cli/index.md"
-sourceSha: "3cced6931a069b56c43363a371375cac503668f6"
-sourceRefSha: "58291afa9815ba23fe51a811e1470783f5b0fe98"
-sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/58291afa9815ba23fe51a811e1470783f5b0fe98/docs/clients/cli/index.md"
-syncedAt: "2026-10-06T03:44:44Z"
+sourceSha: "c4280d6d2c5836312adc358e320bb9f0f75bd1e5"
+sourceRefSha: "73d1fae563271498c8f9c6d92f213ad19903fee3"
+sourceUrl: "https://github.com/w6w-io/w6w-wrappers/blob/73d1fae563271498c8f9c6d92f213ad19903fee3/docs/clients/cli/index.md"
+syncedAt: "2026-10-14T22:48:07Z"
 ---
 
 
@@ -153,7 +153,6 @@ A few flags shown in `--help` aren't applied yet. Use these instead:
 | `w6w functions run --id-or-key <key>` or `w6w endpoints run --id-or-key <key>` | The flag isn't read, so the command says it needs a key. | Pass the key as an argument: `w6w functions run <key>`. |
 | `w6w functions run <key> --inputs '…'` | The inputs are ignored and the Function gets `{}`. `--payload` is rejected. | `w6w run fn:<key> --payload '…'` |
 | `w6w endpoints run <key> --input '…'` | The input is ignored and the Endpoint gets `{}`. `--payload` is rejected. | `w6w run ep:<key> --payload '…'` |
-| `w6w workflows run … --var k=v` or `--trigger …` | Variables and the trigger are ignored. `--wait` and `--input` work. | Set variables or a trigger from the [Node SDK](/clients/node/workflows/) or [Python](/clients/python/). |
 | `w6w workflows update … --if-unmodified-since …` | The check is skipped, so the save always wins. | Make conditional saves from an SDK with `ifUnmodifiedSince`. |
 
 ## Troubleshooting

@@ -11,8 +11,8 @@ position: 18
 sourceRepo: "w6w-io/w6w-studio"
 sourcePath: "docs/documents.md"
 sourceSha: "9a45301d5cd377a92647afbb3dcd782de00eed82"
-sourceRefSha: "2e25e297622dec7966f7baafd584add3eba28641"
-sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/2e25e297622dec7966f7baafd584add3eba28641/docs/documents.md"
+sourceRefSha: "5c12eada9888c3fb1031d01714feb32337be265b"
+sourceUrl: "https://github.com/w6w-io/w6w-studio/blob/5c12eada9888c3fb1031d01714feb32337be265b/docs/documents.md"
 syncedAt: "2026-10-06T21:18:40Z"
 ---
 

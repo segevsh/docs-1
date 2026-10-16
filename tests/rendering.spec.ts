@@ -21,6 +21,26 @@ test.describe("homepage", () => {
 });
 
 test.describe("rail areas", () => {
+  test("only the current section starts expanded on documents and section landings", async ({ page }) => {
+    const routes = [
+      ["/clients/", "clients"],
+      ["/clients/web-ui/", "clients"],
+      ["/guides/rich-prose/", "guides"],
+      ["/get-started/", "get-started"],
+      ["/get-started/install/", "get-started"],
+      ["/self-hosting/hardening/", "self-hosting"],
+      ["/build-apps/first-app/", "build-apps"],
+      ["/reference-api/", "reference"],
+      ["/reference-spec/protocol/", "reference"],
+    ];
+    for (const [route, area] of routes) {
+      await page.goto(route);
+      const expanded = page.locator(".docs-rail-section[open]");
+      await expect(expanded, route).toHaveCount(1);
+      await expect(expanded, route).toHaveAttribute("data-area", area);
+    }
+  });
+
   test("renders the six areas in pinned order, each with its title (never the raw slug)", async ({ page }) => {
     await page.goto("/guides/rich-prose/");
 
@@ -175,7 +195,7 @@ test.describe("rail accordion", () => {
     await page.goto("/guides/long-title/");
     const guides = page.locator('.docs-rail-section[data-area="guides"]');
     const reference = page.locator('.docs-rail-section[data-area="reference"]');
-    await expect(guides).toHaveJSProperty("open", true); // areas outside Reference start open
+    await expect(guides).toHaveJSProperty("open", true); // the current document's area starts open
 
     await guides.locator("> summary").click();
     await expect(guides).toHaveJSProperty("open", false);

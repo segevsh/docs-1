@@ -11,8 +11,8 @@ position: 12
 sourceRepo: "w6w-io/w6w-server"
 sourcePath: "docs/guides/overrides.md"
 sourceSha: "a7381cb29ad44d1fb8278937cb1dfb53596c8e30"
-sourceRefSha: "40127346cb4c16c6f06e5b4546527b9d7a62a25b"
-sourceUrl: "https://github.com/w6w-io/w6w-server/blob/40127346cb4c16c6f06e5b4546527b9d7a62a25b/docs/guides/overrides.md"
+sourceRefSha: "801217d024e3bf11a372f2876ef6bed8a10a1bfb"
+sourceUrl: "https://github.com/w6w-io/w6w-server/blob/801217d024e3bf11a372f2876ef6bed8a10a1bfb/docs/guides/overrides.md"
 syncedAt: "2026-10-06T21:33:41Z"
 ---
 
