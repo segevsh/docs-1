@@ -53,10 +53,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
         working-directory: sources/docs
 
-      # Keeps T2.1.1's vendored branding tokens from drifting after this run. Not optional, and
-      # never allowed to soft-fail — a drifted token set fails the build, not just a warning.
-      - name: Check vendored tokens are current
-        run: pnpm check:tokens
+      # For the browser suite in scripts/verify.sh (the deploy gate below).
+      - name: Install chromium for the browser suite
+        run: pnpm exec playwright install --with-deps chromium
         working-directory: sources/docs
 
       # Main pushes and releases publish the reviewed content/ snapshot. Source-repo dispatches
@@ -70,7 +69,7 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: w6w-io
-          repositories: w6w-core,w6w-server,w6w-wrappers,w6w-studio,w6w-apps,w6w-ui
+          repositories: w6w-core,w6w-server,w6w-wrappers,w6w-studio,w6w-apps
 
       # Full history (fetch-depth 0): the importer stamps each page with its source file's last
       # commit date and refuses a dirty listed file.
@@ -114,22 +113,18 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           path: sources/apps
           fetch-depth: 0
-      - name: Checkout ui
-        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
-        uses: actions/checkout@v6
-        with:
-          repository: w6w-io/w6w-ui
-          token: ${{ steps.app-token.outputs.token }}
-          path: sources/ui
-          fetch-depth: 0
-
       - name: Import docs from the source repos
         if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         run: node src/lib/import-docs.ts --root "$GITHUB_WORKSPACE/sources"
         working-directory: sources/docs
 
-      - name: Build
-        run: pnpm build
+      # The deploy gate: scripts/verify.sh — the same file ci.yml and the pre-push hook run — over
+      # exactly what is about to ship (after any import above). It checks the vendored branding
+      # tokens (never allowed to soft-fail: a drifted token set fails the deploy), runs the unit
+      # tests, `astro check`, the browser suite, and the production build into dist/, which the
+      # Deploy step below publishes as-is.
+      - name: Verify + build (scripts/verify.sh)
+        run: bash scripts/verify.sh
         working-directory: sources/docs
 
       # Main pushes and source-repo dispatches deploy the current site. Published releases

@@ -1,0 +1,62 @@
+name: CI
+
+# The required PR check. Every check lives in scripts/verify.sh, which deploy.yml runs as its gate
+# and the pre-push hook (w6w-io/w6w .githooks/pre-push) also runs — add a check THERE, never only
+# here.
+#
+# The site builds from the committed content/ snapshot, so no source repo is checked out and no
+# secret is needed (deploy.yml's source-repo App token is only for a refresh dispatch). This repo
+# sits at `docs/`, matching the sibling layout every other w6w CI uses.
+#
+# No `paths:` filter, on purpose: a required check that never runs blocks the PR forever.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: docs
+
+      # pnpm BEFORE Node, so the Node action's pnpm cache can resolve the store path. The version
+      # comes from docs/package.json's `packageManager` (pnpm 11), as in deploy.yml.
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: docs/package.json
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: docs/pnpm-lock.yaml
+
+      - name: Install
+        working-directory: docs
+        run: pnpm install --frozen-lockfile
+      - name: Install chromium for the browser suite
+        working-directory: docs
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Verify
+        run: bash docs/scripts/verify.sh
+
+      # Screenshots and traces from a failing browser test, for a human — never a gate.
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-artifacts
+          path: docs/test-results
+          if-no-files-found: ignore
+          retention-days: 7
