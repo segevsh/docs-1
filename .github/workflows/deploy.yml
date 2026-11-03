@@ -69,7 +69,7 @@ jobs:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: w6w-io
-          repositories: w6w-core,w6w-server,w6w-wrappers,w6w-studio,w6w-apps,w6w-ui
+          repositories: w6w-core,w6w-server,w6w-wrappers,w6w-studio,w6w-apps
 
       # Full history (fetch-depth 0): the importer stamps each page with its source file's last
       # commit date and refuses a dirty listed file.
@@ -113,15 +113,6 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           path: sources/apps
           fetch-depth: 0
-      - name: Checkout ui
-        if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
-        uses: actions/checkout@v6
-        with:
-          repository: w6w-io/w6w-ui
-          token: ${{ steps.app-token.outputs.token }}
-          path: sources/ui
-          fetch-depth: 0
-
       - name: Import docs from the source repos
         if: github.event_name == 'workflow_dispatch' && inputs.refresh_sources
         run: node src/lib/import-docs.ts --root "$GITHUB_WORKSPACE/sources"
